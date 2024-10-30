@@ -1,41 +1,38 @@
-import { Client, Row } from "@libsql/client";
+import { Database, KVStore } from "./db";
 
-type CacheRow = Row & {
-  key: string;
-  value: string;
-  expires_at: number | null;
-};
-
-export function createCache<T = unknown>(db: Client, prefix = "") {
-  function is_expired(obj: CacheRow) {
+export function createCache<T = unknown>(db: Database, prefix: string) {
+  function is_expired(obj: KVStore) {
     if (!obj.expires_at) return false;
     return Date.now() > new Date(obj.expires_at).getTime();
   }
 
   async function set(key: string, value: T | null, expires_in?: number) {
-    if (typeof expires_in === "number") {
-      await db.execute({
-        sql: "INSERT INTO kv_store (key, value, expires_at) VALUES (?, ?, ?)",
-        args: [prefix + key, JSON.stringify(value), Date.now() + expires_in],
-      });
-    } else {
-      await db.execute({
-        sql: "INSERT INTO kv_store (key, value) VALUES (?, ?)",
-        args: [prefix + key, JSON.stringify(value)],
-      });
-    }
+    const expiresAt =
+      typeof expires_in === "number" ? Date.now() + expires_in : null;
+    const values = {
+      key: prefix + key,
+      value: JSON.stringify(value),
+      expires_at: expiresAt,
+    };
+    await db
+      .insertInto("kv_store")
+      .values(values)
+      .onConflict((oc) =>
+        oc.doUpdateSet({ value: values.value, expires_at: values.expires_at }),
+      )
+      .execute();
   }
 
   async function get(key: string): Promise<T | null | undefined> {
-    const { rows } = await db.execute({
-      sql: "SELECT value, expires_at FROM kv_store WHERE key = ? LIMIT 1",
-      args: [prefix + key],
-    });
-    const found = rows[0] as CacheRow | undefined;
+    const found = await db
+      .selectFrom("kv_store")
+      .selectAll()
+      .where("key", "=", prefix + key)
+      .executeTakeFirst();
 
     if (found && is_expired(found)) {
       // Key has expired, time to delete
-      await del(prefix + key);
+      await del(key);
       return undefined;
     }
 
@@ -43,10 +40,10 @@ export function createCache<T = unknown>(db: Client, prefix = "") {
   }
 
   async function del(key: string) {
-    await db.execute({
-      sql: "DELETE FROM kv_store WHERE key in (SELECT key FROM kv_store WHERE key = ? LIMIT 1)",
-      args: [prefix + key],
-    });
+    await db
+      .deleteFrom("kv_store")
+      .where("key", "=", prefix + key)
+      .execute();
   }
 
   return {

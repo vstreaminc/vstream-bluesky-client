@@ -1,22 +1,22 @@
-import { Client as DBClient } from "@libsql/client";
 import {
   NodeSavedState,
   NodeSavedSession,
   NodeOAuthClient,
   NodeOAuthClientOptions,
 } from "@atproto/oauth-client-node";
-import { createCache } from "./cache";
 import { ServerConfig } from "./config";
+import { createCache } from "./cache";
+import { Database } from "./db";
 
 const REQUESTED_SCOPES = ["atproto", "transition:generic"].join(" ");
 
 export function createClient(
-  appDB: DBClient,
+  appDB: Database,
   keyset: NonNullable<NodeOAuthClientOptions["keyset"]>,
   cfg: ServerConfig,
 ) {
-  const stateCache = createCache<NodeSavedState>(appDB);
-  const sessionCache = createCache<NodeSavedSession>(appDB);
+  const stateCache = createCache<NodeSavedState>(appDB, "state:");
+  const sessionCache = createCache<NodeSavedSession>(appDB, "session:");
 
   const redirectPath = "/auth/bsky/callback";
   // Client ID has some strange requirements for BSky OAuth. When in dev, one

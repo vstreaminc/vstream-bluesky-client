@@ -6,6 +6,7 @@ import express from "express";
 import { createHttpTerminator, HttpTerminator } from "http-terminator";
 import { ServerConfig } from "./config";
 import * as AppContext from "./config/context";
+import { migrateToLatest } from "./db";
 
 export class Machine {
   public readonly ctx: AppContext.AppContext;
@@ -21,6 +22,8 @@ export class Machine {
 
   static async create(cfg: ServerConfig): Promise<Machine> {
     const ctx = await AppContext.fromConfig(cfg);
+    await migrateToLatest(ctx.appDB);
+
     const viteDevServer =
       process.env.NODE_ENV === "production"
         ? undefined
@@ -67,10 +70,7 @@ export class Machine {
     // handle SSR requests
     app.all("*", remixHandler);
 
-    return new Machine({
-      ctx,
-      app,
-    });
+    return new Machine({ ctx, app });
   }
 
   async start(): Promise<http.Server> {
@@ -87,6 +87,6 @@ export class Machine {
     this.terminating = true;
 
     await this.terminator?.terminate();
-    this.ctx.appDB.close();
+    await this.ctx.appDB.destroy();
   }
 }

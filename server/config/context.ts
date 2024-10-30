@@ -1,18 +1,11 @@
 import { JoseKey } from "@atproto/jwk-jose";
-import {
-  Client as DBClient,
-  createClient as createDBClient,
-} from "@libsql/client";
 import { NodeOAuthClient } from "@atproto/oauth-client-node";
 import { createClient as createAtProtoClient } from "../atProto";
 import { ServerConfig } from "./config";
+import { createDB, Database } from "../db";
 
 export async function fromConfig(cfg: ServerConfig): Promise<AppContext> {
-  const appDB = createDBClient({
-    authToken: cfg.db.authToken,
-    encryptionKey: cfg.db.encryptionKey,
-    url: cfg.db.url,
-  });
+  const appDB = createDB(cfg);
 
   const bskyKeys =
     cfg.bsky.keys && cfg.bsky.keys.length > 0
@@ -31,7 +24,7 @@ export async function fromConfig(cfg: ServerConfig): Promise<AppContext> {
 }
 
 export type AppContext = {
-  appDB: DBClient;
+  appDB: Database;
   atProtoClient: NodeOAuthClient;
   cfg: ServerConfig;
 };
