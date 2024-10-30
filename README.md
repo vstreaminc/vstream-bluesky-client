@@ -1,5 +1,6 @@
 # VStream - BlueSky client
-> This is a **(still in development)** client for [BlueSky](https://bsky.app) 
+
+> This is a **(still in development)** client for [BlueSky](https://bsky.app)
 
 ## Development
 

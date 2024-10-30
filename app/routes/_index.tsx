@@ -10,5 +10,5 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  return null;
+  return <h1>VStream</h1>;
 }
