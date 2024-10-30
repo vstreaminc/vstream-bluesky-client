@@ -15,6 +15,7 @@
     "@atproto/common": "^0.4.4",
     "@atproto/jwk-jose": "^0.1.2",
     "@atproto/oauth-client-node": "^0.2.0",
+    "@atproto/syntax": "^0.3.0",
     "@libsql/kysely-libsql": "^0.4.1",
     "@remix-run/express": "^2.13.1",
     "@remix-run/node": "^2.13.1",

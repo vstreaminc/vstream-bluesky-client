@@ -18,13 +18,17 @@ export function createClient(
   const stateCache = createCache<NodeSavedState>(appDB, "state:");
   const sessionCache = createCache<NodeSavedSession>(appDB, "session:");
 
-  const redirectPath = "/auth/bsky/callback";
   // Client ID has some strange requirements for BSky OAuth. When in dev, one
   // must use plain old localhost for the domain and use a NON-localhost for
-  // the redirect_uri. And for some reason put the scopes in there? IDK man
+  // the redirect_uri.
+  // See: https://atproto.com/specs/oauth
   // See: https://github.com/bluesky-social/statusphere-example-app/blob/bcb0d344e4def83d389298d9eb32274d41d2f402/src/auth/client.ts#L13-L15
+  const redirectPath = "/auth/bsky/callback";
+  const redirectUri = cfg.service.devMode
+    ? `http://127.0.0.1:${cfg.service.port}${redirectPath}`
+    : `${cfg.service.publicUrl}${redirectPath}`;
   const clientID = cfg.service.devMode
-    ? `http://localhost?redirect_uri=${encodeURIComponent(`http://127.0.0.1:${cfg.service.port}${redirectPath}`)}&scope=${encodeURIComponent(REQUESTED_SCOPES)}`
+    ? `http://localhost?redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(REQUESTED_SCOPES)}`
     : `${cfg.service.publicUrl}/.well-known/client-metadata.json`;
 
   return new NodeOAuthClient({
@@ -38,7 +42,7 @@ export function createClient(
       logo_uri: `${cfg.service.publicUrl}/logo.png`,
       tos_uri: `${cfg.service.publicUrl}/tos`,
       policy_uri: `${cfg.service.publicUrl}/policy`,
-      redirect_uris: [`${cfg.service.publicUrl}${redirectPath}`],
+      redirect_uris: [redirectUri],
       scope: REQUESTED_SCOPES,
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
