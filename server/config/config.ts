@@ -10,10 +10,11 @@ export const envToCfg = (env: ServerEnvironment): ServerConfig => {
       : `https://${hostname}`;
 
   const service: ServiceConfig = {
-    port,
-    hostname,
-    publicUrl,
     devMode: process.env.NODE_ENV !== "production",
+    hostname,
+    port,
+    publicUrl,
+    sessionSecret: env.sessionSecret ?? "s3cret1",
   };
 
   const db: DatabaseConfig = {
@@ -41,11 +42,12 @@ export type ServerConfig = {
 };
 
 export type ServiceConfig = {
-  port: number;
-  hostname: string;
-  publicUrl: string;
-  version?: string;
   devMode: boolean;
+  hostname: string;
+  port: number;
+  publicUrl: string;
+  sessionSecret: string;
+  version?: string;
 };
 
 export type DatabaseConfig = {

@@ -1,6 +1,6 @@
 import { Kysely, Migrator, Migration, MigrationProvider } from "kysely";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
-import { ServerConfig } from "../config";
+import { ServerConfig } from "./config";
 
 export type DatabaseSchema = {
   kv_store: KVStore;

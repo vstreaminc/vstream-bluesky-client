@@ -5,6 +5,7 @@ export const readEnv = (): ServerEnvironment => {
     // server
     port: envInt("PORT"),
     hostname: envStr("VST_HOSTNAME"),
+    sessionSecret: envStr("SESSION_SECRET"),
 
     // turso
     tursoAuthToken: envStr("TURSO_AUTH_TOKEN"),
@@ -20,6 +21,7 @@ export type ServerEnvironment = {
   // server
   port?: number;
   hostname?: string;
+  sessionSecret?: string;
 
   // turso
   tursoAuthToken?: string;

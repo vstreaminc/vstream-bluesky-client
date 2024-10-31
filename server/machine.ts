@@ -5,8 +5,23 @@ import compression from "compression";
 import express from "express";
 import { createHttpTerminator, HttpTerminator } from "http-terminator";
 import { ServerConfig } from "./config";
-import * as AppContext from "./config/context";
+import * as AppContext from "./context";
 import { migrateToLatest } from "./db";
+
+// Helper function for defining routes
+const handler =
+  (fn: express.Handler) =>
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      await fn(req, res, next);
+    } catch (err) {
+      next(err);
+    }
+  };
 
 export class Machine {
   public readonly ctx: AppContext.AppContext;
@@ -48,6 +63,27 @@ export class Machine {
 
     // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
     app.disable("x-powered-by");
+
+    app.use(
+      handler((req, res, next) => {
+        // If somehow comming in on the wrong host, redirect to the correct one
+        if (req.method !== "GET") return next();
+        if (req.hostname === cfg.service.hostname) return next();
+        const url = new URL(
+          req.protocol + "://" + req.get("host") + req.originalUrl,
+        );
+        url.hostname = cfg.service.hostname;
+        res.redirect(url.toString());
+      }),
+    );
+
+    // OAuth metadata
+    app.get(
+      "/.well-known/client-metadata.json",
+      handler((_req, res) => {
+        res.json(ctx.atProtoClient.clientMetadata);
+      }),
+    );
 
     // handle asset requests
     if (viteDevServer) {
