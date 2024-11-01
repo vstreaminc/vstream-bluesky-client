@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "remix vite:build",
-    "dev": "tsx server/index.ts",
+    "dev": "tsx watch --ignore \"./app/**/*\" --ignore \"./vite.config.ts*\" server/index.ts",
     "fmt": "prettier . --write",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "cross-env NODE_ENV=production node ./build/server/index.js",
