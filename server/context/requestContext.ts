@@ -1,9 +1,11 @@
 import express from "express";
+import { redirect } from "@remix-run/node";
 import { Agent } from "@atproto/api";
+import { DAY, MINUTE } from "@atproto/common";
 import { ServerConfig } from "../config";
 import { AppContext } from "./appContext";
 import { Cache, createCache, createRequestCache } from "../cache";
-import { redirect } from "@remix-run/node";
+import { ProfileViewDetailed } from "~/types";
 
 export function memoize0<T>(fn: () => T): () => T {
   let value: T;
@@ -56,8 +58,20 @@ export function fromRequest(
     createCache<unknown>(ctx.appDB, "request:"),
   );
 
+  const currentProfile: RequestContext["currentProfile"] = (agent) => {
+    return requestCache.getOrSet(
+      agent.assertDid,
+      () =>
+        agent.app.bsky.actor
+          .getProfile({ actor: agent.assertDid })
+          .then((res) => res.data),
+      { expiresIn: 30 * MINUTE, staleWhileRevalidate: 1 * DAY },
+    );
+  };
+
   return {
     cache: requestCache,
+    currentProfile,
     maybeLoggedInUser,
     requireLoggedInUser,
   };
@@ -70,6 +84,7 @@ export function fromRequest(
  */
 export type RequestContext = {
   cache: Cache<unknown>;
+  currentProfile: (agent: Agent) => Promise<ProfileViewDetailed>;
   maybeLoggedInUser: () => Promise<Agent | null>;
   requireLoggedInUser: () => Promise<Agent>;
 };

@@ -1,9 +1,7 @@
 import {
-  json,
-  type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useViewer } from "~/hooks/useViewer";
 
 export const meta: MetaFunction = () => {
   return [
@@ -14,27 +12,13 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const agent = await context.maybeLoggedInUser();
-
-  if (agent) {
-    const { data: profile } = await agent.app.bsky.actor.getProfile(
-      { actor: agent.assertDid },
-      { signal: request.signal },
-    );
-    return json({ profile });
-  }
-
-  return json({ profile: null });
-}
-
 export default function Index() {
-  const { profile } = useLoaderData<typeof loader>();
+  const viewer = useViewer();
 
   return (
     <>
       <h1>VStream</h1>
-      {profile ? <pre>{JSON.stringify(profile, null, 2)}</pre> : null}
+      {viewer ? <pre>{JSON.stringify(viewer, null, 2)}</pre> : null}
     </>
   );
 }
