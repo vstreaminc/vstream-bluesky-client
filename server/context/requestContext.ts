@@ -2,6 +2,7 @@ import express from "express";
 import { Agent } from "@atproto/api";
 import { ServerConfig } from "../config";
 import { AppContext } from "./appContext";
+import { Cache, createCache, createRequestCache } from "../cache";
 import { redirect } from "@remix-run/node";
 
 export function memoize0<T>(fn: () => T): () => T {
@@ -51,7 +52,12 @@ export function fromRequest(
       return agent;
     };
 
+  const requestCache = createRequestCache(
+    createCache<unknown>(ctx.appDB, "request:"),
+  );
+
   return {
+    cache: requestCache,
     maybeLoggedInUser,
     requireLoggedInUser,
   };
@@ -63,6 +69,7 @@ export function fromRequest(
  * It is available to all Remix routes
  */
 export type RequestContext = {
+  cache: Cache<unknown>;
   maybeLoggedInUser: () => Promise<Agent | null>;
   requireLoggedInUser: () => Promise<Agent>;
 };

@@ -25,6 +25,7 @@
     "clsx": "^2.1.1",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
+    "dataloader": "^2.2.2",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "http-terminator": "^3.2.0",
