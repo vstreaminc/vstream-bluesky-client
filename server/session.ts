@@ -26,6 +26,7 @@ export function createSession(cfg: ServerConfig) {
     });
 
   return {
+    getFromCookie: (cookie: string | null) => getSession(cookie),
     get: (req: Request) => getSession(req.headers.get("Cookie")),
     commit: commitSession,
     destroy: destroySession,

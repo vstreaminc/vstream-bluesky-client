@@ -15,7 +15,7 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const agent = await context.maybeLoggedInUser(request);
+  const agent = await context.maybeLoggedInUser();
 
   if (agent) {
     const { data: profile } = await agent.app.bsky.actor.getProfile(
