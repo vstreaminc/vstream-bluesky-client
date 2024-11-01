@@ -25,7 +25,7 @@ export const links: LinksFunction = () => [
 export async function loader({ context }: LoaderFunctionArgs) {
   const agent = await context.maybeLoggedInUser();
 
-  return json({ viewer: agent ? await context.currentProfile(agent) : null });
+  return json({ viewer: agent ? await context.bsky.currentProfile(agent) : null });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

@@ -58,7 +58,7 @@ export function fromRequest(
     createCache<unknown>(ctx.appDB, "request:"),
   );
 
-  const currentProfile: RequestContext["currentProfile"] = (agent) => {
+  const currentProfile: BSkyContext["currentProfile"] = (agent) => {
     return requestCache.getOrSet(
       agent.assertDid,
       () =>
@@ -69,9 +69,13 @@ export function fromRequest(
     );
   };
 
-  return {
-    cache: requestCache,
+  const bsky: BSkyContext = {
     currentProfile,
+  };
+
+  return {
+    bsky,
+    cache: requestCache,
     maybeLoggedInUser,
     requireLoggedInUser,
   };
@@ -83,8 +87,12 @@ export function fromRequest(
  * It is available to all Remix routes
  */
 export type RequestContext = {
+  bsky: BSkyContext;
   cache: Cache<unknown>;
-  currentProfile: (agent: Agent) => Promise<ProfileViewDetailed>;
   maybeLoggedInUser: () => Promise<Agent | null>;
   requireLoggedInUser: () => Promise<Agent>;
+};
+
+export type BSkyContext = {
+  currentProfile: (agent: Agent) => Promise<ProfileViewDetailed>;
 };
