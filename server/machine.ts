@@ -5,7 +5,8 @@ import compression from "compression";
 import express from "express";
 import { createHttpTerminator, HttpTerminator } from "http-terminator";
 import { ServerConfig } from "./config";
-import * as AppContext from "./context";
+import * as AppContext from "./context/appContext";
+import * as RequestContext from "./context/requestContext";
 import { migrateToLatest } from "./db";
 
 // Helper function for defining routes
@@ -36,8 +37,8 @@ export class Machine {
   }
 
   static async create(cfg: ServerConfig): Promise<Machine> {
-    const ctx = await AppContext.fromConfig(cfg);
-    await migrateToLatest(ctx.appDB);
+    const appContext = await AppContext.fromConfig(cfg);
+    await migrateToLatest(appContext.appDB);
 
     const viteDevServer =
       process.env.NODE_ENV === "production"
@@ -54,7 +55,10 @@ export class Machine {
         : // @ts-expect-error - the file might not exist yet but it will
           // eslint-disable-next-line import/no-unresolved
           await import("../build/server/remix.js"),
-      getLoadContext: () => ctx,
+      getLoadContext: (req) => ({
+        ...appContext,
+        ...RequestContext.fromRequest(req, appContext, cfg),
+      }),
     });
 
     const app = express();
@@ -81,7 +85,7 @@ export class Machine {
     app.get(
       "/.well-known/client-metadata.json",
       handler((_req, res) => {
-        res.json(ctx.atProtoClient.clientMetadata);
+        res.json(appContext.atProtoClient.clientMetadata);
       }),
     );
 
@@ -106,7 +110,7 @@ export class Machine {
     // handle SSR requests
     app.all("*", remixHandler);
 
-    return new Machine({ ctx, app });
+    return new Machine({ ctx: appContext, app });
   }
 
   async start(): Promise<http.Server> {
