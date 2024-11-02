@@ -1,4 +1,5 @@
 import { vitePlugin as remix } from "@remix-run/dev";
+import optimizeLocales from "@react-aria/optimize-locales-plugin";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import esbuild from "esbuild";
@@ -40,5 +41,8 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
+    // Don't include any locale strings in the client JS bundle.
+    // See: https://react-spectrum.adobe.com/react-aria/ssr.html
+    { ...optimizeLocales.vite({ locales: [] }), enforce: "pre" },
   ],
 });

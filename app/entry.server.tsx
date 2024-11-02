@@ -3,7 +3,7 @@
  */
 
 import { PassThrough } from "node:stream";
-
+import { getLocalizationScript } from "react-aria-components/i18n";
 import type { AppLoadContext, EntryContext } from "@remix-run/node";
 import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
@@ -12,27 +12,29 @@ import { renderToPipeableStream } from "react-dom/server";
 
 const ABORT_DELAY = 5_000;
 
-export default function handleRequest(
+export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
-  // This is ignored so we can keep it in the template for visibility.  Feel
-  // free to delete this parameter in your app if you're not using it!
-  _loadContext: AppLoadContext,
+  loadContext: AppLoadContext,
 ) {
+  const locale = await loadContext.currentLocale();
+
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(
         request,
         responseStatusCode,
         responseHeaders,
         remixContext,
+        locale,
       )
     : handleBrowserRequest(
         request,
         responseStatusCode,
         responseHeaders,
         remixContext,
+        locale,
       );
 }
 
@@ -41,6 +43,7 @@ function handleBotRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
+  locale: string,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -51,6 +54,7 @@ function handleBotRequest(
         abortDelay={ABORT_DELAY}
       />,
       {
+        bootstrapScriptContent: getLocalizationScript(locale),
         onAllReady() {
           shellRendered = true;
           const body = new PassThrough();
@@ -91,6 +95,7 @@ function handleBrowserRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
+  locale: string,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -101,6 +106,7 @@ function handleBrowserRequest(
         abortDelay={ABORT_DELAY}
       />,
       {
+        bootstrapScriptContent: getLocalizationScript(locale),
         onShellReady() {
           shellRendered = true;
           const body = new PassThrough();

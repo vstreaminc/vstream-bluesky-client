@@ -4,10 +4,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
+  useRouteLoaderData,
 } from "@remix-run/react";
-import { LinksFunction, LoaderFunctionArgs, json } from "@remix-run/node";
+import { LinksFunction, LoaderFunctionArgs, data } from "@remix-run/node";
 
 import "./tailwind.css";
+import { DEFAULT_LOCALE } from "./lib/locale";
+import { I18nProvider } from "react-aria-components";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -22,15 +26,33 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export async function loader({ context }: LoaderFunctionArgs) {
-  const agent = await context.maybeLoggedInUser();
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const headers = new Headers();
+  const [agent, currentLocale, session] = await Promise.all([
+    context.maybeLoggedInUser(),
+    context.currentLocale(),
+    context.session.get(request),
+  ]);
 
-  return json({ viewer: agent ? await context.bsky.currentProfile(agent) : null });
+  if (session.get("locale") !== currentLocale) {
+    session.set("locale", currentLocale);
+    headers.set("Set-Cookie", await context.session.commit(session));
+  }
+
+  return data(
+    {
+      locale: currentLocale,
+      viewer: agent ? await context.bsky.currentProfile(agent) : null,
+    },
+    { headers },
+  );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useRouteLoaderData<typeof loader>("root");
+
   return (
-    <html lang="en">
+    <html lang={data?.locale ?? DEFAULT_LOCALE}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -47,5 +69,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const { locale } = useLoaderData<typeof loader>();
+
+  return <I18nProvider locale={locale}><Outlet /></I18nProvider>;
 }

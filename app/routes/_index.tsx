@@ -1,6 +1,4 @@
-import {
-  type MetaFunction,
-} from "@remix-run/node";
+import { type MetaFunction } from "@remix-run/node";
 import { useViewer } from "~/hooks/useViewer";
 
 export const meta: MetaFunction = () => {

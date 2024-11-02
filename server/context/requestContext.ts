@@ -6,6 +6,7 @@ import { ServerConfig } from "../config";
 import { AppContext } from "./appContext";
 import { Cache, createCache, createRequestCache } from "../cache";
 import { ProfileViewDetailed } from "~/types";
+import { extractCurrentLocale, SupportedLocale } from "~/lib/locale";
 
 export function memoize0<T>(fn: () => T): () => T {
   let value: T;
@@ -21,6 +22,10 @@ export function fromRequest(
   ctx: AppContext,
   _cfg: ServerConfig,
 ): RequestContext {
+  const currentLocale: RequestContext["currentLocale"] = memoize0(() =>
+    extractCurrentLocale(req, ctx),
+  );
+
   // We memoize this function to only need to lookup the agent once even if
   // mutiple routes call this function at the same time
   const maybeLoggedInUser: RequestContext["maybeLoggedInUser"] = memoize0(
@@ -76,6 +81,7 @@ export function fromRequest(
   return {
     bsky,
     cache: requestCache,
+    currentLocale,
     maybeLoggedInUser,
     requireLoggedInUser,
   };
@@ -89,6 +95,7 @@ export function fromRequest(
 export type RequestContext = {
   bsky: BSkyContext;
   cache: Cache<unknown>;
+  currentLocale: () => Promise<SupportedLocale>;
   maybeLoggedInUser: () => Promise<Agent | null>;
   requireLoggedInUser: () => Promise<Agent>;
 };

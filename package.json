@@ -29,6 +29,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "http-terminator": "^3.2.0",
+    "intl-parse-accept-language": "^1.0.0",
     "isbot": "^4.1.0",
     "kysely": "^0.27.4",
     "lucide-react": "^0.454.0",
@@ -39,6 +40,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@react-aria/optimize-locales-plugin": "^1.1.2",
     "@remix-run/dev": "2.13.1",
     "@types/compression": "^1.7.5",
     "@types/express": "^5.0.0",
