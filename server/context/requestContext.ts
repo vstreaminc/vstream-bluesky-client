@@ -2,11 +2,16 @@ import express from "express";
 import { redirect } from "@remix-run/node";
 import { Agent } from "@atproto/api";
 import { DAY, MINUTE } from "@atproto/common";
+import { createIntl, createIntlCache, IntlShape } from "react-intl";
 import { ServerConfig } from "../config";
 import { AppContext } from "./appContext";
 import { Cache, createCache, createRequestCache } from "../cache";
 import { ProfileViewDetailed } from "~/types";
-import { extractCurrentLocale, SupportedLocale } from "~/lib/locale";
+import {
+  DEFAULT_LOCALE,
+  extractCurrentLocale,
+  SupportedLocale,
+} from "~/lib/locale";
 
 export function memoize0<T>(fn: () => T): () => T {
   let value: T;
@@ -16,6 +21,8 @@ export function memoize0<T>(fn: () => T): () => T {
     return value;
   };
 }
+
+const intlCache = createIntlCache();
 
 export function fromRequest(
   req: express.Request,
@@ -63,6 +70,17 @@ export function fromRequest(
     createCache<unknown>(ctx.appDB, "request:"),
   );
 
+  // TODO: Fill this up with intl messages we extracted
+  const t = async () =>
+    createIntl(
+      {
+        messages: {},
+        locale: await currentLocale(),
+        defaultLocale: DEFAULT_LOCALE,
+      },
+      intlCache,
+    );
+
   const currentProfile: BSkyContext["currentProfile"] = (agent) => {
     return requestCache.getOrSet(
       agent.assertDid,
@@ -84,6 +102,7 @@ export function fromRequest(
     currentLocale,
     maybeLoggedInUser,
     requireLoggedInUser,
+    t,
   };
 }
 
@@ -98,6 +117,7 @@ export type RequestContext = {
   currentLocale: () => Promise<SupportedLocale>;
   maybeLoggedInUser: () => Promise<Agent | null>;
   requireLoggedInUser: () => Promise<Agent>;
+  t: () => Promise<IntlShape>;
 };
 
 export type BSkyContext = {

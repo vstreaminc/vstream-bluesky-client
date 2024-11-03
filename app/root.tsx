@@ -71,5 +71,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const { locale } = useLoaderData<typeof loader>();
 
-  return <I18nProvider locale={locale}><Outlet /></I18nProvider>;
+  return (
+    <I18nProvider locale={locale}>
+      <Outlet />
+    </I18nProvider>
+  );
 }
