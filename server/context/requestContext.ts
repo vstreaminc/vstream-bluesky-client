@@ -2,16 +2,14 @@ import express from "express";
 import { redirect } from "@remix-run/node";
 import { Agent } from "@atproto/api";
 import { DAY, MINUTE } from "@atproto/common";
-import { createIntl, createIntlCache, IntlShape } from "react-intl";
+import { IntlShape } from "react-intl";
 import { ServerConfig } from "../config";
 import { AppContext } from "./appContext";
 import { Cache, createCache, createRequestCache } from "../cache";
 import { ProfileViewDetailed } from "~/types";
-import {
-  DEFAULT_LOCALE,
-  extractCurrentLocale,
-  SupportedLocale,
-} from "~/lib/locale";
+import { SupportedLocale } from "~/lib/locale";
+import { createIntl } from "~/lib/locale.server";
+import { extractCurrentLocale } from "../locale";
 
 export function memoize0<T>(fn: () => T): () => T {
   let value: T;
@@ -21,8 +19,6 @@ export function memoize0<T>(fn: () => T): () => T {
     return value;
   };
 }
-
-const intlCache = createIntlCache();
 
 export function fromRequest(
   req: express.Request,
@@ -70,16 +66,11 @@ export function fromRequest(
     createCache<unknown>(ctx.appDB, "request:"),
   );
 
-  // TODO: Fill this up with intl messages we extracted
-  const t = async () =>
-    createIntl(
-      {
-        messages: {},
-        locale: await currentLocale(),
-        defaultLocale: DEFAULT_LOCALE,
-      },
-      intlCache,
-    );
+  const t = memoize0(async () => createIntl(await currentLocale()));
+
+  const intl: IntlContext = {
+    t,
+  };
 
   const currentProfile: BSkyContext["currentProfile"] = (agent) => {
     return requestCache.getOrSet(
@@ -100,9 +91,9 @@ export function fromRequest(
     bsky,
     cache: requestCache,
     currentLocale,
+    intl,
     maybeLoggedInUser,
     requireLoggedInUser,
-    t,
   };
 }
 
@@ -114,12 +105,16 @@ export function fromRequest(
 export type RequestContext = {
   bsky: BSkyContext;
   cache: Cache<unknown>;
+  intl: IntlContext;
   currentLocale: () => Promise<SupportedLocale>;
   maybeLoggedInUser: () => Promise<Agent | null>;
   requireLoggedInUser: () => Promise<Agent>;
-  t: () => Promise<IntlShape>;
 };
 
 export type BSkyContext = {
   currentProfile: (agent: Agent) => Promise<ProfileViewDetailed>;
+};
+
+export type IntlContext = {
+  t: () => Promise<IntlShape>;
 };
