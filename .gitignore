@@ -1,6 +1,7 @@
 node_modules
 
 /.cache
+/.compiled-lang
 /.data
 /build
 .env

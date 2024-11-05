@@ -16,4 +16,5 @@ pnpm dev
 - [Remix](https://remix.run/)
 - [TailwindCSS](https://tailwindcss.com/)
 - [React Aria](https://react-spectrum.adobe.com/react-aria/)
+- [React-Intl / FormatJS](https://formatjs.github.io/)
 - [Jolly UI](https://www.jollyui.dev/)

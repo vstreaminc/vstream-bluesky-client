@@ -9,16 +9,8 @@ import { Cache, createCache, createRequestCache } from "../cache";
 import { ProfileViewDetailed } from "~/types";
 import { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
+import { memoize0 } from "~/lib/memoize";
 import { extractCurrentLocale } from "../locale";
-
-export function memoize0<T>(fn: () => T): () => T {
-  let value: T;
-  return () => {
-    if (value) return value;
-    value = fn();
-    return value;
-  };
-}
 
 export function fromRequest(
   req: express.Request,

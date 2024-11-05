@@ -4,14 +4,23 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useHref,
   useLoaderData,
+  useNavigate,
   useRouteLoaderData,
 } from "@remix-run/react";
+import type { NavigateOptions } from "react-router-dom";
 import { LinksFunction, LoaderFunctionArgs, data } from "@remix-run/node";
+import { I18nProvider, RouterProvider } from "react-aria-components";
+import { DEFAULT_LOCALE } from "./lib/locale";
 
 import "./tailwind.css";
-import { DEFAULT_LOCALE } from "./lib/locale";
-import { I18nProvider } from "react-aria-components";
+
+declare module "react-aria-components" {
+  interface RouterConfig {
+    routerOptions: NavigateOptions;
+  }
+}
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -70,10 +79,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const { locale } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   return (
     <I18nProvider locale={locale}>
-      <Outlet />
+      <RouterProvider navigate={navigate} useHref={useHref}>
+        <Outlet />
+      </RouterProvider>
     </I18nProvider>
   );
 }
