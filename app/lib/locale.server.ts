@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import stringify from "json-stable-stringify";
-import { MetaArgs } from "@remix-run/node";
 import {
   createIntlCache,
   createIntl as createReactIntl,
@@ -143,22 +142,4 @@ export function createIntl(locale: SupportedLocale): IntlShape {
     },
     intlCache,
   );
-}
-
-/**
- * Function we can use in our meta functions to get a `t()` object
- *
- * @remarks
- * We need this helper as meta functions do not have access to a context object
- * and cannot return a promise
- */
-export function metaIntl(args: MetaArgs) {
-  // matches[0] is the root route always
-  const rootRoute = args.matches[0];
-  const locale =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((rootRoute.data as any)?.locale as SupportedLocale | undefined) ??
-    DEFAULT_LOCALE;
-
-  return createIntl(locale);
 }

@@ -1,24 +1,17 @@
-import type { MetaDescriptor, MetaFunction } from "@remix-run/node";
+import type {
+  LoaderFunctionArgs,
+  MetaDescriptor,
+  MetaFunction,
+} from "@remix-run/node";
 import type { Organization, WithContext } from "schema-dts";
 import { MainLayout } from "~/components/mainLayout";
 import { useViewer } from "~/hooks/useViewer";
 import { PRODUCT_NAME } from "~/lib/constants";
-import { metaIntl } from "~/lib/locale.server";
 import logoSvg from "~/imgs/logo.svg";
 
-export const meta: MetaFunction = (args) => {
-  const t = metaIntl(args);
-
+export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
-    {
-      title: t.formatMessage(
-        {
-          defaultMessage: "Home | {productName}",
-          description: "Title for the home page of website",
-        },
-        { productName: PRODUCT_NAME },
-      ),
-    },
+    { title: args.data?.title ?? PRODUCT_NAME },
     { name: "description", content: "~~~Under Construction~~~" },
     // TODO: Remove before going live
     { name: "robots", content: "noindex" },
@@ -92,6 +85,19 @@ export const meta: MetaFunction = (args) => {
 
   return metas;
 };
+
+export async function loader(args: LoaderFunctionArgs) {
+  const t = await args.context.intl.t();
+  const title = t.formatMessage(
+    {
+      defaultMessage: "Home | {productName}",
+      description: "Title for the home page of website",
+    },
+    { productName: PRODUCT_NAME },
+  );
+
+  return { title };
+}
 
 export default function Index() {
   const viewer = useViewer();
