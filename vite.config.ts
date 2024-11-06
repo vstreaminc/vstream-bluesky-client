@@ -53,6 +53,7 @@ const formatJsExtract: Plugin = (() => {
         }),
         {
           idInterpolationPattern: ID_INTERPOLATION,
+          flatten: true,
         },
       );
       // Nothing to extract
