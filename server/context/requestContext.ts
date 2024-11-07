@@ -6,12 +6,12 @@ import { IntlShape } from "react-intl";
 import { ServerConfig } from "../config";
 import { AppContext } from "./appContext";
 import { Cache, createCache, createRequestCache } from "../cache";
-import { ProfileViewDetailed, ProfileViewSimple } from "~/types";
+import { ProfileViewVStreamSimple } from "~/types";
 import { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
 import { memoize0 } from "~/lib/memoize";
 import { extractCurrentLocale } from "../locale";
-import { profiledDetailedToSimple } from "server/atProto";
+import { profiledDetailedToSimple } from "~/lib/bsky";
 
 export function fromRequest(
   req: express.Request,
@@ -106,7 +106,7 @@ export type RequestContext = {
 };
 
 export type BSkyContext = {
-  currentProfile: (agent: Agent) => Promise<ProfileViewSimple>;
+  currentProfile: (agent: Agent) => Promise<ProfileViewVStreamSimple>;
 };
 
 export type IntlContext = {

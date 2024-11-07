@@ -5,9 +5,10 @@ import type {
 } from "@remix-run/node";
 import type { Organization, WithContext } from "schema-dts";
 import { MainLayout } from "~/components/mainLayout";
-import { useViewer } from "~/hooks/useViewer";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
+import { useLoaderData } from "@remix-run/react";
+import { feedGenerator } from "~/lib/bsky";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
@@ -86,8 +87,28 @@ export const meta: MetaFunction<typeof loader> = (args) => {
   return metas;
 };
 
+async function take<T>(
+  iter: AsyncIterableIterator<T>,
+  num: number,
+): Promise<T[]> {
+  const items: T[] = [];
+  for await (const item of iter) {
+    items.push(item);
+    if (items.length >= num) break;
+  }
+  return items;
+}
+
 export async function loader(args: LoaderFunctionArgs) {
-  const t = await args.context.intl.t();
+  const [agent, t] = await Promise.all([
+    args.context.requireLoggedInUser(),
+    args.context.intl.t(),
+  ]);
+  const gen = feedGenerator(
+    (opts) => agent.app.bsky.feed.getTimeline(opts),
+    agent.assertDid,
+  );
+  const posts = await take(gen, 10);
   const title = t.formatMessage(
     {
       defaultMessage: "Home | {productName}",
@@ -96,16 +117,16 @@ export async function loader(args: LoaderFunctionArgs) {
     { productName: PRODUCT_NAME },
   );
 
-  return { title };
+  return { title, posts };
 }
 
 export default function Index() {
-  const viewer = useViewer();
+  const { posts } = useLoaderData<typeof loader>();
 
   return (
     <MainLayout>
       <h1>{PRODUCT_NAME}</h1>
-      {viewer ? <pre>{JSON.stringify(viewer, null, 2)}</pre> : null}
+      <pre>{JSON.stringify(posts, null, 2)}</pre>
     </MainLayout>
   );
 }
