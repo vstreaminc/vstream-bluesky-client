@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import DataLoader from "dataloader";
+import babel, { PluginItem } from "@babel/core";
 import stringify from "json-stable-stringify";
 import fg from "fast-glob";
 import { vitePlugin as remix } from "@remix-run/dev";
@@ -8,7 +9,7 @@ import optimizeLocales from "@react-aria/optimize-locales-plugin";
 import { compile, extract } from "@formatjs/cli-lib";
 import { defineConfig, Plugin } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import babel from "vite-plugin-babel";
+import { remixRoutes } from "remix-routes/vite";
 import esbuild from "esbuild";
 import { DEFAULT_LOCALE } from "./app/lib/locale";
 
@@ -21,25 +22,56 @@ declare module "@remix-run/node" {
 const ID_INTERPOLATION = "[sha512:contenthash:base64:6]";
 
 // vite plugin for running the babel format-js plugin
-const formatJsTransform = (additionalConfigs = {}) =>
-  babel({
-    exclude: /node_modules/,
-    filter: /\.[tj]sx?$/,
-    babelConfig: {
-      babelrc: false,
-      configFile: false,
-      plugins: [
-        [
-          "formatjs",
-          // Common options here
-          {
-            idInterpolationPattern: ID_INTERPOLATION,
-            ...additionalConfigs,
-          },
-        ],
-      ],
+const formatJsTransform = (additionalConfigs = {}): Plugin => {
+  const options = {
+    idInterpolationPattern: ID_INTERPOLATION,
+    ...additionalConfigs,
+  };
+  const plugin = ["formatjs", options];
+  const pluginsMap = new Map<string | undefined, PluginItem[]>();
+  pluginsMap.set(undefined, [plugin]);
+  pluginsMap.set("ts", [plugin, "@babel/syntax-typescript"]);
+  pluginsMap.set("tsx", [
+    plugin,
+    ["@babel/syntax-typescript", { isTSX: true }],
+  ]);
+
+  return {
+    name: "formatjs/transform",
+    enforce: "pre",
+    async transform(code, id) {
+      if (id.includes("/node_modules/")) {
+        return;
+      }
+
+      const filepath = id.split("?")[0]!;
+
+      const extensionsRE = /\.(jsx?|tsx?|mdx?)$/;
+      if (!extensionsRE.test(filepath)) {
+        return;
+      }
+
+      const ext = path.extname(filepath).slice(1);
+
+      const result = await babel.transformAsync(code, {
+        filename: id,
+        sourceFileName: filepath,
+        parserOpts: {
+          sourceType: "module",
+          allowAwaitOutsideFunction: true,
+        },
+        plugins: pluginsMap.get(pluginsMap.has(ext) ? ext : undefined),
+        sourceMaps: true,
+      });
+
+      if (result === null) {
+        return;
+      }
+
+      return { code: result.code!, map: result.map };
     },
-  });
+  };
+};
 
 const formatJsExtract: Plugin = (() => {
   const dts = "**/*.d.ts";
@@ -208,6 +240,7 @@ export default defineConfig(({ mode }) => ({
           });
       },
     }),
+    remixRoutes(),
     tsconfigPaths(),
     // Don't include any locale strings in the client JS bundle.
     // See: https://react-spectrum.adobe.com/react-aria/ssr.html
@@ -224,8 +257,6 @@ export default defineConfig(({ mode }) => ({
               ast: true,
             },
       ),
-      // Run after the remix plugin to ensure TS syntax has been removed
-      enforce: "post",
     },
   ],
 }));

@@ -49,6 +49,7 @@ module.exports = {
         },
       },
       rules: {
+        "react/prop-types": "off",
         // FormatJS recommended settings
         // See: https://github.com/formatjs/formatjs/blob/ea8550857e976163663506c96cf8b388ff402a20/packages/eslint-plugin-formatjs/index.ts
         "formatjs/no-offset": "error",

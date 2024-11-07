@@ -6,11 +6,12 @@ import { IntlShape } from "react-intl";
 import { ServerConfig } from "../config";
 import { AppContext } from "./appContext";
 import { Cache, createCache, createRequestCache } from "../cache";
-import { ProfileViewDetailed } from "~/types";
+import { ProfileViewDetailed, ProfileViewSimple } from "~/types";
 import { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
 import { memoize0 } from "~/lib/memoize";
 import { extractCurrentLocale } from "../locale";
+import { profiledDetailedToSimple } from "server/atProto";
 
 export function fromRequest(
   req: express.Request,
@@ -70,7 +71,8 @@ export function fromRequest(
       () =>
         agent.app.bsky.actor
           .getProfile({ actor: agent.assertDid })
-          .then((res) => res.data),
+          .then((res) => res.data)
+          .then(profiledDetailedToSimple),
       { expiresIn: 30 * MINUTE, staleWhileRevalidate: 1 * DAY },
     );
   };
@@ -104,7 +106,7 @@ export type RequestContext = {
 };
 
 export type BSkyContext = {
-  currentProfile: (agent: Agent) => Promise<ProfileViewDetailed>;
+  currentProfile: (agent: Agent) => Promise<ProfileViewSimple>;
 };
 
 export type IntlContext = {

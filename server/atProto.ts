@@ -7,6 +7,7 @@ import {
 import { ServerConfig } from "./config";
 import { createCache } from "./cache";
 import { Database } from "./db";
+import { ProfileViewDetailed, ProfileViewSimple } from "~/types";
 
 const REQUESTED_SCOPES = ["atproto", "transition:generic"].join(" ");
 
@@ -86,4 +87,22 @@ export function createClient(
     // TODO: Implement this
     // requestLock,
   });
+}
+
+export function profiledDetailedToSimple(
+  profile: ProfileViewDetailed,
+): ProfileViewSimple {
+  return {
+    avatar: profile.avatar,
+    banner: profile.banner,
+    createdAt: profile.createdAt,
+    description: profile.description,
+    did: profile.did,
+    displayName: profile.displayName,
+    followersCount: profile.followersCount,
+    followsCount: profile.followsCount,
+    handle: profile.handle,
+    indexedAt: profile.indexedAt,
+    postsCount: profile.postsCount,
+  };
 }

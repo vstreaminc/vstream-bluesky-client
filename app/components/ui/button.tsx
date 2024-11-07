@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import {
   Button as AriaButton,
@@ -47,7 +50,8 @@ const buttonVariants = cva(
 
 interface ButtonProps
   extends AriaButtonProps,
-    VariantProps<typeof buttonVariants> {}
+    VariantProps<typeof buttonVariants>,
+    React.RefAttributes<HTMLButtonElement> {}
 
 const Button = ({ className, variant, size, ...props }: ButtonProps) => {
   return (

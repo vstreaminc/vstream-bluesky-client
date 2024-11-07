@@ -1,14 +1,34 @@
 {
+  "7ze5lW": {
+    "defaultMessage": "Close",
+    "description": "CTA to close something"
+  },
+  "9UlEfa": {
+    "defaultMessage": "Log out",
+    "description": "CTA to log out of the appliation"
+  },
   "Adls26": {
     "defaultMessage": "VStream Logo",
     "description": "SVG title for the VStream logo"
+  },
+  "JhrI2s": {
+    "defaultMessage": "Toggle Sidebar",
+    "description": "Action text toggle open and closed a sidebar panel"
   },
   "MG/jut": {
     "defaultMessage": "Home | {productName}",
     "description": "Title for the home page of website"
   },
+  "q2K55K": {
+    "defaultMessage": "Switch locale",
+    "description": "CTA to switch the current locale"
+  },
   "q2bSY/": {
     "defaultMessage": "VStream Mark",
     "description": "SVG title for the VStream Mark"
+  },
+  "stjYo/": {
+    "defaultMessage": "Home",
+    "description": "Name of root page of application"
   }
 }
