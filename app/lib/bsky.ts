@@ -5,6 +5,7 @@ import {
   FeedViewVStreamPostSlice,
 } from "~/types";
 import { FeedTuner, FeedViewPostsSlice } from "./feedTuner";
+import { AppBskyFeedDefs } from "@atproto/api";
 
 export function profiledDetailedToSimple(
   profile: ProfileViewDetailed,
@@ -30,6 +31,17 @@ function bSkySliceToVStreamSlice(
   return {
     _reactKey: slice._reactKey,
     isIncompleteThread: slice.isIncompleteThread,
+    reason: AppBskyFeedDefs.isReasonRepost(slice.reason)
+      ? {
+          $type: "com.vstream.feed.defs#reasonRepost",
+          by: {
+            did: slice.reason.by.did,
+            handle: slice.reason.by.handle,
+            displayName: slice.reason.by.displayName,
+            avatar: slice.reason.by.avatar,
+          },
+        }
+      : undefined,
     items: slice.items.map((item) => ({
       uri: item.post.uri,
       cid: item.post.cid,

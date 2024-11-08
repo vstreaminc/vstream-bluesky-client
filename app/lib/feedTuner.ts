@@ -162,6 +162,10 @@ export class FeedViewPostsSlice {
     );
   }
 
+  get reason() {
+    return this._feedPost.reason;
+  }
+
   get feedContext() {
     return this._feedPost.feedContext;
   }

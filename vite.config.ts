@@ -93,7 +93,7 @@ const formatJsExtract: Plugin = (() => {
       // Write merged object to default lang file
       await fs.writeFile(
         langPath,
-        stringify(JSON.parse(extracted), { space: 2 }),
+        stringify(JSON.parse(extracted), { space: 2 }) + "\n",
         "utf8",
       );
       return files.map(() => null);

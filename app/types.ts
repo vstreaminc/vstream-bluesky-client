@@ -55,8 +55,17 @@ export type FeedViewVStreamPost = Pick<
   richText: RichText[];
 };
 
+type ReasonRepostVStream = {
+  $type: "com.vstream.feed.defs#reasonRepost";
+  by: Pick<
+    AppBskyFeedDefs.ReasonRepost["by"],
+    "did" | "handle" | "displayName" | "avatar"
+  >;
+};
+
 export type FeedViewVStreamPostSlice = {
   _reactKey: string;
   items: FeedViewVStreamPost[];
   isIncompleteThread: boolean;
+  reason?: ReasonRepostVStream;
 };
