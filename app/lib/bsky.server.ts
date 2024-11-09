@@ -1,4 +1,4 @@
-import { AppBskyFeedDefs } from "@atproto/api";
+import { AppBskyEmbedImages, AppBskyFeedDefs } from "@atproto/api";
 import type {
   FeedViewPost,
   ProfileViewDetailed,
@@ -62,6 +62,9 @@ function bSkySliceToVStreamSlice(
           ? omit(item.post.author.viewer, ["mutedFromList", "bannedFromList"])
           : undefined,
       },
+      embed: AppBskyEmbedImages.isView(item.post.embed)
+        ? item.post.embed
+        : undefined,
       createdAt: item.record.createdAt,
       plainText: item.record.text,
       // TODO: Handle this

@@ -1,10 +1,11 @@
 import * as React from "react";
-import type { FeedViewVStreamPost, FeedViewVStreamPostSlice } from "~/types";
-import { Avatar, AvatarImage } from "~/components/ui/avatar";
-import { cn } from "~/lib/utils";
-import { RefreshCcw } from "lucide-react";
-import { RelativeTime } from "./relativeTime";
 import { FormattedMessage } from "react-intl";
+import { RefreshCcw } from "lucide-react";
+import type { FeedViewVStreamPost, FeedViewVStreamPostSlice } from "~/types";
+import { cn } from "~/lib/utils";
+import { Avatar, AvatarImage } from "~/components/ui/avatar";
+import { RelativeTime } from "~/components/relativeTime";
+import { ImageMosaic } from "~/components/imageMosaic";
 
 /**
  * Main component for rendering slices in the feed
@@ -81,6 +82,7 @@ export function FeedPost(props: FeedPostProps) {
         <div className="flex min-w-0 flex-1 flex-col">
           <FeedPostHeader post={post} />
           <FeedPostContent post={post} />
+          <FeedPostEmbed post={post} />
         </div>
       </div>
     </article>
@@ -136,6 +138,28 @@ function FeedPostHeader({ post }: { post: FeedViewVStreamPost }) {
 
 function FeedPostContent({ post }: { post: FeedViewVStreamPost }) {
   return <div className="mt-2">{post.plainText}</div>;
+}
+
+function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
+  if (!post.embed) return null;
+
+  const images = post.embed.images.map((i) => ({
+    ...i,
+    id: i.fullsize,
+    aspectRatio: (i.aspectRatio?.width ?? 1) / (i.aspectRatio?.height ?? 1),
+  }));
+
+  return (
+    <div className="mt-2">
+      <ImageMosaic
+        className="mx-auto max-h-96 sm:max-h-[36rem]"
+        items={images}
+        render={(image, _idx) => (
+          <img key={image.id} src={image.thumb} alt={image.alt} />
+        )}
+      />
+    </div>
+  );
 }
 
 function isThreadParentAt<T>(arr: Array<T>, i: number) {

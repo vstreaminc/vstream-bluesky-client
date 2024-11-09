@@ -1,5 +1,6 @@
 import type {
   AppBskyActorDefs,
+  AppBskyEmbedImages,
   AppBskyFeedDefs,
   AppBskyFeedPost,
 } from "@atproto/api";
@@ -54,7 +55,7 @@ export type FeedViewVStreamPost = Pick<
       "blockingByList" | "mutedByList"
     >;
   };
-} & {
+  embed?: AppBskyEmbedImages.View;
   _reactKey: string;
   createdAt: PostRecord["createdAt"];
   plainText: PostRecord["text"];
