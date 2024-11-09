@@ -61,12 +61,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
 
   return (
-    <html lang={data?.locale ?? DEFAULT_LOCALE} className="dark">
+    <html lang={data?.locale ?? DEFAULT_LOCALE}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        {/* Best to add inline in `head` to avoid FOUC */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+document.documentElement.classList.toggle(
+  'dark',
+  localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+)`.trim(),
+          }}
+        ></script>
       </head>
       <body>
         {children}

@@ -4,7 +4,15 @@ import {
   FormattedMessage,
   IntlProvider,
 } from "react-intl";
-import { ChevronsUpDown, Globe, House, LogOut } from "lucide-react";
+import {
+  ChevronsUpDown,
+  Cpu,
+  Globe,
+  House,
+  LogOut,
+  Moon,
+  Sun,
+} from "lucide-react";
 import { Link } from "@remix-run/react";
 import logoSvg from "~/imgs/logo.svg";
 import {
@@ -34,6 +42,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useViewer } from "~/hooks/useViewer";
 import { ctas } from "~/lib/messages";
 import { SUPPORTED_LOCALES } from "~/lib/locale";
+import { useHydrated } from "~/hooks/useHydrated";
 
 export function ApplicationSidebar() {
   return (
@@ -131,6 +140,8 @@ function ApplicationSidebarFooter() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <LocaleSwitcher />
+              <ColorSchemeSwitcher />
+              <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <LogOut />
                 <FormattedMessage {...ctas.logOut} />
@@ -171,3 +182,82 @@ const LocaleSwitcher = React.memo(function LocaleSwitcher() {
     </DropdownMenuSub>
   );
 });
+
+function ColorSchemeSwitcher() {
+  const hydrated = useHydrated();
+  const switchColorScheme = React.useCallback(
+    (scheme: "dark" | "light" | null) => {
+      switch (scheme) {
+        case "dark":
+          localStorage.setItem("theme", "dark");
+          document.documentElement.classList.add("dark");
+          break;
+        case "light":
+          localStorage.setItem("theme", "light");
+          document.documentElement.classList.remove("dark");
+          break;
+        default:
+          localStorage.removeItem("theme");
+          if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+          break;
+      }
+    },
+    [],
+  );
+
+  if (!hydrated) return null;
+
+  const prefersDarkMode =
+    localStorage.theme === "dark" ||
+    (!("theme" in localStorage) &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const Icon = prefersDarkMode ? Moon : Sun;
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <Icon />
+        <FormattedMessage
+          defaultMessage="Switch color scheme"
+          description="CTA to switch the current color scheme"
+        />
+      </DropdownMenuSubTrigger>
+      <DropdownMenuPortal>
+        <DropdownMenuSubContent>
+          <DropdownMenuItem onClick={() => switchColorScheme("light")}>
+            <Sun />
+            <span>
+              <FormattedMessage
+                defaultMessage="Light mode"
+                description="CTA to switch the application to the color scheme that is much lighter and brighter"
+              />
+            </span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => switchColorScheme("dark")}>
+            <Moon />
+            <span>
+              <FormattedMessage
+                defaultMessage="Dark mode"
+                description="CTA to switch the application to the color scheme that is darker"
+              />
+            </span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => switchColorScheme(null)}>
+            <Cpu />
+            <span>
+              <FormattedMessage
+                defaultMessage="OS preference"
+                description="CTA to switch the application to the color scheme that is controled by thier operating system"
+              />
+            </span>
+          </DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuPortal>
+    </DropdownMenuSub>
+  );
+}

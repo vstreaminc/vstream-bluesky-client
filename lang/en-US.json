@@ -11,6 +11,10 @@
     "defaultMessage": "VStream Logo",
     "description": "SVG title for the VStream logo"
   },
+  "DNbuO+": {
+    "defaultMessage": "OS preference",
+    "description": "CTA to switch the application to the color scheme that is controled by thier operating system"
+  },
   "JhrI2s": {
     "defaultMessage": "Toggle Sidebar",
     "description": "Action text toggle open and closed a sidebar panel"
@@ -19,9 +23,17 @@
     "defaultMessage": "Home | {productName}",
     "description": "Title for the home page of website"
   },
+  "O5x/5l": {
+    "defaultMessage": "Light mode",
+    "description": "CTA to switch the application to the color scheme that is much lighter and brighter"
+  },
   "jAIYp9": {
     "defaultMessage": "Reposted by {name}",
     "description": "Header of a post letting someone know who it was reposted by"
+  },
+  "l3XlNZ": {
+    "defaultMessage": "Dark mode",
+    "description": "CTA to switch the application to the color scheme that is darker"
   },
   "q2K55K": {
     "defaultMessage": "Switch locale",
@@ -34,5 +46,9 @@
   "stjYo/": {
     "defaultMessage": "Home",
     "description": "Name of root page of application"
+  },
+  "txF3NB": {
+    "defaultMessage": "Switch color scheme",
+    "description": "CTA to switch the current color scheme"
   }
 }
