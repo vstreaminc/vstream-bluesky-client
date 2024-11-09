@@ -47,9 +47,15 @@ export type FeedViewVStreamPost = Pick<
 > & {
   author: Pick<
     FeedViewPost["post"]["author"],
-    "did" | "handle" | "displayName" | "avatar" | "viewer"
-  >;
+    "did" | "handle" | "displayName" | "avatar"
+  > & {
+    viewer?: Omit<
+      FeedViewPost["post"]["author"]["viewer"],
+      "blockingByList" | "mutedByList"
+    >;
+  };
 } & {
+  _reactKey: string;
   createdAt: PostRecord["createdAt"];
   plainText: PostRecord["text"];
   richText: RichText[];

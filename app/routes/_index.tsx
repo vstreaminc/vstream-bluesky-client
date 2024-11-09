@@ -8,7 +8,8 @@ import { MainLayout } from "~/components/mainLayout";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
 import { useLoaderData } from "@remix-run/react";
-import { feedGenerator } from "~/lib/bsky";
+import { feedGenerator } from "~/lib/bsky.server";
+import { FeedSlice } from "~/components/post";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
@@ -108,7 +109,7 @@ export async function loader(args: LoaderFunctionArgs) {
     (opts) => agent.app.bsky.feed.getTimeline(opts),
     agent.assertDid,
   );
-  const posts = await take(gen, 10);
+  const slices = await take(gen, 20);
   const title = t.formatMessage(
     {
       defaultMessage: "Home | {productName}",
@@ -117,16 +118,21 @@ export async function loader(args: LoaderFunctionArgs) {
     { productName: PRODUCT_NAME },
   );
 
-  return { title, posts };
+  return { title, slices };
 }
 
 export default function Index() {
-  const { posts } = useLoaderData<typeof loader>();
+  const { slices } = useLoaderData<typeof loader>();
+
+  console.log(slices);
 
   return (
     <MainLayout>
-      <h1>{PRODUCT_NAME}</h1>
-      <pre>{JSON.stringify(posts, null, 2)}</pre>
+      <div className="mx-auto max-w-[42.5rem] border-x border-muted-foreground">
+        {slices.map((s, idx) => (
+          <FeedSlice key={s._reactKey} hideTopBorder={idx === 0} slice={s} />
+        ))}
+      </div>
     </MainLayout>
   );
 }

@@ -3,15 +3,15 @@ import { redirect } from "@remix-run/node";
 import { Agent } from "@atproto/api";
 import { DAY, MINUTE } from "@atproto/common";
 import { IntlShape } from "react-intl";
-import { ServerConfig } from "../config";
-import { AppContext } from "./appContext";
-import { Cache, createCache, createRequestCache } from "../cache";
-import { ProfileViewVStreamSimple } from "~/types";
+import type { ProfileViewVStreamSimple } from "~/types";
 import { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
 import { memoize0 } from "~/lib/memoize";
+import { ServerConfig } from "../config";
+import { profiledDetailedToSimple } from "~/lib/bsky.server";
+import { Cache, createCache, createRequestCache } from "../cache";
 import { extractCurrentLocale } from "../locale";
-import { profiledDetailedToSimple } from "~/lib/bsky";
+import { AppContext } from "./appContext";
 
 export function fromRequest(
   req: express.Request,

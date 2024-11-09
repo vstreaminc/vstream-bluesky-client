@@ -19,6 +19,10 @@
     "defaultMessage": "Home | {productName}",
     "description": "Title for the home page of website"
   },
+  "jAIYp9": {
+    "defaultMessage": "Reposted by {name}",
+    "description": "Header of a post letting someone know who it was reposted by"
+  },
   "q2K55K": {
     "defaultMessage": "Switch locale",
     "description": "CTA to switch the current locale"

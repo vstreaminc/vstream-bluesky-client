@@ -1,11 +1,12 @@
-import {
+import { AppBskyFeedDefs } from "@atproto/api";
+import type {
   FeedViewPost,
   ProfileViewDetailed,
   ProfileViewVStreamSimple,
   FeedViewVStreamPostSlice,
 } from "~/types";
 import { FeedTuner, FeedViewPostsSlice } from "./feedTuner";
-import { AppBskyFeedDefs } from "@atproto/api";
+import { omit } from "./utils";
 
 export function profiledDetailedToSimple(
   profile: ProfileViewDetailed,
@@ -42,7 +43,8 @@ function bSkySliceToVStreamSlice(
           },
         }
       : undefined,
-    items: slice.items.map((item) => ({
+    items: slice.items.map((item, i) => ({
+      _reactKey: `${slice._reactKey}-${i}-${item.post.uri}`,
       uri: item.post.uri,
       cid: item.post.cid,
       replyCount: item.post.replyCount,
@@ -56,7 +58,9 @@ function bSkySliceToVStreamSlice(
         handle: item.post.author.handle,
         displayName: item.post.author.displayName,
         avatar: item.post.author.avatar,
-        viewer: item.post.author.viewer,
+        viewer: item.post.author.viewer
+          ? omit(item.post.author.viewer, ["mutedFromList", "bannedFromList"])
+          : undefined,
       },
       createdAt: item.record.createdAt,
       plainText: item.record.text,
