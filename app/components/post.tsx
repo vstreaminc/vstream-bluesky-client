@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FormattedMessage } from "react-intl";
-import { RefreshCcw } from "lucide-react";
+import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
 import useEvent from "react-use-event-hook";
 import type { FeedViewVStreamPost, FeedViewVStreamPostSlice } from "~/types";
 import { cn } from "~/lib/utils";
@@ -13,6 +13,8 @@ import { useDevicePixelRatio } from "~/hooks/useDevicePixelRatio";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Slider } from "./slider";
 import { Button, PressEvent } from "react-aria-components";
+import { $path } from "remix-routes";
+import { useNavigate } from "@remix-run/react";
 
 /**
  * Main component for rendering slices in the feed
@@ -58,10 +60,50 @@ type FeedPostProps = {
 };
 export function FeedPost(props: FeedPostProps) {
   const { post } = props;
+  const url = $path("/c/:username/p/:postId", {
+    username: props.post.author.handle,
+    postId: props.post.rkey,
+  });
+  const navigate = useNavigate();
+  const ref = React.useRef<HTMLElement | null>(null);
+  const onClick = useEvent<React.MouseEventHandler<HTMLElement>>((event) => {
+    if (
+      event.target instanceof HTMLElement &&
+      // The target isn't an anchor/button/form or inside one
+      !event.target.closest("a") &&
+      !event.target.closest("button") &&
+      !event.target.closest("form") &&
+      // The target isn't inside the user flyout / popover
+      !event.target.closest(".react-aria-Popover") &&
+      // The target isn't inside a dialog
+      !event.target.closest("[role=dialog]") &&
+      // The target isn't the black overlay behind modals
+      !event.target.closest(".fixed.inset-0")
+    ) {
+      // If we click a post inside a quote, don't bubble up to the wider
+      // quoted post
+      event.stopPropagation();
+      navigate(url);
+    }
+  });
+
+  const onKeyUp = useEvent<React.KeyboardEventHandler<HTMLElement>>((event) => {
+    if (event.key !== "Enter") return;
+    if (event.target === ref.current) {
+      // If the current target is the container
+      navigate(url);
+    }
+  });
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <article
-      className={cn("px-4 hover:bg-muted", {
+      ref={ref}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={0}
+      onClick={onClick}
+      onKeyUp={onKeyUp}
+      className={cn("cursor-pointer px-4 hover:bg-muted", {
         "pb-5":
           props.isThreadLastChild ||
           (!props.isThreadChild && !props.isThreadParent),
@@ -90,6 +132,7 @@ export function FeedPost(props: FeedPostProps) {
           <FeedPostHeader post={post} />
           <FeedPostContent post={post} />
           <FeedPostEmbed post={post} />
+          <FeedPostControls post={post} />
         </div>
       </div>
     </article>
@@ -204,6 +247,37 @@ function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
           </ManualDialogTrigger>
         )}
       />
+    </div>
+  );
+}
+
+export function FeedPostControls({ post }: { post: FeedViewVStreamPost }) {
+  return (
+    <div className="flex items-center justify-between pt-2">
+      <div className="flex-1 items-start">
+        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-muted-foreground">
+          <Undo2 className="size-4" color="hsl(var(--secondary))" />
+          {typeof post.replyCount === "number" && post.replyCount > 0 ? (
+            <span className="text-sm text-muted">{post.replyCount}</span>
+          ) : null}
+        </button>
+      </div>
+      <div className="flex-1 items-start">
+        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-muted-foreground">
+          <Repeat className="size-4" color="hsl(var(--secondary))" />
+          {typeof post.repostCount === "number" && post.repostCount > 0 ? (
+            <span className="text-sm text-muted">{post.repostCount}</span>
+          ) : null}
+        </button>
+      </div>
+      <div className="flex-1 items-start">
+        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-muted-foreground">
+          <Heart className="size-4" color="hsl(var(--secondary))" />
+          {typeof post.likeCount === "number" && post.likeCount > 0 ? (
+            <span className="text-sm text-muted">{post.likeCount}</span>
+          ) : null}
+        </button>
+      </div>
     </div>
   );
 }

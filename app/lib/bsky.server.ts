@@ -2,6 +2,7 @@ import {
   AppBskyEmbedImages,
   AppBskyFeedDefs,
   AppBskyFeedPost,
+  AtUri,
 } from "@atproto/api";
 import type {
   FeedViewPost,
@@ -15,6 +16,18 @@ import { omit } from "./utils";
 
 export const DISCOVER_FEED_URI =
   "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot";
+
+export function makeRecordUri(
+  didOrName: string,
+  collection: string,
+  rkey: string,
+): string {
+  const urip = new AtUri("at://host/");
+  urip.host = didOrName.startsWith("@") ? didOrName.slice(1) : didOrName;
+  urip.collection = collection;
+  urip.rkey = rkey;
+  return urip.toString();
+}
 
 export function profiledDetailedToSimple(
   profile: ProfileViewDetailed,
@@ -43,6 +56,7 @@ function bSkyPostFeedViewPostToVStreamPostItem<
   return {
     _reactKey: item.post.uri,
     uri: item.post.uri,
+    rkey: new AtUri(item.post.uri).rkey,
     cid: item.post.cid,
     replyCount: item.post.replyCount,
     repostCount: item.post.repostCount,

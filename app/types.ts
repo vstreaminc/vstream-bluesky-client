@@ -55,6 +55,7 @@ export type FeedViewVStreamPost = Pick<
       "blockingByList" | "mutedByList"
     >;
   };
+  rkey: string;
   embed?: AppBskyEmbedImages.View;
   _reactKey: string;
   createdAt: PostRecord["createdAt"];

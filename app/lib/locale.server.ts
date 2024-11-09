@@ -121,7 +121,7 @@ export function serializeMessages(
     if (common.has(s)) {
       s = common.get(s);
     }
-    res += `${/^\d|[ ()/]/.test(key) ? JSON.stringify(key) : key}:${s},`;
+    res += `${/^\d|[ ()+/]/.test(key) ? JSON.stringify(key) : key}:${s},`;
   }
   if (isEmpty) {
     res += "};}";

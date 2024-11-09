@@ -4,7 +4,9 @@ import {
   MetaDescriptor,
   MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
+import useEvent from "react-use-event-hook";
+import { $path } from "remix-routes";
 import { MainLayout } from "~/components/mainLayout";
 import { FeedPostContentText, PostMediaImage } from "~/components/post";
 import { DISCOVER_FEED_URI, exploreGenerator } from "~/lib/bsky.server";
@@ -117,10 +119,15 @@ function ExploreItemPostImage({
   const image = post.embed.images[0];
   const width = image.aspectRatio?.width ?? 1;
   const height = image.aspectRatio?.height ?? 1;
+  const url = $path("/c/:username/p/:postId", {
+    username: post.author.handle,
+    postId: post.rkey,
+  });
 
   return (
     <OverlayItem
       aspectRatio={width / height}
+      url={url}
       overlay={
         <PostItem post={post}>
           <FeedPostContentText
@@ -177,8 +184,11 @@ function PostItem(props: {
 function OverlayItem(props: {
   aspectRatio: number;
   overlay: React.ReactNode;
+  url: string;
   children?: React.ReactNode;
 }) {
+  const indirectLinkProps = useIndirectLink<HTMLDivElement>(props.url);
+
   return (
     <div
       className={cn(
@@ -191,6 +201,7 @@ function OverlayItem(props: {
         flex: `${100 * props.aspectRatio} 0 ${props.aspectRatio * MIN_ROW_HEIGHT}px`,
         maxWidth: `min(100%, ${props.aspectRatio * MAX_ROW_HEIGHT}px)`,
       }}
+      {...indirectLinkProps}
     >
       {props.children}
       <div
@@ -208,4 +219,46 @@ function OverlayItem(props: {
       </div>
     </div>
   );
+}
+
+function useIndirectLink<T extends HTMLElement>(url: string) {
+  const ref = React.useRef<T>(null);
+  const navigate = useNavigate();
+  const onClick = useEvent<React.MouseEventHandler<T>>((event) => {
+    if (
+      event.target instanceof HTMLElement &&
+      // The target isn't an anchor/button/form or inside one
+      !event.target.closest("a") &&
+      !event.target.closest("button") &&
+      !event.target.closest("form") &&
+      // The target isn't inside the user flyout / popover
+      !event.target.closest(".react-aria-Popover") &&
+      // The target isn't inside a dialog
+      !event.target.closest("[role=dialog]") &&
+      // The target isn't the black overlay behind modals
+      !event.target.closest(".fixed.inset-0")
+    ) {
+      console.log("GOT HERE", url);
+      // If we click a post inside a quote, don't bubble up to the wider
+      // quoted post
+      event.stopPropagation();
+      navigate(url);
+    }
+  });
+
+  const onKeyUp = useEvent<React.KeyboardEventHandler<T>>((event) => {
+    if (event.key !== "Enter") return;
+    if (event.target === ref.current) {
+      // If the current target is the container
+      navigate(url);
+    }
+  });
+
+  return {
+    ref,
+    onClick,
+    onKeyUp,
+    tabIndex: 0,
+    role: "link",
+  } as const;
 }
