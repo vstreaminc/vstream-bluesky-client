@@ -14,7 +14,6 @@ import {
   Sun,
 } from "lucide-react";
 import { Link } from "@remix-run/react";
-import logoSvg from "~/imgs/logo.svg";
 import {
   Sidebar,
   SidebarContent,
@@ -39,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Logo } from "~/components/logo";
 import { useViewer } from "~/hooks/useViewer";
 import { ctas } from "~/lib/messages";
 import { SUPPORTED_LOCALES } from "~/lib/locale";
@@ -85,7 +85,9 @@ function ApplicationSidebarHeader() {
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" asChild>
             <Link to="/">
-              <img className="h-auto w-fit" src={logoSvg} alt="" />
+              <div>
+                <Logo className="h-auto w-fit" />
+              </div>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
