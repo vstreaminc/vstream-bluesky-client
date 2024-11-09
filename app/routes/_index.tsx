@@ -124,8 +124,6 @@ export async function loader(args: LoaderFunctionArgs) {
 export default function Index() {
   const { slices } = useLoaderData<typeof loader>();
 
-  console.log(slices);
-
   return (
     <MainLayout>
       <div className="mx-auto max-w-[42.5rem] border-x border-muted-foreground">
