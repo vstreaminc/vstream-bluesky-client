@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export async function take<T>(
+  iter: AsyncIterableIterator<T>,
+  num: number,
+): Promise<T[]> {
+  const items: T[] = [];
+  for await (const item of iter) {
+    items.push(item);
+    if (items.length >= num) break;
+  }
+  return items;
+}
+
 /**
  * Typesafe omit function
  */
@@ -24,4 +36,9 @@ export function omit<T extends object, K extends [...(keyof T)[]]>(
     }
   }
   return ret;
+}
+
+type Truthy<T> = T extends false | "" | 0 | null | undefined ? never : T;
+export function BooleanFilter<T>(value: T): value is Truthy<T> {
+  return Boolean(value);
 }

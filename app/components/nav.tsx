@@ -6,6 +6,7 @@ import {
 } from "react-intl";
 import {
   ChevronsUpDown,
+  Compass,
   Cpu,
   Globe,
   House,
@@ -14,6 +15,7 @@ import {
   Sun,
 } from "lucide-react";
 import { Link } from "@remix-run/react";
+import { $path } from "remix-routes";
 import {
   Sidebar,
   SidebarContent,
@@ -63,6 +65,19 @@ export function ApplicationSidebar() {
                       <FormattedMessage
                         defaultMessage="Home"
                         description="Name of root page of application"
+                      />
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+                <SidebarMenuButton size="lg" asChild>
+                  <Link to={$path("/explore")} prefetch="intent">
+                    <div>
+                      <Compass className="size-6" />
+                    </div>
+                    <span className="text-lg">
+                      <FormattedMessage
+                        defaultMessage="Explore"
+                        description="Link to explore page in main navigation"
                       />
                     </span>
                   </Link>

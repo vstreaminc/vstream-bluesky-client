@@ -1,4 +1,8 @@
 {
+  "6QjI8l": {
+    "defaultMessage": "Explore",
+    "description": "Link to explore page in main navigation"
+  },
   "7ze5lW": {
     "defaultMessage": "Close",
     "description": "CTA to close something"
@@ -23,6 +27,10 @@
     "defaultMessage": "Home | {productName}",
     "description": "Title for the home page of website"
   },
+  "N47zqY": {
+    "defaultMessage": "Explore | {productName}",
+    "description": "Title for the explore page of website"
+  },
   "O5x/5l": {
     "defaultMessage": "Light mode",
     "description": "CTA to switch the application to the color scheme that is much lighter and brighter"
@@ -34,6 +42,10 @@
   "l3XlNZ": {
     "defaultMessage": "Dark mode",
     "description": "CTA to switch the application to the color scheme that is darker"
+  },
+  "pWTd95": {
+    "defaultMessage": "Discover new and interesting posts from artists and creators",
+    "description": "Description for the explore page of website"
   },
   "q2K55K": {
     "defaultMessage": "Switch locale",

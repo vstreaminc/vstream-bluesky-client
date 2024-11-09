@@ -10,6 +10,7 @@ import logoSvg from "~/imgs/logo.svg";
 import { useLoaderData } from "@remix-run/react";
 import { feedGenerator } from "~/lib/bsky.server";
 import { FeedSlice } from "~/components/post";
+import { take } from "~/lib/utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
@@ -87,18 +88,6 @@ export const meta: MetaFunction<typeof loader> = (args) => {
 
   return metas;
 };
-
-async function take<T>(
-  iter: AsyncIterableIterator<T>,
-  num: number,
-): Promise<T[]> {
-  const items: T[] = [];
-  for await (const item of iter) {
-    items.push(item);
-    if (items.length >= num) break;
-  }
-  return items;
-}
 
 export async function loader(args: LoaderFunctionArgs) {
   const [agent, t] = await Promise.all([

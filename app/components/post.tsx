@@ -12,6 +12,7 @@ import { useHydrated } from "~/hooks/useHydrated";
 import { useDevicePixelRatio } from "~/hooks/useDevicePixelRatio";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Slider } from "./slider";
+import { Button, PressEvent } from "react-aria-components";
 
 /**
  * Main component for rendering slices in the feed
@@ -143,7 +144,30 @@ function FeedPostHeader({ post }: { post: FeedViewVStreamPost }) {
 }
 
 function FeedPostContent({ post }: { post: FeedViewVStreamPost }) {
-  return <div className="mt-2">{post.plainText}</div>;
+  return (
+    <div className="mt-2">
+      <FeedPostContentText post={post} />
+    </div>
+  );
+}
+
+export function FeedPostContentText({
+  post,
+  className,
+}: {
+  post: FeedViewVStreamPost;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "leading-6 text-foreground [word-break:break-word]",
+        className,
+      )}
+    >
+      {post.plainText}
+    </span>
+  );
 }
 
 function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
@@ -172,10 +196,7 @@ function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
                 alt={image.alt}
                 width={image.width}
                 height={image.height}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  open();
-                }}
+                onPress={open}
                 thumbnail
               />
             )}
@@ -187,7 +208,7 @@ function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
   );
 }
 
-function PostMediaImage(props: {
+export function PostMediaImage(props: {
   className?: string;
   thumbSrc: string;
   fullsizeSrc: string;
@@ -196,7 +217,7 @@ function PostMediaImage(props: {
   height: number;
   thumbnail?: boolean;
   noUpscale?: boolean;
-  onClick?: React.MouseEventHandler<HTMLImageElement>;
+  onPress?: (e: PressEvent) => void;
 }) {
   // Track whether we are server-side-rendering or not
   // Since we don't set blurSrc until client-side hydration, we use this to show the preview/primary image
@@ -281,7 +302,7 @@ function PostMediaImage(props: {
         props.className,
       )}
     >
-      <div
+      <Button
         className={cn(
           "relative isolate min-h-0 min-w-0",
           primaryDimension === "width" &&
@@ -300,7 +321,7 @@ function PostMediaImage(props: {
               ? maxHeight
               : undefined,
         }}
-        onClick={props.onClick}
+        onPress={props.onPress}
       >
         <img
           ref={onMount}
@@ -333,7 +354,7 @@ function PostMediaImage(props: {
           loading="lazy"
           decoding="async"
         />
-      </div>
+      </Button>
     </div>
   );
 }
@@ -361,9 +382,6 @@ function PostMediaImagesModal(props: {
             width={image.width}
             height={image.height}
             noUpscale
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
           />
         </div>
         <span className="row-start-2 mt-4 max-w-full justify-self-center break-words px-8 text-foreground md:px-14">
