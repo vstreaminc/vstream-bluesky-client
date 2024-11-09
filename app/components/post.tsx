@@ -1,11 +1,17 @@
 import * as React from "react";
 import { FormattedMessage } from "react-intl";
 import { RefreshCcw } from "lucide-react";
+import useEvent from "react-use-event-hook";
 import type { FeedViewVStreamPost, FeedViewVStreamPostSlice } from "~/types";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { RelativeTime } from "~/components/relativeTime";
 import { ImageMosaic } from "~/components/imageMosaic";
+import { ManualDialogTrigger } from "./ui/dialog";
+import { useHydrated } from "~/hooks/useHydrated";
+import { useDevicePixelRatio } from "~/hooks/useDevicePixelRatio";
+import { useDimensions } from "~/hooks/useDimensions";
+import { Slider } from "./slider";
 
 /**
  * Main component for rendering slices in the feed
@@ -146,19 +152,237 @@ function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
   const images = post.embed.images.map((i) => ({
     ...i,
     id: i.fullsize,
+    width: i.aspectRatio?.width ?? 1,
+    height: i.aspectRatio?.height ?? 1,
     aspectRatio: (i.aspectRatio?.width ?? 1) / (i.aspectRatio?.height ?? 1),
   }));
 
   return (
     <div className="mt-2">
       <ImageMosaic
-        className="mx-auto max-h-96 sm:max-h-[36rem]"
+        className="max-h-96 sm:max-h-[36rem]"
         items={images}
-        render={(image, _idx) => (
-          <img key={image.id} src={image.thumb} alt={image.alt} />
+        render={(image, idx) => (
+          <ManualDialogTrigger className="h-full max-h-full w-full max-w-full overflow-visible bg-transparent shadow-[none]">
+            {({ open }) => (
+              <PostMediaImage
+                className="rounded-sm"
+                thumbSrc={image.thumb}
+                fullsizeSrc={image.fullsize}
+                alt={image.alt}
+                width={image.width}
+                height={image.height}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  open();
+                }}
+                thumbnail
+              />
+            )}
+            {() => <PostMediaImagesModal startIdx={idx} images={images} />}
+          </ManualDialogTrigger>
         )}
       />
     </div>
+  );
+}
+
+function PostMediaImage(props: {
+  className?: string;
+  thumbSrc: string;
+  fullsizeSrc: string;
+  alt?: string;
+  width: number;
+  height: number;
+  thumbnail?: boolean;
+  noUpscale?: boolean;
+  onClick?: React.MouseEventHandler<HTMLImageElement>;
+}) {
+  // Track whether we are server-side-rendering or not
+  // Since we don't set blurSrc until client-side hydration, we use this to show the preview/primary image
+  // as it loads in, which matches expected browser behavior. This improves user experience on slow connections
+  // where the images may load faster than the javascript.
+  const hydrated = useHydrated();
+
+  // Track the state of the primary image and whether to show it
+  // We always want to prefer the primary image if it's set and fully loaded
+  const [showImage, setLoaded] = React.useState(false);
+
+  // SSR sends down the img tag with src already set, allowing the browser to download and render
+  // the image before JS hydration finishes. This manually checks that case and correctly updates loaded.
+  const imgRef = React.useRef<HTMLImageElement | null>(null);
+  const onMount = useEvent((img: HTMLImageElement | null) => {
+    if (img?.complete) {
+      setLoaded(true);
+    }
+    imgRef.current = img;
+  });
+  // Otherwise if the image is still loading, or the image was rendered client-side, we listen for onLoad as you'd expect
+  const onLoad = useEvent(() => {
+    setLoaded(true);
+  });
+  // When src changes we need to re-blur the image, but we also need to avoid re-bluring after hydration
+  React.useEffect(() => {
+    if (props.fullsizeSrc !== imgRef.current?.src) {
+      setLoaded(false);
+    }
+  }, [props.fullsizeSrc]);
+
+  // Track the state of the preview image and whether to show it
+  // Only show preview if it's set and the primary image hasn't loaded in yet
+  // Or if we are pre-hydration, since the preview will likely load faster
+  const [previewLoaded, setPreviewLoaded] = React.useState(false);
+  const showPreviewImage = React.useMemo(
+    () => !showImage && (previewLoaded || !hydrated),
+    [showImage, previewLoaded, hydrated],
+  );
+  // SSR sends down the img tag with src already set, allowing the browser to download and render
+  // the image before JS hydration finishes. This manually checks that case and correctly updates previewLoaded.
+  const previewRef = React.useRef<HTMLImageElement | null>(null);
+  const onPreviewMount = useEvent((img: HTMLImageElement | null) => {
+    if (img?.complete) {
+      setPreviewLoaded(true);
+    }
+    previewRef.current = img;
+  });
+  // Otherwise if the image is still loading, or the image was rendered client-side, we listen for onLoad as you'd expect
+  const onPreviewLoad = useEvent(() => {
+    setPreviewLoaded(true);
+  });
+  // When previewSrc changes we need to re-blur the image, but we also need to avoid re-bluring after hydration
+  React.useEffect(() => {
+    if (props.thumbSrc !== previewRef.current?.src) {
+      setPreviewLoaded(false);
+    }
+  }, [props.thumbSrc]);
+
+  // Use props.width and parse the image URLs to determine the maximum native resolution of the biggest image
+  // We then use this in the styling to ensure we don't upscale the image if `props.noUpscale` is set
+  const dpr = useDevicePixelRatio();
+  const maxWidth = props.width / dpr;
+  const maxHeight = (maxWidth / props.width) * props.height;
+
+  // Track the aspect ratio of the container so we know whether to scale based on width or height
+  const dim = useDimensions();
+  const onContainerMount = useEvent((div: HTMLElement | null) => {
+    dim.observe(div ?? undefined);
+  });
+  const primaryDimension = React.useMemo(() => {
+    const containerAR = dim.width / (dim.height || 1);
+    const imageAR = props.width / props.height;
+    return containerAR > imageAR ? ("height" as const) : ("width" as const);
+  }, [dim.width, dim.height, props.width, props.height]);
+
+  return (
+    <div
+      ref={onContainerMount}
+      className={cn(
+        "grid h-full w-full place-items-center overflow-hidden",
+        props.className,
+      )}
+    >
+      <div
+        className={cn(
+          "relative isolate min-h-0 min-w-0",
+          primaryDimension === "width" &&
+            "h-auto w-full min-w-[min(100%,48rem)]",
+          primaryDimension === "height" &&
+            "h-full min-h-[min(100%,24rem)] w-auto",
+        )}
+        style={{
+          aspectRatio: `${props.width} / ${props.height}`,
+          maxWidth:
+            props.noUpscale && primaryDimension === "width"
+              ? maxWidth
+              : undefined,
+          maxHeight:
+            props.noUpscale && primaryDimension === "height"
+              ? maxHeight
+              : undefined,
+        }}
+        onClick={props.onClick}
+      >
+        <img
+          ref={onMount}
+          onLoad={onLoad}
+          src={props.fullsizeSrc}
+          alt={props.alt}
+          width={props.width}
+          height={props.height}
+          className={cn(
+            "h-full w-full",
+            "opacity-0 transition-opacity ease-linear",
+            showImage && "opacity-100",
+          )}
+          loading="lazy"
+          decoding="async"
+        />
+        <img
+          ref={onPreviewMount}
+          onLoad={onPreviewLoad}
+          src={props.thumbSrc}
+          alt={props.alt}
+          width={props.width}
+          height={props.height}
+          className={cn(
+            "h-full w-full",
+            "pointer-events-none absolute inset-0 mix-blend-plus-lighter",
+            "opacity-0 transition-opacity ease-linear",
+            showPreviewImage && "opacity-100",
+          )}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  );
+}
+
+function PostMediaImagesModal(props: {
+  images: {
+    id: string;
+    width: number;
+    height: number;
+    aspectRatio: number;
+    thumb: string;
+    fullsize: string;
+    alt: string;
+  }[];
+  startIdx: number;
+}) {
+  const imageNodes = props.images.map((image) => {
+    return (
+      <React.Fragment key={image.id}>
+        <div className="row-start-1 min-h-0 min-w-0 snap-center snap-always px-8 md:px-14">
+          <PostMediaImage
+            thumbSrc={image.thumb}
+            fullsizeSrc={image.fullsize}
+            alt={image.alt}
+            width={image.width}
+            height={image.height}
+            noUpscale
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          />
+        </div>
+        <span className="row-start-2 mt-4 max-w-full justify-self-center break-words px-8 text-foreground md:px-14">
+          {image.alt}
+        </span>
+      </React.Fragment>
+    );
+  });
+
+  return (
+    <Slider
+      containerClassName="h-full"
+      contentClassName="-mx-6"
+      nodes={imageNodes}
+      startIndex={props.startIdx}
+      leftNavClassName="fixed"
+      rightNavClassName="fixed"
+      enableHotKeys
+    />
   );
 }
 
