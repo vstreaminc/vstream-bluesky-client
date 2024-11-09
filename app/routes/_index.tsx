@@ -126,7 +126,7 @@ export default function Index() {
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-[42.5rem] border-x border-muted-foreground">
+      <div className="mx-auto max-w-[100vw] border-x border-muted-foreground md:max-w-[42.5rem]">
         {slices.map((s, idx) => (
           <FeedSlice key={s._reactKey} hideTopBorder={idx === 0} slice={s} />
         ))}

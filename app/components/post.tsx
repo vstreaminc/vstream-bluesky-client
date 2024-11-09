@@ -53,7 +53,7 @@ export function FeedPost(props: FeedPostProps) {
 
   return (
     <article
-      className={cn("flex gap-4 px-4 pt-5", {
+      className={cn("px-4 hover:bg-muted", {
         "pb-5":
           props.isThreadLastChild ||
           (!props.isThreadChild && !props.isThreadParent),
@@ -61,57 +61,81 @@ export function FeedPost(props: FeedPostProps) {
           !props.hideTopBorder && !props.isThreadChild,
       })}
     >
-      <div className="flex flex-col">
-        <Avatar className="size-[3.25rem]">
-          <AvatarImage src={post.author.avatar} alt={post.author.displayName} />
-        </Avatar>
-        {/* Line connecting related posts */}
-        {props.isThreadParent && (
-          <div className="mx-auto mt-1 w-0.5 grow bg-muted-foreground" />
-        )}
-      </div>
-      <div className="flex grow flex-col gap-2">
-        <FeedPostHeader post={post} reason={props.reason} />
-        <FeedPostContent post={post} />
+      <FeedPostEyebrow
+        isThreadChild={props.isThreadChild}
+        reason={props.reason}
+      />
+      <div className="flex gap-4">
+        <div className="flex w-[3.25rem] flex-col">
+          <Avatar className="h-auto w-full">
+            <AvatarImage
+              src={post.author.avatar}
+              alt={post.author.displayName}
+            />
+          </Avatar>
+          {/* Line connecting related posts */}
+          {props.isThreadParent && (
+            <div className="mx-auto mt-1 w-0.5 grow bg-muted-foreground" />
+          )}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <FeedPostHeader post={post} />
+          <FeedPostContent post={post} />
+        </div>
       </div>
     </article>
   );
 }
 
-function FeedPostHeader({
-  post,
+function FeedPostEyebrow({
+  isThreadChild,
   reason,
 }: {
-  post: FeedViewVStreamPost;
+  isThreadChild: boolean;
   reason: FeedViewVStreamPostSlice["reason"];
 }) {
   return (
-    <div>
-      {reason && reason.$type === "com.vstream.feed.defs#reasonRepost" ? (
-        <div className="flex items-center gap-2 text-sm">
-          <RefreshCcw size={20} />
-          <span>
-            <FormattedMessage
-              defaultMessage="Reposted by {name}"
-              description="Header of a post letting someone know who it was reposted by"
-              values={{ name: post.author.displayName }}
-            />
-          </span>
-        </div>
-      ) : null}
-      <div className="flex min-w-0 items-center gap-2">
-        <span>{post.author.displayName}</span>
-        <span className="truncate text-sm">@{post.author.handle}</span>
+    <div className="flex gap-4">
+      <div className="flex w-[3.25rem] flex-col">
+        {/* Line connecting related posts */}
+        {isThreadChild && (
+          <div className="mx-auto mb-1 w-0.5 grow bg-muted-foreground" />
+        )}
       </div>
-      <div>
-        <RelativeTime value={post.createdAt} />
+      <div className="flex min-w-0 shrink pt-5">
+        {reason && reason.$type === "com.vstream.feed.defs#reasonRepost" ? (
+          <div className="-ml-6 flex min-w-0 items-center pb-0.5 text-sm">
+            <RefreshCcw size={20} className="mr-1" />
+            <span className="truncate">
+              <FormattedMessage
+                defaultMessage="Reposted by {name}"
+                description="Header of a post letting someone know who it was reposted by"
+                values={{ name: reason.by.displayName }}
+              />
+            </span>
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
 
+function FeedPostHeader({ post }: { post: FeedViewVStreamPost }) {
+  return (
+    <>
+      <div className="truncate pb-0.5">
+        <span className="font-sm">{post.author.displayName}</span>&nbsp;
+        <span className="text-muted-foreground">@{post.author.handle}</span>
+      </div>
+      <div className="text-sm text-muted-foreground">
+        <RelativeTime value={post.createdAt} />
+      </div>
+    </>
+  );
+}
+
 function FeedPostContent({ post }: { post: FeedViewVStreamPost }) {
-  return <div>{post.plainText}</div>;
+  return <div className="mt-2">{post.plainText}</div>;
 }
 
 function isThreadParentAt<T>(arr: Array<T>, i: number) {
