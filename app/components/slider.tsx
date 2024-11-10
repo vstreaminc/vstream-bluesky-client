@@ -86,7 +86,7 @@ export function Slider({
         ref={scrollRef}
         onScroll={onScroll}
         className={cn(
-          "scrollbar-hide grid min-h-0 min-w-0 flex-1 snap-x snap-mandatory auto-cols-[100%] grid-flow-col grid-rows-[1fr,min-content] overflow-x-scroll scroll-smooth",
+          "grid min-h-0 min-w-0 flex-1 snap-x snap-mandatory auto-cols-[100%] grid-flow-col grid-rows-[1fr,min-content] overflow-x-scroll scroll-smooth scrollbar-hide",
           contentClassName,
         )}
       >
@@ -124,13 +124,13 @@ export function Slider({
             {nodes.map((_, i) => (
               <button
                 key={i}
-                className="hover:bg-disabled appearance-none rounded-full p-1"
+                className="appearance-none rounded-full p-1 hover:bg-gray-400"
                 onClick={(e) => {
                   e.stopPropagation();
                   scrollTo(i);
                 }}
               >
-                <div className="bg-disabled h-2 w-2 rounded-full p-1"></div>
+                <div className="h-2 w-2 rounded-full bg-gray-400 p-1"></div>
               </button>
             ))}
             <div
@@ -139,7 +139,7 @@ export function Slider({
                 transform: `translateX(calc((100% - 1rem) * ${scrollPercentage}))`,
               }}
             >
-              <div className="bg-high m-1 h-2 w-2 appearance-none rounded-full"></div>
+              <div className="m-1 h-2 w-2 appearance-none rounded-full bg-white"></div>
             </div>
           </div>
         </>

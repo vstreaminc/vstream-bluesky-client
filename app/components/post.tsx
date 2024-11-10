@@ -365,6 +365,7 @@ export function PostMediaImage(props: {
   const primaryDimension = React.useMemo(() => {
     const containerAR = dim.width / (dim.height || 1);
     const imageAR = props.width / props.height;
+    console.log({ containerAR, imageAR });
     return containerAR > imageAR ? ("height" as const) : ("width" as const);
   }, [dim.width, dim.height, props.width, props.height]);
 
@@ -448,7 +449,7 @@ function PostMediaImagesModal(props: {
   const imageNodes = props.images.map((image) => {
     return (
       <React.Fragment key={image.id}>
-        <div className="row-start-1 min-h-0 min-w-0 snap-center snap-always px-8 md:px-14">
+        <div className="row-start-1 max-h-[85lvh] min-h-0 min-w-0 snap-center snap-always px-8 md:px-14">
           <PostMediaImage
             thumbSrc={image.thumb}
             fullsizeSrc={image.fullsize}
@@ -458,7 +459,7 @@ function PostMediaImagesModal(props: {
             noUpscale
           />
         </div>
-        <span className="row-start-2 mt-4 max-w-full justify-self-center break-words px-8 text-foreground md:px-14">
+        <span className="row-start-2 mt-4 max-w-full justify-self-center break-words px-8 text-white md:px-14">
           {image.alt}
         </span>
       </React.Fragment>
