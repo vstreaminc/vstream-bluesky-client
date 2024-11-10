@@ -369,6 +369,8 @@ export function PostMediaImage(props: {
     return containerAR > imageAR ? ("height" as const) : ("width" as const);
   }, [dim.width, dim.height, props.width, props.height]);
 
+  const Container = props.onPress ? Button : "div";
+
   return (
     <div
       ref={onContainerMount}
@@ -377,7 +379,7 @@ export function PostMediaImage(props: {
         props.className,
       )}
     >
-      <Button
+      <Container
         className={cn(
           "relative isolate min-h-0 min-w-0",
           primaryDimension === "width" &&
@@ -429,7 +431,7 @@ export function PostMediaImage(props: {
           loading="lazy"
           decoding="async"
         />
-      </Button>
+      </Container>
     </div>
   );
 }

@@ -127,7 +127,7 @@ const DialogContent = ({
               onPress={renderProps.close}
               className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity data-[disabled]:pointer-events-none data-[entering]:bg-accent data-[entering]:text-muted-foreground data-[hovered]:opacity-100 data-[focused]:outline-none data-[focused]:ring-2 data-[focused]:ring-ring data-[focused]:ring-offset-2"
             >
-              <Cross2Icon className="size-4" />
+              <Cross2Icon className="size-4 md:size-6" color="white" />
               <span className="sr-only">
                 <FormattedMessage {...ctas.close} />
               </span>

@@ -8,13 +8,18 @@ import { useLoaderData, useNavigate } from "@remix-run/react";
 import useEvent from "react-use-event-hook";
 import { $path } from "remix-routes";
 import { MainLayout } from "~/components/mainLayout";
-import { FeedPostContentText, PostMediaImage } from "~/components/post";
+import {
+  FeedPostContentText,
+  FeedPostControls,
+  PostMediaImage,
+} from "~/components/post";
 import { DISCOVER_FEED_URI, exploreGenerator } from "~/lib/bsky.server";
 import { PRODUCT_NAME } from "~/lib/constants";
 import { BooleanFilter, cn, take } from "~/lib/utils";
 import { FeedViewVStreamPost } from "~/types";
 import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
+import { Link } from "react-aria-components";
 
 export async function loader(args: LoaderFunctionArgs) {
   const [agent, t] = await Promise.all([
@@ -89,8 +94,14 @@ function ExploreItem({ post }: { post: FeedViewVStreamPost }) {
 }
 
 function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
+  const url = $path("/c/:username/p/:postId", {
+    username: post.author.handle,
+    postId: post.rkey,
+  });
+
   return (
-    <div
+    <Link
+      href={url}
       className={cn(
         "cursor-pointer border-muted bg-background focus-within:bg-muted hover:bg-muted",
         "group/ExploreItem flex flex-1 basis-96 flex-col gap-1 rounded-md p-4",
@@ -100,12 +111,12 @@ function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
       }}
     >
       <PostItem post={post}>
-        <div className="relative min-h-0 flex-1 basis-0 overflow-hidden pt-4 max-md:line-clamp-5 max-md:basis-auto">
-          <FeedPostContentText post={post} />
+        <div className="relative min-h-0 flex-1 basis-0 overflow-hidden pt-4 max-md:basis-auto">
+          <FeedPostContentText post={post} className="max-md:line-clamp-5" />
           <div className="from-background-200 group-hover/ExploreItem:from-background-300 group-focus-within/ExploreItem:from-background-300 pointer-events-none absolute bottom-0 h-9 w-full md:bg-gradient-to-t"></div>
         </div>
       </PostItem>
-    </div>
+    </Link>
   );
 }
 
@@ -128,14 +139,7 @@ function ExploreItemPostImage({
     <OverlayItem
       aspectRatio={width / height}
       url={url}
-      overlay={
-        <PostItem post={post}>
-          <FeedPostContentText
-            post={post}
-            className="line-clamp-1 max-md:hidden"
-          />
-        </PostItem>
-      }
+      overlay={<PostItem post={post} />}
     >
       <div style={{ aspectRatio: `${width / height}` }}>
         <PostMediaImage
@@ -177,6 +181,7 @@ function PostItem(props: {
         </div>
       </div>
       {props.children}
+      <FeedPostControls post={post} />
     </>
   );
 }
@@ -195,6 +200,7 @@ function OverlayItem(props: {
         // On mobile we stop caring about keeping a strict size and just want to fill the device width
         "max-md:!aspect-[auto] max-md:!max-w-none max-md:!flex-shrink",
         "bg-transparent-black group/ExploreItem relative overflow-hidden rounded-md",
+        "cursor-pointer",
       )}
       style={{
         aspectRatio: `${props.aspectRatio}`,

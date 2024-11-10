@@ -86,7 +86,7 @@ export function Slider({
         ref={scrollRef}
         onScroll={onScroll}
         className={cn(
-          "grid min-h-0 min-w-0 flex-1 snap-x snap-mandatory auto-cols-[100%] grid-flow-col grid-rows-[1fr,min-content] overflow-x-scroll scroll-smooth scrollbar-hide",
+          "scrollbar-hide grid min-h-0 min-w-0 flex-1 snap-x snap-mandatory auto-cols-[100%] grid-flow-col grid-rows-[1fr,min-content] overflow-x-scroll scroll-smooth",
           contentClassName,
         )}
       >
@@ -104,7 +104,7 @@ export function Slider({
               scrollTo(page + 1);
             }}
           >
-            <ArrowRight />
+            <ArrowRight color="white" />
           </Button>
 
           <Button
@@ -117,7 +117,7 @@ export function Slider({
               scrollTo(page - 1);
             }}
           >
-            <ArrowLeft />
+            <ArrowLeft color="white" />
           </Button>
 
           <div className="relative flex flex-initial gap-1 self-center pt-4">
