@@ -17,6 +17,14 @@ export default {
           "Noto Color Emoji",
         ],
       },
+      keyframes: {
+        shimmer: {
+          "100%": { "mask-position": "left" },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 2.5s infinite",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

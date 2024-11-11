@@ -331,6 +331,11 @@ export function PostMediaImage(props: {
     () => !showImage && (previewLoaded || !hydrated),
     [showImage, previewLoaded, hydrated],
   );
+  const showShimmer = React.useMemo(
+    () => !showPreviewImage && !showImage,
+    [showPreviewImage, showImage],
+  );
+
   // SSR sends down the img tag with src already set, allowing the browser to download and render
   // the image before JS hydration finishes. This manually checks that case and correctly updates previewLoaded.
   const previewRef = React.useRef<HTMLImageElement | null>(null);
@@ -365,7 +370,6 @@ export function PostMediaImage(props: {
   const primaryDimension = React.useMemo(() => {
     const containerAR = dim.width / (dim.height || 1);
     const imageAR = props.width / props.height;
-    console.log({ containerAR, imageAR });
     return containerAR > imageAR ? ("height" as const) : ("width" as const);
   }, [dim.width, dim.height, props.width, props.height]);
 
@@ -430,6 +434,19 @@ export function PostMediaImage(props: {
           )}
           loading="lazy"
           decoding="async"
+        />
+        <div
+          className={cn(
+            "animate-shimmer h-full w-full bg-gray-200",
+            "pointer-events-none absolute inset-0",
+            "opacity-0 mix-blend-plus-lighter transition-opacity ease-linear",
+            showShimmer && "animate-none opacity-100",
+          )}
+          style={{
+            mask: "linear-gradient(-60deg, #000 30%, #0005, #000 70%) right/350% 100%",
+            width: props.width,
+            height: props.height,
+          }}
         />
       </Container>
     </div>
