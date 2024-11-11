@@ -125,7 +125,7 @@ function ApplicationSidebarFooter() {
         <span className="truncate font-semibold">
           {viewer.displayName ?? ""}
         </span>
-        <span className="truncate text-xs">@{viewer.handle}</span>
+        <span className="truncate text-xs">{viewer.handle}</span>
       </div>
     </>
   );

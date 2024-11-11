@@ -29,6 +29,31 @@ export function makeRecordUri(
   return urip.toString();
 }
 
+function formatHandle(handle: string): string {
+  return `@${handle.trim()}`;
+}
+
+// \u2705 = ✅
+// \u2713 = ✓
+// \u2714 = ✔
+// \u2611 = ☑
+const CHECK_MARKS_RE = /[\u2705\u2713\u2714\u2611]/gu;
+const CONTROL_CHARS_RE =
+  // eslint-disable-next-line no-control-regex
+  /[\u0000-\u001F\u007F-\u009F\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+const MULTIPLE_SPACES_RE = /[\s][\s\u200B]+/g;
+
+export function formatDisplayName(str: string | undefined): string {
+  if (typeof str === "string") {
+    return str
+      .replace(CHECK_MARKS_RE, "")
+      .replace(CONTROL_CHARS_RE, "")
+      .replace(MULTIPLE_SPACES_RE, " ")
+      .trim();
+  }
+  return "";
+}
+
 export function profiledDetailedToSimple(
   profile: ProfileViewDetailed,
 ): ProfileViewVStreamSimple {
@@ -38,10 +63,10 @@ export function profiledDetailedToSimple(
     createdAt: profile.createdAt,
     description: profile.description,
     did: profile.did,
-    displayName: profile.displayName,
+    displayName: formatDisplayName(profile.displayName),
     followersCount: profile.followersCount,
     followsCount: profile.followsCount,
-    handle: profile.handle,
+    handle: formatHandle(profile.handle),
     indexedAt: profile.indexedAt,
     postsCount: profile.postsCount,
   };
@@ -66,8 +91,8 @@ function bSkyPostFeedViewPostToVStreamPostItem<
     viewer: item.post.viewer,
     author: {
       did: item.post.author.did,
-      handle: item.post.author.handle,
-      displayName: item.post.author.displayName,
+      handle: formatHandle(item.post.author.handle),
+      displayName: formatDisplayName(item.post.author.displayName),
       avatar: item.post.author.avatar,
       viewer: item.post.author.viewer
         ? omit(item.post.author.viewer, ["mutedFromList", "bannedFromList"])
@@ -94,8 +119,8 @@ function bSkySliceToVStreamSlice(
           $type: "com.vstream.feed.defs#reasonRepost",
           by: {
             did: slice.reason.by.did,
-            handle: slice.reason.by.handle,
-            displayName: slice.reason.by.displayName,
+            handle: formatHandle(slice.reason.by.handle),
+            displayName: formatDisplayName(slice.reason.by.displayName),
             avatar: slice.reason.by.avatar,
           },
         }

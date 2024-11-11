@@ -177,7 +177,7 @@ function FeedPostHeader({ post }: { post: FeedViewVStreamPost }) {
     <>
       <div className="truncate pb-0.5">
         <span className="font-sm">{post.author.displayName}</span>&nbsp;
-        <span className="text-muted-foreground">@{post.author.handle}</span>
+        <span className="text-muted-foreground">{post.author.handle}</span>
       </div>
       <div className="text-sm text-muted-foreground">
         <RelativeTime value={post.createdAt} />
