@@ -63,7 +63,7 @@ export default function PostPage() {
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-[37.5rem]">
+      <div className="mx-auto w-full max-w-[37.5rem]">
         <div className="flex w-full items-center gap-4">
           <Avatar className="size-16">
             <AvatarImage src={thread.post.author.avatar} />
