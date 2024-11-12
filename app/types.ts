@@ -26,14 +26,34 @@ export type FeedViewPost = AppBskyFeedDefs.FeedViewPost;
 export type PostView = AppBskyFeedDefs.PostView;
 export type PostRecord = AppBskyFeedPost.Record;
 
-export type TextNode = { type: "text"; text: string };
-export type ParagraphNode = { type: "paragraph"; nodes: RichText[] };
-export type InlineImageNode = {
-  type: "inline-image";
+export type TextNode = { $type: "text"; text: string };
+export type ParagraphNode = { $type: "paragraph"; nodes: RichText[] };
+export type EmojiNode = {
+  $type: "emoji";
   src: string;
-  alt: string | null;
+  actionText: string;
 };
-export type RichText = TextNode | ParagraphNode | InlineImageNode;
+export type MentionNode = {
+  $type: "mention";
+  handle: string;
+  did: string;
+};
+export type HashtagNode = {
+  $type: "hashtag";
+  tag: string;
+};
+export type LinkNode = {
+  $type: "link";
+  text: string;
+  href: string;
+};
+export type RichText =
+  | TextNode
+  | ParagraphNode
+  | EmojiNode
+  | HashtagNode
+  | MentionNode
+  | LinkNode;
 
 export type FeedViewVStreamPost = Pick<
   FeedViewPost["post"],

@@ -6,12 +6,13 @@ import { IntlShape } from "react-intl";
 import type { ProfileViewVStreamSimple } from "~/types";
 import { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
-import { memoize0 } from "~/lib/memoize";
+import { memoize0, memoizeObject1 } from "~/lib/memoize";
 import { ServerConfig } from "../config";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
 import { Cache, createCache, createRequestCache } from "../cache";
 import { extractCurrentLocale } from "../locale";
 import { AppContext } from "./appContext";
+import DataLoader from "dataloader";
 
 export function fromRequest(
   req: express.Request,
@@ -65,20 +66,52 @@ export function fromRequest(
     t,
   };
 
+  const profileLoader: BSkyContext["profileLoader"] = memoizeObject1(
+    (agent) =>
+      new DataLoader(async (dids) => {
+        if (dids.length === 1) {
+          return agent.app.bsky.actor
+            .getProfile({ actor: dids[0] })
+            .then((res) => res.data)
+            .then((p) => [profiledDetailedToSimple(p)]);
+        }
+
+        const profiles = await agent.app.bsky.actor
+          .getProfiles({ actors: [...dids] })
+          .then((res) => res.data.profiles.map(profiledDetailedToSimple));
+        const mappedProfiles = new Map<
+          (typeof dids)[number],
+          (typeof profiles)[number]
+        >();
+        for (const p of profiles) {
+          mappedProfiles.set(p.did, p);
+        }
+
+        return dids.map(
+          (d) => mappedProfiles.get(d) ?? new Error("Cannot find profile"),
+        );
+      }),
+  );
+
+  const cachedFindProfile: BSkyContext["cachedFindProfile"] = (agent, did) => {
+    return requestCache.getOrSet(did, () => profileLoader(agent).load(did), {
+      expiresIn: 30 * MINUTE,
+      staleWhileRevalidate: 1 * DAY,
+    });
+  };
+
   const currentProfile: BSkyContext["currentProfile"] = (agent) => {
     return requestCache.getOrSet(
       agent.assertDid,
-      () =>
-        agent.app.bsky.actor
-          .getProfile({ actor: agent.assertDid })
-          .then((res) => res.data)
-          .then(profiledDetailedToSimple),
+      () => profileLoader(agent).load(agent.assertDid),
       { expiresIn: 30 * MINUTE, staleWhileRevalidate: 1 * DAY },
     );
   };
 
   const bsky: BSkyContext = {
+    cachedFindProfile,
     currentProfile,
+    profileLoader,
   };
 
   return {
@@ -106,6 +139,11 @@ export type RequestContext = {
 };
 
 export type BSkyContext = {
+  profileLoader: (agent: Agent) => DataLoader<string, ProfileViewVStreamSimple>;
+  cachedFindProfile: (
+    agent: Agent,
+    did: string,
+  ) => Promise<ProfileViewVStreamSimple>;
   currentProfile: (agent: Agent) => Promise<ProfileViewVStreamSimple>;
 };
 

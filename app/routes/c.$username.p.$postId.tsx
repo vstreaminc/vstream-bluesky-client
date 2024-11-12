@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import {
   bSkyPostFeedViewPostToVStreamPostItem,
+  hydrateFeedViewVStreamPost,
   makeRecordUri,
 } from "~/lib/bsky.server";
 
@@ -49,11 +50,16 @@ export async function loader(args: LoaderFunctionArgs) {
     throw new Response("Not found", { status: 404 });
   }
 
-  const record = res.data.thread.post.record;
+  const record = res.data.thread.post.record as AppBskyFeedPost.Record;
   const post = bSkyPostFeedViewPostToVStreamPostItem({
     post: res.data.thread.post,
-    record: record as AppBskyFeedPost.Record,
+    record,
   });
+  const finders = {
+    getProfile: (did: string) =>
+      args.context.bsky.cachedFindProfile(agent, did),
+  };
+  await hydrateFeedViewVStreamPost(post, record, finders);
 
   return { thread: { post } };
 }

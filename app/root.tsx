@@ -4,7 +4,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useHref,
   useLoaderData,
   useNavigate,
   useRouteLoaderData,
@@ -15,6 +14,7 @@ import { I18nProvider, RouterProvider } from "react-aria-components";
 import { DEFAULT_LOCALE } from "./lib/locale";
 
 import "./tailwind.css";
+import { useBetterHref } from "./hooks/useBetterHref";
 
 declare module "react-aria-components" {
   interface RouterConfig {
@@ -93,7 +93,7 @@ export default function App() {
 
   return (
     <I18nProvider locale={locale}>
-      <RouterProvider navigate={navigate} useHref={useHref}>
+      <RouterProvider navigate={navigate} useHref={useBetterHref}>
         <Outlet />
       </RouterProvider>
     </I18nProvider>

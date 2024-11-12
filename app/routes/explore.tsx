@@ -13,7 +13,11 @@ import {
   FeedPostControls,
   PostMediaImage,
 } from "~/components/post";
-import { DISCOVER_FEED_URI, exploreGenerator } from "~/lib/bsky.server";
+import {
+  DISCOVER_FEED_URI,
+  exploreGenerator,
+  hydrateFeedViewVStreamPost,
+} from "~/lib/bsky.server";
 import { PRODUCT_NAME } from "~/lib/constants";
 import { BooleanFilter, cn, take } from "~/lib/utils";
 import { FeedViewVStreamPost } from "~/types";
@@ -44,7 +48,17 @@ export async function loader(args: LoaderFunctionArgs) {
       feed: DISCOVER_FEED_URI,
     }),
   );
-  const posts = await take(gen, 20);
+  const res = await take(gen, 20);
+  const finders = {
+    getProfile: (did: string) =>
+      args.context.bsky.cachedFindProfile(agent, did),
+  };
+  await Promise.all(
+    res.map(({ original, post }) =>
+      hydrateFeedViewVStreamPost(post, original.items[0].record, finders),
+    ),
+  );
+  const posts = res.map((res) => res.post);
 
   return { title, description, posts };
 }

@@ -15,6 +15,7 @@ import { Slider } from "./slider";
 import { Button, PressEvent } from "react-aria-components";
 import { $path } from "remix-routes";
 import { useNavigate } from "@remix-run/react";
+import { RichTextRenderer } from "./richText";
 
 /**
  * Main component for rendering slices in the feed
@@ -208,7 +209,11 @@ export function FeedPostContentText({
         className,
       )}
     >
-      {post.plainText}
+      {post.richText.length > 0 ? (
+        <RichTextRenderer richText={post.richText} />
+      ) : (
+        post.plainText
+      )}
     </span>
   );
 }

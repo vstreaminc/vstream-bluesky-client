@@ -8,7 +8,7 @@ import { MainLayout } from "~/components/mainLayout";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
 import { useLoaderData } from "@remix-run/react";
-import { feedGenerator } from "~/lib/bsky.server";
+import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { FeedSlice } from "~/components/post";
 import { take } from "~/lib/utils";
 
@@ -98,7 +98,19 @@ export async function loader(args: LoaderFunctionArgs) {
     (opts) => agent.app.bsky.feed.getTimeline(opts),
     agent.assertDid,
   );
-  const slices = await take(gen, 20);
+  const res = await take(gen, 20);
+  const finders = {
+    getProfile: (did: string) =>
+      args.context.bsky.cachedFindProfile(agent, did),
+  };
+  await Promise.all(
+    res.flatMap(({ original, slice }) =>
+      slice.items.map((post, i) =>
+        hydrateFeedViewVStreamPost(post, original.items[i].record, finders),
+      ),
+    ),
+  );
+
   const title = t.formatMessage(
     {
       defaultMessage: "Home | {productName}",
@@ -107,7 +119,7 @@ export async function loader(args: LoaderFunctionArgs) {
     { productName: PRODUCT_NAME },
   );
 
-  return { title, slices };
+  return { title, slices: res.map((r) => r.slice) };
 }
 
 export default function Index() {

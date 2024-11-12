@@ -3,6 +3,7 @@ import {
   AppBskyFeedDefs,
   AppBskyFeedPost,
   AtUri,
+  RichText as AtProtoRichText,
 } from "@atproto/api";
 import type {
   FeedViewPost,
@@ -10,6 +11,11 @@ import type {
   ProfileViewVStreamSimple,
   FeedViewVStreamPostSlice,
   FeedViewVStreamPost,
+  RichText,
+  TextNode,
+  HashtagNode,
+  LinkNode,
+  MentionNode,
 } from "~/types";
 import { FeedTuner, FeedViewPostsSlice } from "./feedTuner";
 import { omit } from "./utils";
@@ -139,7 +145,10 @@ export async function* feedGenerator(
   }) => Promise<{ data: { cursor?: string; feed: FeedViewPost[] } }>,
   userDid: string,
   initalCusor?: string,
-): AsyncIterableIterator<FeedViewVStreamPostSlice> {
+): AsyncIterableIterator<{
+  original: FeedViewPostsSlice;
+  slice: FeedViewVStreamPostSlice;
+}> {
   const tuner = new FeedTuner([
     FeedTuner.removeOrphans,
     FeedTuner.followedRepliesOnly({ userDid }),
@@ -152,7 +161,10 @@ export async function* feedGenerator(
     cursor = res.data.cursor;
     const slices = tuner.tune(res.data.feed);
 
-    yield* slices.map(bSkySliceToVStreamSlice);
+    yield* slices.map((original) => ({
+      original,
+      slice: bSkySliceToVStreamSlice(original),
+    }));
   } while (cursor);
 }
 
@@ -162,7 +174,10 @@ export async function* exploreGenerator(
     limit?: number;
   }) => Promise<{ data: { cursor?: string; feed: FeedViewPost[] } }>,
   initalCusor?: string,
-): AsyncIterableIterator<FeedViewVStreamPost> {
+): AsyncIterableIterator<{
+  original: FeedViewPostsSlice;
+  post: FeedViewVStreamPost;
+}> {
   const tuner = new FeedTuner([
     FeedTuner.dedupThreads,
     FeedTuner.removeReposts,
@@ -201,16 +216,75 @@ export async function* exploreGenerator(
         case "image": {
           const slice = imagePosts.shift();
           if (!slice) continue;
-          yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
+          yield {
+            original: slice,
+            post: bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]),
+          };
           break;
         }
         case "basic": {
           const slice = basicPosts.shift();
           if (!slice) continue;
-          yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
+          yield {
+            original: slice,
+            post: bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]),
+          };
           break;
         }
       }
     }
   } while (cursor);
+}
+
+export async function hydrateFeedViewVStreamPost(
+  post: FeedViewVStreamPost,
+  record: AppBskyFeedPost.Record,
+  finders: {
+    getProfile: (did: string) => Promise<ProfileViewVStreamSimple>;
+  },
+): Promise<FeedViewVStreamPost> {
+  // Already hydrated, return
+  if (post.richText.length > 0) return post;
+
+  const richTextP = Array.from(
+    new AtProtoRichText({
+      text: record.text,
+      facets: record.facets,
+    }).segments(),
+  ).flatMap<RichText | Promise<RichText>>((seg) => {
+    if (!seg.facet) {
+      return [{ $type: "text", text: seg.text } satisfies TextNode];
+    } else if (seg.tag) {
+      return [
+        { $type: "hashtag", tag: "#" + seg.tag.tag } satisfies HashtagNode,
+      ];
+    } else if (seg.link) {
+      return [
+        {
+          $type: "link",
+          text: seg.text,
+          href: seg.link.uri,
+        } satisfies LinkNode,
+      ];
+    } else if (seg.mention) {
+      return [
+        finders.getProfile(seg.mention.did).then(
+          (profile) =>
+            ({
+              $type: "mention",
+              handle: profile.handle,
+              did: profile.did,
+            }) satisfies MentionNode,
+        ),
+      ];
+    }
+    // TODO: Handle emoji nodes
+
+    return [];
+  });
+
+  post.richText = await Promise.all(richTextP);
+  // Send less bytes down by clearing out the old text
+  post.plainText = "";
+  return post;
 }
