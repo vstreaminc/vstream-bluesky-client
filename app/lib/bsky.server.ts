@@ -72,7 +72,7 @@ export function profiledDetailedToSimple(
   };
 }
 
-function bSkyPostFeedViewPostToVStreamPostItem<
+export function bSkyPostFeedViewPostToVStreamPostItem<
   T extends {
     post: AppBskyFeedDefs.PostView;
     record: AppBskyFeedPost.Record;

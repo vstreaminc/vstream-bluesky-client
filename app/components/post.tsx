@@ -213,7 +213,7 @@ export function FeedPostContentText({
   );
 }
 
-function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
+export function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
   if (!post.embed) return null;
 
   const images = post.embed.images.map((i) => ({
@@ -255,26 +255,26 @@ export function FeedPostControls({ post }: { post: FeedViewVStreamPost }) {
   return (
     <div className="flex items-center justify-between pt-2">
       <div className="flex-1 items-start">
-        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-muted-foreground">
-          <Undo2 className="size-4" color="hsl(var(--secondary))" />
+        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
+          <Undo2 className="size-4 stroke-slate-400" />
           {typeof post.replyCount === "number" && post.replyCount > 0 ? (
-            <span className="text-sm text-muted">{post.replyCount}</span>
+            <span className="text-sm text-slate-400">{post.replyCount}</span>
           ) : null}
         </button>
       </div>
       <div className="flex-1 items-start">
-        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-muted-foreground">
-          <Repeat className="size-4" color="hsl(var(--secondary))" />
+        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
+          <Repeat className="size-4 stroke-slate-400" />
           {typeof post.repostCount === "number" && post.repostCount > 0 ? (
-            <span className="text-sm text-muted">{post.repostCount}</span>
+            <span className="text-sm text-slate-400">{post.repostCount}</span>
           ) : null}
         </button>
       </div>
       <div className="flex-1 items-start">
-        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-muted-foreground">
-          <Heart className="size-4" color="hsl(var(--secondary))" />
+        <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
+          <Heart className="size-4 stroke-slate-400" />
           {typeof post.likeCount === "number" && post.likeCount > 0 ? (
-            <span className="text-sm text-muted">{post.likeCount}</span>
+            <span className="text-sm text-slate-400">{post.likeCount}</span>
           ) : null}
         </button>
       </div>
