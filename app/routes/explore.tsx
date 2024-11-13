@@ -7,7 +7,6 @@ import type {
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import useEvent from "react-use-event-hook";
 import { $path } from "remix-routes";
-import { Link } from "react-aria-components";
 import { SECOND } from "@atproto/common";
 import { MainLayout } from "~/components/mainLayout";
 import {
@@ -132,10 +131,10 @@ function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
     handle: post.author.handle,
     rkey: post.rkey,
   });
+  const indirectLinkProps = useIndirectLink<HTMLDivElement>(url);
 
   return (
-    <Link
-      href={url}
+    <div
       className={cn(
         "cursor-pointer border-muted bg-background focus-within:bg-muted hover:bg-muted",
         "group/ExploreItem flex flex-1 basis-96 flex-col gap-1 rounded-md p-4",
@@ -143,6 +142,7 @@ function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
       style={{
         minHeight: `${MIN_ROW_HEIGHT}px`,
       }}
+      {...indirectLinkProps}
     >
       <PostItem post={post}>
         <div className="relative min-h-0 flex-1 basis-0 overflow-hidden pt-4 max-md:basis-auto">
@@ -150,7 +150,7 @@ function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
           <div className="from-background-200 group-hover/ExploreItem:from-background-300 group-focus-within/ExploreItem:from-background-300 pointer-events-none absolute bottom-0 h-9 w-full md:bg-gradient-to-t"></div>
         </div>
       </PostItem>
-    </Link>
+    </div>
   );
 }
 
