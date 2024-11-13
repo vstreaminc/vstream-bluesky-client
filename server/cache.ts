@@ -3,12 +3,12 @@ import { Database, KVStore } from "./db";
 
 function isExpired(obj: KVStore): obj is KVStore & { expires_at: number } {
   if (!obj.expires_at) return false;
-  return Date.now() > new Date(obj.expires_at).getTime();
+  return Date.now() > obj.expires_at;
 }
 
 function isStaleWhileRevalidate(obj: KVStore, staleFor: number | undefined) {
   if (typeof staleFor !== "number" || !isExpired(obj)) return false;
-  return Date.now() > new Date(obj.expires_at).getTime() + staleFor;
+  return Date.now() < obj.expires_at + staleFor;
 }
 
 export function createCache<T = unknown>(db: Database, prefix: string) {
