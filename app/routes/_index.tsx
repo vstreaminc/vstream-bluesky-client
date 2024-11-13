@@ -11,6 +11,7 @@ import logoSvg from "~/imgs/logo.svg";
 import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { FeedSlice } from "~/components/post";
 import { take } from "~/lib/utils";
+import { SECOND } from "@atproto/common";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
@@ -94,21 +95,30 @@ export async function loader(args: LoaderFunctionArgs) {
     args.context.requireLoggedInUser(),
     args.context.intl.t(),
   ]);
-  const gen = feedGenerator(
-    (opts) => agent.app.bsky.feed.getTimeline(opts),
-    agent.assertDid,
-  );
-  const res = await take(gen, 20);
-  const finders = {
-    getProfile: (did: string) =>
-      args.context.bsky.cachedFindProfile(agent, did),
-  };
-  await Promise.all(
-    res.flatMap(({ original, slice }) =>
-      slice.items.map((post, i) =>
-        hydrateFeedViewVStreamPost(post, original.items[i].record, finders),
-      ),
-    ),
+  const slices = await args.context.cache.getOrSet(
+    "timeline",
+    async () => {
+      const gen = feedGenerator(
+        (opts) => agent.app.bsky.feed.getTimeline(opts),
+        agent.assertDid,
+      );
+      const res = await take(gen, 20);
+      const finders = {
+        getProfile: (did: string) =>
+          args.context.bsky.cachedFindProfile(agent, did),
+      };
+      await Promise.all(
+        res.flatMap(({ original, slice }) =>
+          slice.items.map((post, i) =>
+            hydrateFeedViewVStreamPost(post, original.items[i].record, finders),
+          ),
+        ),
+      );
+      return res.map((r) => r.slice);
+    },
+    {
+      expiresIn: 5 * SECOND,
+    },
   );
 
   const title = t.formatMessage(
@@ -119,7 +129,7 @@ export async function loader(args: LoaderFunctionArgs) {
     { productName: PRODUCT_NAME },
   );
 
-  return { title, slices: res.map((r) => r.slice) };
+  return { title, slices };
 }
 
 export default function Index() {
