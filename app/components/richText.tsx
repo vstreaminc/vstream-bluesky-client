@@ -50,31 +50,30 @@ export function RichTextRenderer({
   ),
   richText,
 }: Props) {
-  const renderFn = (nodes: RichText[]): React.ReactNode => {
-    return (
-      <>
-        {nodes.map((node) => {
-          switch (node.$type) {
-            case "text":
-              return textRenderer(node);
-            case "paragraph":
-              return paragraphRenderer(node, renderFn);
-            case "emoji":
-              return emojiRenderer(node);
-            case "mention":
-              return mentionRenderer(node);
-            case "hashtag":
-              return hashtagRenderer(node);
-            case "link":
-              return linkRenderer(node);
-            default:
-              node satisfies never;
-              return null;
-          }
-        })}
-      </>
-    );
+  const renderNode = (node: RichText): React.ReactNode => {
+    switch (node.$type) {
+      case "text":
+        return textRenderer(node);
+      case "paragraph":
+        return paragraphRenderer(node, renderFn);
+      case "emoji":
+        return emojiRenderer(node);
+      case "mention":
+        return mentionRenderer(node);
+      case "hashtag":
+        return hashtagRenderer(node);
+      case "link":
+        return linkRenderer(node);
+      default:
+        node satisfies never;
+        return null;
+    }
   };
+
+  const renderFn = (nodes: RichText[]): React.ReactNode =>
+    nodes.map((node, idx) => (
+      <React.Fragment key={idx}>{renderNode(node)}</React.Fragment>
+    ));
 
   return renderFn(Array.isArray(richText) ? richText : [richText]);
 }
