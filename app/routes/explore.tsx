@@ -24,6 +24,7 @@ import { FeedViewVStreamPost } from "~/types";
 import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Link } from "react-aria-components";
+import { saveFeedPost } from "~/db.client";
 
 export async function loader(args: LoaderFunctionArgs) {
   const [agent, t] = await Promise.all([
@@ -94,7 +95,15 @@ export default function ExplorePage() {
   );
 }
 
-function ExploreItem({ post }: { post: FeedViewVStreamPost }) {
+const ExploreItem = React.memo(function ExploreItem({
+  post,
+}: {
+  post: FeedViewVStreamPost;
+}) {
+  React.useEffect(() => {
+    saveFeedPost(post);
+  }, [post]);
+
   if (!post.embed) {
     return <ExploreItemBasicPost post={post} />;
   }
@@ -105,12 +114,12 @@ function ExploreItem({ post }: { post: FeedViewVStreamPost }) {
   }
 
   return null;
-}
+});
 
 function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
-  const url = $path("/c/:username/p/:postId", {
-    username: post.author.handle,
-    postId: post.rkey,
+  const url = $path("/c/:handle/p/:rkey", {
+    handle: post.author.handle,
+    rkey: post.rkey,
   });
 
   return (
@@ -144,9 +153,9 @@ function ExploreItemPostImage({
   const image = post.embed.images[0];
   const width = image.aspectRatio?.width ?? 1;
   const height = image.aspectRatio?.height ?? 1;
-  const url = $path("/c/:username/p/:postId", {
-    username: post.author.handle,
-    postId: post.rkey,
+  const url = $path("/c/:handle/p/:rkey", {
+    handle: post.author.handle,
+    rkey: post.rkey,
   });
 
   return (

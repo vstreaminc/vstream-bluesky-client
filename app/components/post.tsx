@@ -16,6 +16,7 @@ import { Button, PressEvent } from "react-aria-components";
 import { $path } from "remix-routes";
 import { useNavigate } from "@remix-run/react";
 import { RichTextRenderer } from "./richText";
+import { saveFeedPost } from "~/db.client";
 
 /**
  * Main component for rendering slices in the feed
@@ -61,9 +62,9 @@ type FeedPostProps = {
 };
 export function FeedPost(props: FeedPostProps) {
   const { post } = props;
-  const url = $path("/c/:username/p/:postId", {
-    username: props.post.author.handle,
-    postId: props.post.rkey,
+  const url = $path("/c/:handle/p/:rkey", {
+    handle: props.post.author.handle,
+    rkey: props.post.rkey,
   });
   const navigate = useNavigate();
   const ref = React.useRef<HTMLElement | null>(null);
@@ -95,6 +96,11 @@ export function FeedPost(props: FeedPostProps) {
       navigate(url);
     }
   });
+
+  React.useEffect(() => {
+    // Save the post in local client DB for fast loading later
+    saveFeedPost(post);
+  }, [post]);
 
   return (
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
