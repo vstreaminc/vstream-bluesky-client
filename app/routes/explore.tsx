@@ -25,6 +25,8 @@ import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Link } from "react-aria-components";
 import { saveFeedPost } from "~/db.client";
+import { useImageShadows } from "~/hooks/useImgShadow";
+import { SECOND } from "@atproto/common";
 
 export async function loader(args: LoaderFunctionArgs) {
   const [agent, t] = await Promise.all([
@@ -43,23 +45,32 @@ export async function loader(args: LoaderFunctionArgs) {
       "Discover new and interesting posts from artists and creators",
     description: "Description for the explore page of website",
   });
-  const gen = exploreGenerator((opts) =>
-    agent.app.bsky.feed.getFeed({
-      ...opts,
-      feed: DISCOVER_FEED_URI,
-    }),
+  const posts = await args.context.cache.getOrSet(
+    "explorePosts",
+    async () => {
+      const gen = exploreGenerator((opts) =>
+        agent.app.bsky.feed.getFeed({
+          ...opts,
+          feed: DISCOVER_FEED_URI,
+        }),
+      );
+      const res = await take(gen, 20);
+      const finders = {
+        getProfile: (did: string) =>
+          args.context.bsky.cachedFindProfile(agent, did),
+      };
+      await Promise.all(
+        res.map(({ original, post }) =>
+          hydrateFeedViewVStreamPost(post, original.items[0].record, finders),
+        ),
+      );
+      return res.map((res) => res.post);
+    },
+    {
+      expiresIn: 10 * SECOND,
+      staleWhileRevalidate: 50 * SECOND,
+    },
   );
-  const res = await take(gen, 20);
-  const finders = {
-    getProfile: (did: string) =>
-      args.context.bsky.cachedFindProfile(agent, did),
-  };
-  await Promise.all(
-    res.map(({ original, post }) =>
-      hydrateFeedViewVStreamPost(post, original.items[0].record, finders),
-    ),
-  );
-  const posts = res.map((res) => res.post);
 
   return { title, description, posts };
 }
@@ -150,9 +161,11 @@ function ExploreItemPostImage({
     embed: NonNullable<FeedViewVStreamPost["embed"]>;
   };
 }) {
+  const [getShadow] = useImageShadows();
   const image = post.embed.images[0];
-  const width = image.aspectRatio?.width ?? 1;
-  const height = image.aspectRatio?.height ?? 1;
+  const shadow = getShadow(image.fullsize);
+  const width = shadow.width ?? image.aspectRatio?.width ?? 1;
+  const height = shadow.height ?? image.aspectRatio?.height ?? 1;
   const url = $path("/c/:handle/p/:rkey", {
     handle: post.author.handle,
     rkey: post.rkey,
@@ -267,7 +280,6 @@ function useIndirectLink<T extends HTMLElement>(url: string) {
       // The target isn't the black overlay behind modals
       !event.target.closest(".fixed.inset-0")
     ) {
-      console.log("GOT HERE", url);
       // If we click a post inside a quote, don't bubble up to the wider
       // quoted post
       event.stopPropagation();
