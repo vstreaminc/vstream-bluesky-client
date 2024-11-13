@@ -56,9 +56,16 @@ export function fromRequest(
       return agent;
     };
 
-  const requestCache = createRequestCache(
-    createCache<unknown>(ctx.appDB, "request:"),
-  );
+  const requestCache: RequestContext["cache"] = memoize0(async () => {
+    const session = await ctx.session.getFromCookie(req.get("Cookie") ?? null);
+    const did = session.get("did") ?? "[guest]";
+
+    return createRequestCache(
+      // Ensure we put the current user in the cache path, as cached items will
+      // likely have per user data inside of them
+      createCache<unknown>(ctx.appDB, `request:${did}:`),
+    );
+  });
 
   const t = memoize0(async () => createIntl(await currentLocale()));
 
@@ -93,15 +100,22 @@ export function fromRequest(
       }),
   );
 
-  const cachedFindProfile: BSkyContext["cachedFindProfile"] = (agent, did) => {
-    return requestCache.getOrSet(did, () => profileLoader(agent).load(did), {
-      expiresIn: 30 * MINUTE,
-      staleWhileRevalidate: 1 * DAY,
-    });
+  const cachedFindProfile: BSkyContext["cachedFindProfile"] = async (
+    agent,
+    did,
+  ) => {
+    return (await requestCache()).getOrSet(
+      did,
+      () => profileLoader(agent).load(did),
+      {
+        expiresIn: 30 * MINUTE,
+        staleWhileRevalidate: 1 * DAY,
+      },
+    );
   };
 
-  const currentProfile: BSkyContext["currentProfile"] = (agent) => {
-    return requestCache.getOrSet(
+  const currentProfile: BSkyContext["currentProfile"] = async (agent) => {
+    return (await requestCache()).getOrSet(
       agent.assertDid,
       () => profileLoader(agent).load(agent.assertDid),
       { expiresIn: 30 * MINUTE, staleWhileRevalidate: 1 * DAY },
@@ -131,7 +145,7 @@ export function fromRequest(
  */
 export type RequestContext = {
   bsky: BSkyContext;
-  cache: Cache<unknown>;
+  cache: () => Promise<Cache<unknown>>;
   intl: IntlContext;
   currentLocale: () => Promise<SupportedLocale>;
   maybeLoggedInUser: () => Promise<Agent | null>;

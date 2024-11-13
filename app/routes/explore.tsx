@@ -44,7 +44,9 @@ export async function loader(args: LoaderFunctionArgs) {
       "Discover new and interesting posts from artists and creators",
     description: "Description for the explore page of website",
   });
-  const posts = await args.context.cache.getOrSet(
+  const posts = await (
+    await args.context.cache()
+  ).getOrSet(
     "explorePosts",
     async () => {
       const gen = exploreGenerator((opts) =>

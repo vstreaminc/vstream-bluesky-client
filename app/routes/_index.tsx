@@ -5,13 +5,13 @@ import type {
 } from "@remix-run/node";
 import type { Organization, WithContext } from "schema-dts";
 import { useLoaderData } from "@remix-run/react";
+import { SECOND } from "@atproto/common";
 import { MainLayout } from "~/components/mainLayout";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
 import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { FeedSlice } from "~/components/post";
 import { take } from "~/lib/utils";
-import { SECOND } from "@atproto/common";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
@@ -95,7 +95,9 @@ export async function loader(args: LoaderFunctionArgs) {
     args.context.requireLoggedInUser(),
     args.context.intl.t(),
   ]);
-  const slices = await args.context.cache.getOrSet(
+  const slices = await (
+    await args.context.cache()
+  ).getOrSet(
     "timeline",
     async () => {
       const gen = feedGenerator(
