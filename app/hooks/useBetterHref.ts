@@ -1,4 +1,4 @@
-import { To, useHref } from "react-router-dom";
+import { type To, useHref } from "react-router-dom";
 
 /**
  * A `useHref` function that knows not to prefix routes that are no local

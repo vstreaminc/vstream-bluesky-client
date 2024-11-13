@@ -5,9 +5,9 @@
 import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { DEFAULT_LOCALE, SupportedLocale } from "./lib/locale";
+import type { IntlConfig } from "react-intl";
+import { DEFAULT_LOCALE, type SupportedLocale } from "./lib/locale";
 import { VStreamIntlProvider } from "./components/vstreamIntlProvider";
-import { IntlConfig } from "react-intl";
 
 function start() {
   const locale =

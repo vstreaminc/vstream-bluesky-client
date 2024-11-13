@@ -3,10 +3,10 @@ import stringify from "json-stable-stringify";
 import {
   createIntlCache,
   createIntl as createReactIntl,
-  IntlConfig,
-  IntlShape,
+  type IntlConfig,
+  type IntlShape,
 } from "react-intl";
-import { DEFAULT_LOCALE, SupportedLocale } from "./locale";
+import { DEFAULT_LOCALE, type SupportedLocale } from "./locale";
 import { memoizeBasic1 } from "./memoize";
 
 const intlCache = createIntlCache();

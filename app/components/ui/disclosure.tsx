@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useContext } from "react";
+import type React from "react";
+import { useContext } from "react";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import {
   UNSTABLE_Disclosure as AriaDisclosure,
   UNSTABLE_DisclosureGroup as AriaDisclosureGroup,
-  DisclosureGroupProps as AriaDisclosureGroupProps,
+  type DisclosureGroupProps as AriaDisclosureGroupProps,
   UNSTABLE_DisclosurePanel as AriaDisclosurePanel,
-  DisclosurePanelProps as AriaDisclosurePanelProps,
-  DisclosureProps as AriaDisclosureProps,
+  type DisclosurePanelProps as AriaDisclosurePanelProps,
+  type DisclosureProps as AriaDisclosureProps,
   Button,
-  ButtonProps,
+  type ButtonProps,
   composeRenderProps,
   DisclosureGroupStateContext,
   Heading,
 } from "react-aria-components";
-
 import { cn } from "~/lib/utils";
 
 export interface DisclosureProps extends AriaDisclosureProps {

@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const params = new URLSearchParams(request.url.split("?")[1]);

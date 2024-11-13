@@ -13,6 +13,7 @@ module.exports = {
     ecmaFeatures: {
       jsx: true,
     },
+    project: "tsconfig.json",
   },
   env: {
     browser: true,
@@ -110,6 +111,53 @@ module.exports = {
           {
             argsIgnorePattern: "^_",
           },
+        ],
+        // import
+        "import/order": [
+          "error",
+          {
+            "newlines-between": "never",
+            groups: [
+              "builtin",
+              "external",
+              "internal",
+              "parent",
+              "sibling",
+              "index",
+            ],
+            pathGroups: [
+              {
+                pattern: "react",
+                group: "external",
+                position: "before",
+              },
+              {
+                pattern: "~/**",
+                group: "internal",
+                position: "before",
+              },
+            ],
+          },
+        ],
+        "@typescript-eslint/consistent-type-imports": [
+          "error",
+          { fixStyle: "inline-type-imports" },
+        ],
+        "@typescript-eslint/consistent-type-exports": [
+          "error",
+          { fixMixedExportsWithInlineTypeSpecifier: true },
+        ],
+        // import { type A } from 'foo' => import type { A } from 'foo'
+        "@typescript-eslint/no-import-type-side-effects": "error",
+      },
+    },
+
+    {
+      files: ["*.d.ts"],
+      rules: {
+        "@typescript-eslint/consistent-type-imports": [
+          "error",
+          { fixStyle: "inline-type-imports", disallowTypeAnnotations: false },
         ],
       },
     },

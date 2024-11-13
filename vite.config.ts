@@ -1,13 +1,13 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import DataLoader from "dataloader";
-import babel, { PluginItem } from "@babel/core";
+import babel, { type PluginItem } from "@babel/core";
 import stringify from "json-stable-stringify";
 import fg from "fast-glob";
 import { vitePlugin as remix } from "@remix-run/dev";
 import optimizeLocales from "@react-aria/optimize-locales-plugin";
 import { compile, extract } from "@formatjs/cli-lib";
-import { defineConfig, Plugin } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { remixRoutes } from "remix-routes/vite";
 import esbuild from "esbuild";

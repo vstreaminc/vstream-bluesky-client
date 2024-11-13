@@ -1,6 +1,6 @@
 import { useRouteLoaderData } from "@remix-run/react";
-import { loader } from "~/root";
-import { ProfileViewVStreamSimple } from "~/types";
+import type { loader } from "~/root";
+import type { ProfileViewVStreamSimple } from "~/types";
 
 export function useViewer(): ProfileViewVStreamSimple | null {
   const data = useRouteLoaderData<typeof loader>("root");

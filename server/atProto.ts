@@ -1,12 +1,12 @@
 import {
-  NodeSavedState,
-  NodeSavedSession,
+  type NodeSavedState,
+  type NodeSavedSession,
   NodeOAuthClient,
-  NodeOAuthClientOptions,
+  type NodeOAuthClientOptions,
 } from "@atproto/oauth-client-node";
-import { ServerConfig } from "./config";
+import type { ServerConfig } from "./config";
 import { createCache } from "./cache";
-import { Database } from "./db";
+import type { Database } from "./db";
 
 const REQUESTED_SCOPES = ["atproto", "transition:generic"].join(" ");
 

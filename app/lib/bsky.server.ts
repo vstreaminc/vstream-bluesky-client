@@ -1,7 +1,7 @@
 import {
   AppBskyEmbedImages,
   AppBskyFeedDefs,
-  AppBskyFeedPost,
+  type AppBskyFeedPost,
   AtUri,
   RichText as AtProtoRichText,
 } from "@atproto/api";
@@ -17,7 +17,7 @@ import type {
   LinkNode,
   MentionNode,
 } from "~/types";
-import { FeedTuner, FeedViewPostsSlice } from "./feedTuner";
+import { FeedTuner, type FeedViewPostsSlice } from "./feedTuner";
 import { omit } from "./utils";
 
 export const DISCOVER_FEED_URI =

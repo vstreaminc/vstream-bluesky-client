@@ -1,10 +1,10 @@
-import http from "http";
+import type http from "http";
 import events from "events";
 import { createRequestHandler } from "@remix-run/express";
 import compression from "compression";
 import express from "express";
-import { createHttpTerminator, HttpTerminator } from "http-terminator";
-import { ServerConfig } from "./config";
+import { createHttpTerminator, type HttpTerminator } from "http-terminator";
+import type { ServerConfig } from "./config";
 import * as AppContext from "./context/appContext";
 import * as RequestContext from "./context/requestContext";
 import { migrateToLatest } from "./db";

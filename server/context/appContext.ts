@@ -1,9 +1,9 @@
 import { JoseKey } from "@atproto/jwk-jose";
-import { NodeOAuthClient } from "@atproto/oauth-client-node";
+import type { NodeOAuthClient } from "@atproto/oauth-client-node";
 import { createClient as createAtProtoClient } from "../atProto";
-import { ServerConfig } from "../config";
-import { createDB, Database } from "../db";
-import { createSession, SessionAPI } from "../session";
+import type { ServerConfig } from "../config";
+import { createDB, type Database } from "../db";
+import { createSession, type SessionAPI } from "../session";
 
 export async function fromConfig(cfg: ServerConfig): Promise<AppContext> {
   const appDB = createDB(cfg);

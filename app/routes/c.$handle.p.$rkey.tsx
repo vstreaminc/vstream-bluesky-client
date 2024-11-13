@@ -1,8 +1,8 @@
-import { AppBskyFeedDefs, AppBskyFeedPost } from "@atproto/api";
-import { LoaderFunctionArgs, redirect, SerializeFrom } from "@remix-run/node";
+import { AppBskyFeedDefs, type AppBskyFeedPost } from "@atproto/api";
+import { type LoaderFunctionArgs, redirect, type SerializeFrom } from "@remix-run/node";
 import {
   Await,
-  ClientLoaderFunctionArgs,
+  type ClientLoaderFunctionArgs,
   useLoaderData,
 } from "@remix-run/react";
 import { Suspense } from "react";

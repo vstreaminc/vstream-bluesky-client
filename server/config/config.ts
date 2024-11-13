@@ -1,5 +1,5 @@
-import { ServerEnvironment } from "./env";
 import { MINUTE } from "@atproto/common";
+import type { ServerEnvironment } from "./env";
 
 export const envToCfg = (env: ServerEnvironment): ServerConfig => {
   const port = env.port ?? 3000;

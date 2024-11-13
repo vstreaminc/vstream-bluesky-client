@@ -1,18 +1,18 @@
-import express from "express";
+import type express from "express";
 import { redirect } from "@remix-run/node";
 import { Agent } from "@atproto/api";
 import { DAY, MINUTE } from "@atproto/common";
-import { IntlShape } from "react-intl";
+import type { IntlShape } from "react-intl";
+import DataLoader from "dataloader";
 import type { ProfileViewVStreamSimple } from "~/types";
-import { SupportedLocale } from "~/lib/locale";
+import type { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
 import { memoize0, memoizeObject1 } from "~/lib/memoize";
-import { ServerConfig } from "../config";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
-import { Cache, createCache, createRequestCache } from "../cache";
 import { extractCurrentLocale } from "../locale";
-import { AppContext } from "./appContext";
-import DataLoader from "dataloader";
+import { type Cache, createCache, createRequestCache } from "../cache";
+import type { ServerConfig } from "../config";
+import type { AppContext } from "./appContext";
 
 export function fromRequest(
   req: express.Request,

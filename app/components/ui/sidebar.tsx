@@ -4,7 +4,7 @@ import * as React from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import { Slot } from "@radix-ui/react-slot";
 import { ViewVerticalIcon } from "@radix-ui/react-icons";
-import { VariantProps, cva } from "class-variance-authority";
+import { type VariantProps, cva } from "class-variance-authority";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";

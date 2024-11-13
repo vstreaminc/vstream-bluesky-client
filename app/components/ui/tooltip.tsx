@@ -4,7 +4,6 @@ import {
   composeRenderProps,
   type TooltipProps as AriaTooltipProps,
 } from "react-aria-components";
-
 import { cn } from "~/lib/utils";
 
 const TooltipTrigger = AriaTooltipTrigger;

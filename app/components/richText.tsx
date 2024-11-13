@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link } from "react-aria-components";
 import type {
   EmojiNode,
   HashtagNode,
@@ -8,7 +9,6 @@ import type {
   RichText,
   TextNode,
 } from "~/types";
-import { Link } from "react-aria-components";
 
 type Props = {
   textRenderer?: (node: TextNode) => React.ReactNode;

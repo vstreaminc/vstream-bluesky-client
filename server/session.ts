@@ -1,7 +1,7 @@
 import { createCookieSessionStorage } from "@remix-run/node";
 import { DAY, SECOND } from "@atproto/common";
-import { SupportedLocale } from "~/lib/locale";
-import { ServerConfig } from "./config";
+import type { SupportedLocale } from "~/lib/locale";
+import type { ServerConfig } from "./config";
 
 type SessionData = {
   did: string;

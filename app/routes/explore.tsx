@@ -1,5 +1,5 @@
 import * as React from "react";
-import {
+import type {
   LoaderFunctionArgs,
   MetaDescriptor,
   MetaFunction,
@@ -7,6 +7,8 @@ import {
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import useEvent from "react-use-event-hook";
 import { $path } from "remix-routes";
+import { Link } from "react-aria-components";
+import { SECOND } from "@atproto/common";
 import { MainLayout } from "~/components/mainLayout";
 import {
   FeedPostContentText,
@@ -20,13 +22,11 @@ import {
 } from "~/lib/bsky.server";
 import { PRODUCT_NAME } from "~/lib/constants";
 import { BooleanFilter, cn, take } from "~/lib/utils";
-import { FeedViewVStreamPost } from "~/types";
+import type { FeedViewVStreamPost } from "~/types";
 import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
-import { Link } from "react-aria-components";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
-import { SECOND } from "@atproto/common";
 
 export async function loader(args: LoaderFunctionArgs) {
   const [agent, t] = await Promise.all([

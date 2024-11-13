@@ -1,5 +1,5 @@
 import DataLoader from "dataloader";
-import { Database, KVStore } from "./db";
+import type { Database, KVStore } from "./db";
 
 function isExpired(obj: KVStore): obj is KVStore & { expires_at: number } {
   if (!obj.expires_at) return false;

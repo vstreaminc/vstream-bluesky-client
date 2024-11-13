@@ -3,9 +3,9 @@ import { parseAcceptLanguage } from "intl-parse-accept-language";
 import {
   DEFAULT_LOCALE,
   isSupportedLocale,
-  SupportedLocale,
+  type SupportedLocale,
 } from "~/lib/locale";
-import { AppContext } from "./context/appContext";
+import type { AppContext } from "./context/appContext";
 
 export async function extractCurrentLocale(
   request: express.Request | Request,

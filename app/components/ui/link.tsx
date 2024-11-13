@@ -6,15 +6,15 @@ import type {
   TouchEventHandler,
 } from "react";
 import * as React from "react";
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import {
   Link as AriaLink,
-  LinkProps as AriaLinkProps,
+  type LinkProps as AriaLinkProps,
   composeRenderProps,
 } from "react-aria-components";
+import { PrefetchPageLinks } from "@remix-run/react";
 import { cn } from "~/lib/utils";
 import { buttonVariants } from "./button";
-import { PrefetchPageLinks } from "@remix-run/react";
 
 /**
  * Defines the prefetching behavior of the link:

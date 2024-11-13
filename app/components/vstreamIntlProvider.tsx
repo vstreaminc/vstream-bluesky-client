@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IntlProvider } from "react-intl";
-import { DEFAULT_LOCALE, SupportedLocale } from "~/lib/locale";
+import { DEFAULT_LOCALE, type SupportedLocale } from "~/lib/locale";
 
 export const VStreamLocaleContext = React.createContext<{
   locale: SupportedLocale;
