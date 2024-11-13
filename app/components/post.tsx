@@ -17,6 +17,7 @@ import { $path } from "remix-routes";
 import { useNavigate } from "@remix-run/react";
 import { RichTextRenderer } from "./richText";
 import { saveFeedPost } from "~/db.client";
+import { useImageShadows } from "~/hooks/useImgShadow";
 
 /**
  * Main component for rendering slices in the feed
@@ -225,15 +226,19 @@ export function FeedPostContentText({
 }
 
 export function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
+  const [getExtraInfo] = useImageShadows();
   if (!post.embed) return null;
 
-  const images = post.embed.images.map((i) => ({
-    ...i,
-    id: i.fullsize,
-    width: i.aspectRatio?.width ?? 1,
-    height: i.aspectRatio?.height ?? 1,
-    aspectRatio: (i.aspectRatio?.width ?? 1) / (i.aspectRatio?.height ?? 1),
-  }));
+  const images = post.embed.images.map((i) => {
+    const img = {
+      ...i,
+      id: i.fullsize,
+      width: i.aspectRatio?.width,
+      height: i.aspectRatio?.height,
+      ...getExtraInfo(i.fullsize),
+    };
+    return { ...img, aspectRatio: (img.width ?? 1) / (img.height ?? 1) };
+  });
 
   return (
     <div className="mt-2">
@@ -298,8 +303,8 @@ export function PostMediaImage(props: {
   thumbSrc: string;
   fullsizeSrc: string;
   alt?: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   thumbnail?: boolean;
   noUpscale?: boolean;
   onPress?: (e: PressEvent) => void;
@@ -309,6 +314,7 @@ export function PostMediaImage(props: {
   // as it loads in, which matches expected browser behavior. This improves user experience on slow connections
   // where the images may load faster than the javascript.
   const hydrated = useHydrated();
+  const [, updateImageDims] = useImageShadows();
 
   // Track the state of the primary image and whether to show it
   // We always want to prefer the primary image if it's set and fully loaded
@@ -319,6 +325,12 @@ export function PostMediaImage(props: {
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const onMount = useEvent((img: HTMLImageElement | null) => {
     if (img?.complete) {
+      if (props.width === undefined || props.height === undefined) {
+        updateImageDims(props.fullsizeSrc, {
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        });
+      }
       setLoaded(true);
     }
     imgRef.current = img;
@@ -370,8 +382,13 @@ export function PostMediaImage(props: {
   // Use props.width and parse the image URLs to determine the maximum native resolution of the biggest image
   // We then use this in the styling to ensure we don't upscale the image if `props.noUpscale` is set
   const dpr = useDevicePixelRatio();
-  const maxWidth = props.width / dpr;
-  const maxHeight = (maxWidth / props.width) * props.height;
+  const maxWidth = props.width !== undefined ? props.width / dpr : undefined;
+  const maxHeight =
+    maxWidth !== undefined &&
+    props.width !== undefined &&
+    props.height !== undefined
+      ? (maxWidth / props.width) * props.height
+      : undefined;
 
   // Track the aspect ratio of the container so we know whether to scale based on width or height
   const dim = useDimensions();
@@ -379,6 +396,7 @@ export function PostMediaImage(props: {
     dim.observe(div ?? undefined);
   });
   const primaryDimension = React.useMemo(() => {
+    if (props.width === undefined || props.height === undefined) return "width";
     const containerAR = dim.width / (dim.height || 1);
     const imageAR = props.width / props.height;
     return containerAR > imageAR ? ("height" as const) : ("width" as const);
@@ -467,8 +485,8 @@ export function PostMediaImage(props: {
 function PostMediaImagesModal(props: {
   images: {
     id: string;
-    width: number;
-    height: number;
+    width?: number;
+    height?: number;
     aspectRatio: number;
     thumb: string;
     fullsize: string;

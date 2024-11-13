@@ -37,6 +37,7 @@ export function ImageMosaic<T extends ImageMosaicItem>({
     () => deferredItems.map((i) => i.aspectRatio),
     [deferredItems],
   );
+  console.log(aspectRatios);
   const grid = useMemo(
     () => imageMosaicLayout(aspectRatios, gapPercentage),
     // Using JSON.stringify is a hack to minimize recomputations by comparing values instead of array pointers
