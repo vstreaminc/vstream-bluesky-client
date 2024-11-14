@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import * as React from "react";
 import { Button } from "react-aria-components";
 import { useHotkeys as useReactHotKeys } from "react-hotkeys-hook";
-import useEvent from "react-use-event-hook";
+import { useEvent } from "react-use-event-hook";
 import { cn } from "~/lib/utils";
 
 /**

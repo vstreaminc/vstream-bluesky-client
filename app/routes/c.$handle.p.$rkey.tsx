@@ -1,5 +1,9 @@
 import { AppBskyFeedDefs, type AppBskyFeedPost } from "@atproto/api";
-import { type LoaderFunctionArgs, redirect, type SerializeFrom } from "@remix-run/node";
+import {
+  type LoaderFunctionArgs,
+  redirect,
+  type SerializeFrom,
+} from "@remix-run/node";
 import {
   Await,
   type ClientLoaderFunctionArgs,
@@ -26,7 +30,7 @@ const REPLY_TREE_DEPTH = 10;
 
 export async function loader(args: LoaderFunctionArgs) {
   const { handle, rkey } = args.params;
-  if (!handle!.startsWith("@")) {
+  if (!handle!.startsWith("@") && !handle!.startsWith("did:")) {
     const searchParams = new URLSearchParams(args.request.url.split("?")[1]);
     throw redirect(
       $path(

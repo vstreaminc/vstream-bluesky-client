@@ -1,9 +1,8 @@
 import * as React from "react";
 import { FormattedMessage } from "react-intl";
 import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
-import useEvent from "react-use-event-hook";
+import { useEvent } from "react-use-event-hook";
 import { Button, type PressEvent } from "react-aria-components";
-import { $path } from "remix-routes";
 import { useNavigate } from "@remix-run/react";
 import type { FeedViewVStreamPost, FeedViewVStreamPostSlice } from "~/types";
 import { cn } from "~/lib/utils";
@@ -15,6 +14,7 @@ import { useDevicePixelRatio } from "~/hooks/useDevicePixelRatio";
 import { useDimensions } from "~/hooks/useDimensions";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
+import { linkToPost } from "~/lib/linkHelpers";
 import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
@@ -63,10 +63,7 @@ type FeedPostProps = {
 };
 export function FeedPost(props: FeedPostProps) {
   const { post } = props;
-  const url = $path("/c/:handle/p/:rkey", {
-    handle: props.post.author.handle,
-    rkey: props.post.rkey,
-  });
+  const url = linkToPost(props.post);
   const navigate = useNavigate();
   const ref = React.useRef<HTMLElement | null>(null);
   const onClick = useEvent<React.MouseEventHandler<HTMLElement>>((event) => {

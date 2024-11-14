@@ -5,8 +5,7 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import useEvent from "react-use-event-hook";
-import { $path } from "remix-routes";
+import { useEvent } from "react-use-event-hook";
 import { SECOND } from "@atproto/common";
 import { MainLayout } from "~/components/mainLayout";
 import {
@@ -26,6 +25,7 @@ import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
+import { linkToPost } from "~/lib/linkHelpers";
 
 export async function loader(args: LoaderFunctionArgs) {
   const [agent, t] = await Promise.all([
@@ -129,10 +129,7 @@ const ExploreItem = React.memo(function ExploreItem({
 });
 
 function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
-  const url = $path("/c/:handle/p/:rkey", {
-    handle: post.author.handle,
-    rkey: post.rkey,
-  });
+  const url = linkToPost(post);
   const indirectLinkProps = useIndirectLink<HTMLDivElement>(url);
 
   return (
@@ -168,10 +165,7 @@ function ExploreItemPostImage({
   const shadow = getShadow(image.fullsize);
   const width = shadow.width ?? image.aspectRatio?.width ?? 1;
   const height = shadow.height ?? image.aspectRatio?.height ?? 1;
-  const url = $path("/c/:handle/p/:rkey", {
-    handle: post.author.handle,
-    rkey: post.rkey,
-  });
+  const url = linkToPost(post);
 
   return (
     <OverlayItem

@@ -1,5 +1,5 @@
 import * as React from "react";
-import useEvent from "react-use-event-hook";
+import { useEvent } from "react-use-event-hook";
 
 export function useDimensions() {
   const [state, setState] = React.useState({
