@@ -2,7 +2,7 @@ import * as React from "react";
 import { FormattedMessage } from "react-intl";
 import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
 import { useEvent } from "react-use-event-hook";
-import { Button, type PressEvent } from "react-aria-components";
+import { Button, Link, type PressEvent } from "react-aria-components";
 import { useNavigate } from "@remix-run/react";
 import type { FeedViewVStreamPost, FeedViewVStreamPostSlice } from "~/types";
 import { cn } from "~/lib/utils";
@@ -14,7 +14,7 @@ import { useDevicePixelRatio } from "~/hooks/useDevicePixelRatio";
 import { useDimensions } from "~/hooks/useDimensions";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
-import { linkToPost } from "~/lib/linkHelpers";
+import { linkToProfile, linkToPost } from "~/lib/linkHelpers";
 import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
@@ -181,8 +181,19 @@ function FeedPostHeader({ post }: { post: FeedViewVStreamPost }) {
   return (
     <>
       <div className="truncate pb-0.5">
-        <span className="font-sm">{post.author.displayName}</span>&nbsp;
-        <span className="text-muted-foreground">{post.author.handle}</span>
+        <Link
+          href={linkToProfile(post.author)}
+          className="font-sm cursor-pointer"
+        >
+          {post.author.displayName}
+        </Link>
+        &nbsp;
+        <Link
+          href={linkToProfile(post.author)}
+          className="cursor-pointer text-muted-foreground"
+        >
+          {post.author.handle}
+        </Link>
       </div>
       <div className="text-sm text-muted-foreground">
         <RelativeTime value={post.createdAt} />

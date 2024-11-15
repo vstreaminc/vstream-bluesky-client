@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link } from "react-aria-components";
+import { linkToProfile } from "~/lib/linkHelpers";
 import type {
   EmojiNode,
   HashtagNode,
@@ -29,9 +30,12 @@ export function RichTextRenderer({
     throw new Error("Not implemented");
   },
   mentionRenderer = (node) => (
-    <span className="cursor-pointer text-blue-400 hover:underline">
+    <Link
+      href={linkToProfile(node)}
+      className="cursor-pointer text-blue-400 hover:underline"
+    >
       {node.handle}
-    </span>
+    </Link>
   ),
   hashtagRenderer = (node) => (
     <span className="cursor-pointer text-blue-400 hover:underline">

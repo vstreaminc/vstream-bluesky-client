@@ -10,6 +10,7 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { Suspense } from "react";
+import { Link } from "react-aria-components";
 import { FormattedDate, FormattedTime } from "react-intl";
 import { $path } from "remix-routes";
 import { MainLayout } from "~/components/mainLayout";
@@ -18,13 +19,14 @@ import {
   FeedPostControls,
   FeedPostEmbed,
 } from "~/components/post";
-import { Avatar, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { loadFeedPost } from "~/db.client";
 import {
   bSkyPostFeedViewPostToVStreamPostItem,
   hydrateFeedViewVStreamPost,
   makeRecordUri,
 } from "~/lib/bsky.server";
+import { linkToProfile } from "~/lib/linkHelpers";
 
 const REPLY_TREE_DEPTH = 10;
 
@@ -103,16 +105,27 @@ export default function PostPageScreen() {
 }
 
 export function PostPage({ thread }: SerializeFrom<typeof loader>) {
+  const profileLink = linkToProfile(thread.post.author);
+
   return (
     <div className="mx-auto w-full max-w-[37.5rem]">
       <div className="flex w-full items-center gap-4">
-        <Avatar className="size-16">
-          <AvatarImage src={thread.post.author.avatar} />
-        </Avatar>
+        <Link href={profileLink} className="cursor-pointer">
+          <Avatar className="size-16">
+            <AvatarImage src={thread.post.author.avatar} />
+            <AvatarFallback>@</AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="flex-grow">
-          <h2 className="text-lg">{thread.post.author.displayName}</h2>
+          <h2 className="text-lg">
+            <Link href={profileLink} className="cursor-pointer">
+              {thread.post.author.displayName}
+            </Link>
+          </h2>
           <div className="text-muted-foreground">
-            {thread.post.author.handle}
+            <Link href={profileLink} className="cursor-pointer">
+              {thread.post.author.handle}
+            </Link>
           </div>
         </div>
       </div>
