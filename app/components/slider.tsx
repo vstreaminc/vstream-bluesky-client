@@ -30,6 +30,15 @@ export function Slider({
   const [isScrolling, setIsScrolling] = React.useState(false);
 
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const onScrollMount = React.useCallback(
+    (e: HTMLDivElement | null) => {
+      scrollRef.current = e;
+      e?.children
+        .item(2 * (startIndex ?? 0))
+        ?.scrollIntoView({ behavior: "instant" });
+    },
+    [startIndex],
+  );
   const scrollTo = useEvent((idx: number) => {
     scrollRef.current?.children.item(2 * idx)?.scrollIntoView({
       behavior: "smooth",
@@ -83,7 +92,7 @@ export function Slider({
   return (
     <div className={cn("relative flex flex-col", containerClassName)}>
       <div
-        ref={scrollRef}
+        ref={onScrollMount}
         onScroll={onScroll}
         className={cn(
           "scrollbar-hide grid min-h-0 min-w-0 flex-1 snap-x snap-mandatory auto-cols-[100%] grid-flow-col grid-rows-[1fr,min-content] overflow-x-scroll scroll-smooth",
