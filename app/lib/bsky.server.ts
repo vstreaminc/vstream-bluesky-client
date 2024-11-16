@@ -6,11 +6,11 @@ import {
   RichText as AtProtoRichText,
 } from "@atproto/api";
 import type {
-  FeedViewPost,
-  ProfileViewDetailed,
-  ProfileViewVStreamSimple,
-  FeedViewVStreamPostSlice,
-  FeedViewVStreamPost,
+  BSkyFeedViewPost,
+  BskyProfileViewDetailed,
+  VStreamProfileViewSimple,
+  VStreamFeedViewPostSlice,
+  VStreamFeedViewPost,
   RichText,
   TextNode,
   HashtagNode,
@@ -61,8 +61,8 @@ export function formatDisplayName(str: string | undefined): string {
 }
 
 export function profiledDetailedToSimple(
-  profile: ProfileViewDetailed,
-): ProfileViewVStreamSimple {
+  profile: BskyProfileViewDetailed,
+): VStreamProfileViewSimple {
   return {
     avatar: profile.avatar,
     banner: profile.banner,
@@ -83,7 +83,7 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
     post: AppBskyFeedDefs.PostView;
     record: AppBskyFeedPost.Record;
   },
->(item: T): FeedViewVStreamPost {
+>(item: T): VStreamFeedViewPost {
   return {
     _reactKey: item.post.uri,
     uri: item.post.uri,
@@ -116,7 +116,7 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
 
 function bSkySliceToVStreamSlice(
   slice: FeedViewPostsSlice,
-): FeedViewVStreamPostSlice {
+): VStreamFeedViewPostSlice {
   return {
     _reactKey: slice._reactKey,
     isIncompleteThread: slice.isIncompleteThread,
@@ -142,12 +142,12 @@ export async function* feedGenerator(
   fn: (options?: {
     cursor?: string;
     limit?: number;
-  }) => Promise<{ data: { cursor?: string; feed: FeedViewPost[] } }>,
+  }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
   userDid: string,
   initalCusor?: string,
 ): AsyncIterableIterator<{
   original: FeedViewPostsSlice;
-  slice: FeedViewVStreamPostSlice;
+  slice: VStreamFeedViewPostSlice;
 }> {
   const tuner = new FeedTuner([
     FeedTuner.removeOrphans,
@@ -172,11 +172,11 @@ export async function* exploreGenerator(
   fn: (options?: {
     cursor?: string;
     limit?: number;
-  }) => Promise<{ data: { cursor?: string; feed: FeedViewPost[] } }>,
+  }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
   initalCusor?: string,
 ): AsyncIterableIterator<{
   original: FeedViewPostsSlice;
-  post: FeedViewVStreamPost;
+  post: VStreamFeedViewPost;
 }> {
   const tuner = new FeedTuner([
     FeedTuner.dedupThreads,
@@ -237,12 +237,12 @@ export async function* exploreGenerator(
 }
 
 export async function hydrateFeedViewVStreamPost(
-  post: FeedViewVStreamPost,
+  post: VStreamFeedViewPost,
   record: AppBskyFeedPost.Record,
   finders: {
-    getProfile: (did: string) => Promise<ProfileViewVStreamSimple>;
+    getProfile: (did: string) => Promise<VStreamProfileViewSimple>;
   },
-): Promise<FeedViewVStreamPost> {
+): Promise<VStreamFeedViewPost> {
   // Already hydrated, return
   if (post.richText.length > 0) return post;
 

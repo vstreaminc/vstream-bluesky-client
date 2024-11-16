@@ -4,7 +4,7 @@ import { Agent } from "@atproto/api";
 import { DAY, MINUTE } from "@atproto/common";
 import type { IntlShape } from "react-intl";
 import DataLoader from "dataloader";
-import type { ProfileViewVStreamSimple } from "~/types";
+import type { VStreamProfileViewSimple } from "~/types";
 import type { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
 import { memoize0, memoizeObject1 } from "~/lib/memoize";
@@ -153,12 +153,12 @@ export type RequestContext = {
 };
 
 export type BSkyContext = {
-  profileLoader: (agent: Agent) => DataLoader<string, ProfileViewVStreamSimple>;
+  profileLoader: (agent: Agent) => DataLoader<string, VStreamProfileViewSimple>;
   cachedFindProfile: (
     agent: Agent,
     did: string,
-  ) => Promise<ProfileViewVStreamSimple>;
-  currentProfile: (agent: Agent) => Promise<ProfileViewVStreamSimple>;
+  ) => Promise<VStreamProfileViewSimple>;
+  currentProfile: (agent: Agent) => Promise<VStreamProfileViewSimple>;
 };
 
 export type IntlContext = {

@@ -4,7 +4,7 @@ import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
 import { useEvent } from "react-use-event-hook";
 import { Button, Link, type PressEvent } from "react-aria-components";
 import { useNavigate } from "@remix-run/react";
-import type { FeedViewVStreamPost, FeedViewVStreamPostSlice } from "~/types";
+import type { VStreamFeedViewPost, VStreamFeedViewPostSlice } from "~/types";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { RelativeTime } from "~/components/relativeTime";
@@ -26,7 +26,7 @@ export const FeedSlice = React.memo(function FeedSlice({
   slice,
   hideTopBorder,
 }: {
-  slice: FeedViewVStreamPostSlice;
+  slice: VStreamFeedViewPostSlice;
   hideTopBorder?: boolean;
 }) {
   if (slice.isIncompleteThread && slice.items.length >= 3) {
@@ -53,13 +53,13 @@ export const FeedSlice = React.memo(function FeedSlice({
 });
 
 type FeedPostProps = {
-  post: FeedViewVStreamPost;
-  reason: FeedViewVStreamPostSlice["reason"];
+  post: VStreamFeedViewPost;
+  reason: VStreamFeedViewPostSlice["reason"];
   isThreadParent: boolean;
   isThreadChild: boolean;
   isThreadLastChild: boolean;
   hideTopBorder?: boolean;
-  rootPost: FeedViewVStreamPost;
+  rootPost: VStreamFeedViewPost;
 };
 export function FeedPost(props: FeedPostProps) {
   const { post } = props;
@@ -149,7 +149,7 @@ function FeedPostEyebrow({
   reason,
 }: {
   isThreadChild: boolean;
-  reason: FeedViewVStreamPostSlice["reason"];
+  reason: VStreamFeedViewPostSlice["reason"];
 }) {
   return (
     <div className="flex gap-4">
@@ -177,7 +177,7 @@ function FeedPostEyebrow({
   );
 }
 
-function FeedPostHeader({ post }: { post: FeedViewVStreamPost }) {
+function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
   return (
     <>
       <div className="truncate pb-0.5">
@@ -202,7 +202,7 @@ function FeedPostHeader({ post }: { post: FeedViewVStreamPost }) {
   );
 }
 
-function FeedPostContent({ post }: { post: FeedViewVStreamPost }) {
+function FeedPostContent({ post }: { post: VStreamFeedViewPost }) {
   return (
     <div className="mt-2">
       <FeedPostContentText post={post} />
@@ -214,7 +214,7 @@ export function FeedPostContentText({
   post,
   className,
 }: {
-  post: FeedViewVStreamPost;
+  post: VStreamFeedViewPost;
   className?: string;
 }) {
   return (
@@ -233,7 +233,7 @@ export function FeedPostContentText({
   );
 }
 
-export function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
+export function FeedPostEmbed({ post }: { post: VStreamFeedViewPost }) {
   const [getExtraInfo] = useImageShadows();
   if (!post.embed) return null;
 
@@ -275,7 +275,7 @@ export function FeedPostEmbed({ post }: { post: FeedViewVStreamPost }) {
   );
 }
 
-export function FeedPostControls({ post }: { post: FeedViewVStreamPost }) {
+export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
   return (
     <div className="flex items-center justify-between pt-2">
       <div className="flex-1 items-start">

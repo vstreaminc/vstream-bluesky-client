@@ -20,7 +20,7 @@ import {
 } from "~/lib/bsky.server";
 import { PRODUCT_NAME } from "~/lib/constants";
 import { BooleanFilter, cn, take } from "~/lib/utils";
-import type { FeedViewVStreamPost } from "~/types";
+import type { VStreamFeedViewPost } from "~/types";
 import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { saveFeedPost } from "~/db.client";
@@ -110,7 +110,7 @@ export default function ExplorePage() {
 const ExploreItem = React.memo(function ExploreItem({
   post,
 }: {
-  post: FeedViewVStreamPost;
+  post: VStreamFeedViewPost;
 }) {
   React.useEffect(() => {
     saveFeedPost(post);
@@ -128,7 +128,7 @@ const ExploreItem = React.memo(function ExploreItem({
   return null;
 });
 
-function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
+function ExploreItemBasicPost({ post }: { post: VStreamFeedViewPost }) {
   const url = linkToPost(post);
   const indirectLinkProps = useIndirectLink<HTMLDivElement>(url);
 
@@ -156,8 +156,8 @@ function ExploreItemBasicPost({ post }: { post: FeedViewVStreamPost }) {
 function ExploreItemPostImage({
   post,
 }: {
-  post: FeedViewVStreamPost & {
-    embed: NonNullable<FeedViewVStreamPost["embed"]>;
+  post: VStreamFeedViewPost & {
+    embed: NonNullable<VStreamFeedViewPost["embed"]>;
   };
 }) {
   const [getShadow] = useImageShadows();
@@ -188,7 +188,7 @@ function ExploreItemPostImage({
 
 /* Internal helper components & hooks */
 function PostItem(props: {
-  post: FeedViewVStreamPost;
+  post: VStreamFeedViewPost;
   children?: React.ReactNode;
 }) {
   const { post } = props;

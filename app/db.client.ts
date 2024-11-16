@@ -1,14 +1,14 @@
-import type { FeedViewVStreamPost } from "./types";
+import type { VStreamFeedViewPost } from "./types";
 
-const postDB = new Map<string, FeedViewVStreamPost>();
+const postDB = new Map<string, VStreamFeedViewPost>();
 
-export function saveFeedPost(post: FeedViewVStreamPost): void {
+export function saveFeedPost(post: VStreamFeedViewPost): void {
   postDB.set(`${post.author.handle}:${post.rkey}`, post);
 }
 
 export function loadFeedPost(
   handle: string,
   rkey: string,
-): FeedViewVStreamPost | undefined {
+): VStreamFeedViewPost | undefined {
   return postDB.get(`${handle}:${rkey}`);
 }

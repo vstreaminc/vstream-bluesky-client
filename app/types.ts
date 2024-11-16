@@ -5,10 +5,10 @@ import type {
   AppBskyFeedPost,
 } from "@atproto/api";
 
-export type ProfileViewDetailed = AppBskyActorDefs.ProfileViewDetailed;
+export type BskyProfileViewDetailed = AppBskyActorDefs.ProfileViewDetailed;
 
-export type ProfileViewVStreamSimple = Pick<
-  ProfileViewDetailed,
+export type VStreamProfileViewSimple = Pick<
+  BskyProfileViewDetailed,
   | "avatar"
   | "banner"
   | "createdAt"
@@ -22,9 +22,9 @@ export type ProfileViewVStreamSimple = Pick<
   | "postsCount"
 >;
 
-export type FeedViewPost = AppBskyFeedDefs.FeedViewPost;
-export type PostView = AppBskyFeedDefs.PostView;
-export type PostRecord = AppBskyFeedPost.Record;
+export type BSkyFeedViewPost = AppBskyFeedDefs.FeedViewPost;
+export type BSkyPostView = AppBskyFeedDefs.PostView;
+export type BskyPostRecord = AppBskyFeedPost.Record;
 
 export type TextNode = { $type: "text"; text: string };
 export type ParagraphNode = { $type: "paragraph"; nodes: RichText[] };
@@ -55,8 +55,8 @@ export type RichText =
   | MentionNode
   | LinkNode;
 
-export type FeedViewVStreamPost = Pick<
-  FeedViewPost["post"],
+export type VStreamFeedViewPost = Pick<
+  BSkyFeedViewPost["post"],
   | "uri"
   | "cid"
   | "replyCount"
@@ -67,23 +67,23 @@ export type FeedViewVStreamPost = Pick<
   | "viewer"
 > & {
   author: Pick<
-    FeedViewPost["post"]["author"],
+    BSkyFeedViewPost["post"]["author"],
     "did" | "handle" | "displayName" | "avatar"
   > & {
     viewer?: Omit<
-      FeedViewPost["post"]["author"]["viewer"],
+      BSkyFeedViewPost["post"]["author"]["viewer"],
       "blockingByList" | "mutedByList"
     >;
   };
   rkey: string;
   embed?: AppBskyEmbedImages.View;
   _reactKey: string;
-  createdAt: PostRecord["createdAt"];
-  plainText: PostRecord["text"];
+  createdAt: BskyPostRecord["createdAt"];
+  plainText: BskyPostRecord["text"];
   richText: RichText[];
 };
 
-type ReasonRepostVStream = {
+type VStreamReasonRepost = {
   $type: "com.vstream.feed.defs#reasonRepost";
   by: Pick<
     AppBskyFeedDefs.ReasonRepost["by"],
@@ -91,9 +91,9 @@ type ReasonRepostVStream = {
   >;
 };
 
-export type FeedViewVStreamPostSlice = {
+export type VStreamFeedViewPostSlice = {
   _reactKey: string;
-  items: FeedViewVStreamPost[];
+  items: VStreamFeedViewPost[];
   isIncompleteThread: boolean;
-  reason?: ReasonRepostVStream;
+  reason?: VStreamReasonRepost;
 };
