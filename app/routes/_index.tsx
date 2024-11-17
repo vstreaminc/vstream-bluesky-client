@@ -110,13 +110,11 @@ export async function loader(args: LoaderFunctionArgs) {
           args.context.bsky.cachedFindProfile(agent, did),
       };
       await Promise.all(
-        res.flatMap(({ original, slice }) =>
-          slice.items.map((post, i) =>
-            hydrateFeedViewVStreamPost(post, original.items[i].record, finders),
-          ),
+        res.flatMap((slice) =>
+          slice.items.map((post) => hydrateFeedViewVStreamPost(post, finders)),
         ),
       );
-      return res.map((r) => r.slice);
+      return res;
     },
     {
       expiresIn: 5 * SECOND,

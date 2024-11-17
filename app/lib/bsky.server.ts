@@ -108,6 +108,7 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
       ? item.post.embed
       : undefined,
     createdAt: item.record.createdAt,
+    facets: item.record.facets,
     plainText: item.record.text,
     // TODO: Handle this
     richText: [],
@@ -145,10 +146,7 @@ export async function* feedGenerator(
   }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
   userDid: string,
   initalCusor?: string,
-): AsyncIterableIterator<{
-  original: FeedViewPostsSlice;
-  slice: VStreamFeedViewPostSlice;
-}> {
+): AsyncIterableIterator<VStreamFeedViewPostSlice> {
   const tuner = new FeedTuner([
     FeedTuner.removeOrphans,
     FeedTuner.followedRepliesOnly({ userDid }),
@@ -161,10 +159,7 @@ export async function* feedGenerator(
     cursor = res.data.cursor;
     const slices = tuner.tune(res.data.feed);
 
-    yield* slices.map((original) => ({
-      original,
-      slice: bSkySliceToVStreamSlice(original),
-    }));
+    yield* slices.map((slice) => bSkySliceToVStreamSlice(slice));
   } while (cursor);
 }
 
@@ -174,10 +169,7 @@ export async function* exploreGenerator(
     limit?: number;
   }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
   initalCusor?: string,
-): AsyncIterableIterator<{
-  original: FeedViewPostsSlice;
-  post: VStreamFeedViewPost;
-}> {
+): AsyncIterableIterator<VStreamFeedViewPost> {
   const tuner = new FeedTuner([
     FeedTuner.dedupThreads,
     FeedTuner.removeReposts,
@@ -216,19 +208,13 @@ export async function* exploreGenerator(
         case "image": {
           const slice = imagePosts.shift();
           if (!slice) continue;
-          yield {
-            original: slice,
-            post: bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]),
-          };
+          yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
           break;
         }
         case "basic": {
           const slice = basicPosts.shift();
           if (!slice) continue;
-          yield {
-            original: slice,
-            post: bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]),
-          };
+          yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
           break;
         }
       }
@@ -238,7 +224,6 @@ export async function* exploreGenerator(
 
 export async function hydrateFeedViewVStreamPost(
   post: VStreamFeedViewPost,
-  record: AppBskyFeedPost.Record,
   finders: {
     getProfile: (did: string) => Promise<VStreamProfileViewSimple>;
   },
@@ -248,8 +233,8 @@ export async function hydrateFeedViewVStreamPost(
 
   const richTextP = Array.from(
     new AtProtoRichText({
-      text: record.text,
-      facets: record.facets,
+      text: post.plainText,
+      facets: post.facets as BskyPostRecord["facets"],
     }).segments(),
   ).flatMap<RichText | Promise<RichText>>((seg) => {
     if (!seg.facet) {
@@ -286,5 +271,6 @@ export async function hydrateFeedViewVStreamPost(
   post.richText = await Promise.all(richTextP);
   // Send less bytes down by clearing out the old text
   post.plainText = "";
+  post.facets = [];
   return post;
 }

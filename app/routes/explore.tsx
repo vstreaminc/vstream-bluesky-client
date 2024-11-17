@@ -55,17 +55,15 @@ export async function loader(args: LoaderFunctionArgs) {
           feed: DISCOVER_FEED_URI,
         }),
       );
-      const res = await take(gen, 20);
+      const posts = await take(gen, 20);
       const finders = {
         getProfile: (did: string) =>
           args.context.bsky.cachedFindProfile(agent, did),
       };
       await Promise.all(
-        res.map(({ original, post }) =>
-          hydrateFeedViewVStreamPost(post, original.items[0].record, finders),
-        ),
+        posts.map((post) => hydrateFeedViewVStreamPost(post, finders)),
       );
-      return res.map((res) => res.post);
+      return posts;
     },
     {
       expiresIn: 10 * SECOND,

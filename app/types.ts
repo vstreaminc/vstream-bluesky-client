@@ -78,6 +78,11 @@ export type VStreamFeedViewPost = Pick<
   rkey: string;
   embed?: AppBskyEmbedImages.View;
   _reactKey: string;
+  /**
+   * Real type `BskyPostRecord["facets"]`. Typed as `unknown` to make remix okay
+   * Should never need to touch underlying types unless hydrating.
+   */
+  facets?: object[];
   createdAt: BskyPostRecord["createdAt"];
   plainText: BskyPostRecord["text"];
   richText: RichText[];
