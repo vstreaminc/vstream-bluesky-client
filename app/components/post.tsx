@@ -241,8 +241,6 @@ export function FeedPostEmbed({ post }: { post: VStreamFeedViewPost }) {
     const img = {
       ...i,
       id: i.fullsize,
-      width: i.aspectRatio?.width,
-      height: i.aspectRatio?.height,
       ...getExtraInfo(i.fullsize),
     };
     return { ...img, aspectRatio: (img.width ?? 1) / (img.height ?? 1) };

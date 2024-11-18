@@ -16,9 +16,12 @@ import type {
   HashtagNode,
   LinkNode,
   MentionNode,
+  VStreamPostThreadNode,
+  VStreamPostThread,
+  BskyPostRecord,
 } from "~/types";
 import { FeedTuner, type FeedViewPostsSlice } from "./feedTuner";
-import { omit } from "./utils";
+import { pick } from "./utils";
 
 export const DISCOVER_FEED_URI =
   "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot";
@@ -101,11 +104,26 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
       displayName: formatDisplayName(item.post.author.displayName),
       avatar: item.post.author.avatar,
       viewer: item.post.author.viewer
-        ? omit(item.post.author.viewer, ["mutedFromList", "bannedFromList"])
+        ? pick(item.post.author.viewer, [
+            "muted",
+            "blockedBy",
+            "blocking",
+            "following",
+            "followedBy",
+          ])
         : undefined,
     },
     embed: AppBskyEmbedImages.isView(item.post.embed)
-      ? item.post.embed
+      ? {
+          $type: "com.vstream.embed.images#view",
+          images: item.post.embed.images.map((i) => ({
+            alt: i.alt,
+            fullsize: i.fullsize,
+            height: i.aspectRatio?.height,
+            thumb: i.thumb,
+            width: i.aspectRatio?.width,
+          })),
+        }
       : undefined,
     createdAt: item.record.createdAt,
     facets: item.record.facets,

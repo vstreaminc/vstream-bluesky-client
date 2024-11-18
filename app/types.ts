@@ -5,26 +5,14 @@ import type {
   AppBskyFeedPost,
 } from "@atproto/api";
 
+///// BSky re-exports
+
 export type BskyProfileViewDetailed = AppBskyActorDefs.ProfileViewDetailed;
-
-export type VStreamProfileViewSimple = Pick<
-  BskyProfileViewDetailed,
-  | "avatar"
-  | "banner"
-  | "createdAt"
-  | "description"
-  | "did"
-  | "displayName"
-  | "followersCount"
-  | "followsCount"
-  | "handle"
-  | "indexedAt"
-  | "postsCount"
->;
-
 export type BSkyFeedViewPost = AppBskyFeedDefs.FeedViewPost;
 export type BSkyPostView = AppBskyFeedDefs.PostView;
 export type BskyPostRecord = AppBskyFeedPost.Record;
+
+///// Rich Text
 
 export type TextNode = { $type: "text"; text: string };
 export type ParagraphNode = { $type: "paragraph"; nodes: RichText[] };
@@ -55,6 +43,14 @@ export type RichText =
   | MentionNode
   | LinkNode;
 
+export type VStreamEmbedImages = {
+  $type: "com.vstream.embed.images#view";
+  images: (Pick<AppBskyEmbedImages.ViewImage, "thumb" | "fullsize" | "alt"> & {
+    width?: number;
+    height?: number;
+  })[];
+};
+
 export type VStreamFeedViewPost = Pick<
   BSkyFeedViewPost["post"],
   | "uri"
@@ -64,19 +60,27 @@ export type VStreamFeedViewPost = Pick<
   | "likeCount"
   | "quoteCount"
   | "indexedAt"
-  | "viewer"
 > & {
   author: Pick<
     BSkyFeedViewPost["post"]["author"],
     "did" | "handle" | "displayName" | "avatar"
   > & {
-    viewer?: Omit<
-      BSkyFeedViewPost["post"]["author"]["viewer"],
-      "blockingByList" | "mutedByList"
+    viewer?: Pick<
+      NonNullable<BSkyFeedViewPost["post"]["author"]["viewer"]>,
+      "muted" | "blockedBy" | "blocking" | "following" | "followedBy"
     >;
   };
+  viewer?: Pick<
+    NonNullable<BSkyFeedViewPost["post"]["viewer"]>,
+    | "repost"
+    | "like"
+    | "threadMuted"
+    | "replyDisabled"
+    | "embeddingDisabled"
+    | "pinned"
+  >;
   rkey: string;
-  embed?: AppBskyEmbedImages.View;
+  embed?: VStreamEmbedImages;
   _reactKey: string;
   /**
    * Real type `BskyPostRecord["facets"]`. Typed as `unknown` to make remix okay
@@ -88,6 +92,23 @@ export type VStreamFeedViewPost = Pick<
   richText: RichText[];
 };
 
+// VStream types
+
+export type VStreamProfileViewSimple = Pick<
+  BskyProfileViewDetailed,
+  | "avatar"
+  | "banner"
+  | "createdAt"
+  | "description"
+  | "did"
+  | "displayName"
+  | "followersCount"
+  | "followsCount"
+  | "handle"
+  | "indexedAt"
+  | "postsCount"
+>;
+
 type VStreamReasonRepost = {
   $type: "com.vstream.feed.defs#reasonRepost";
   by: Pick<
@@ -96,6 +117,12 @@ type VStreamReasonRepost = {
   >;
 };
 
+/**
+ * Posts in feeds are grouped into "slices". A slice is 1-N related posts that
+ * are threaded together in some way. Often this is to be able to show inline
+ * replies to a parent thread. If there is only 1 post in the thread, there
+ * is no threading going on.
+ */
 export type VStreamFeedViewPostSlice = {
   _reactKey: string;
   items: VStreamFeedViewPost[];
