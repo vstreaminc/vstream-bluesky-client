@@ -1,4 +1,8 @@
 {
+  "/MphzK": {
+    "defaultMessage": "{likeCount,plural,one{<b>#</b> like} other{<b>#</b> likes}}",
+    "description": "Number of likes a post has gained"
+  },
   "6QjI8l": {
     "defaultMessage": "Explore",
     "description": "Link to explore page in main navigation"
@@ -15,6 +19,10 @@
     "defaultMessage": "VStream Logo",
     "description": "SVG title for the VStream logo"
   },
+  "B94LjD": {
+    "defaultMessage": "{quoteCount,plural,one{<b>#</b> quote} other{<b>#</b> quotes}}",
+    "description": "Number of quotes a post has gained"
+  },
   "DNbuO+": {
     "defaultMessage": "OS preference",
     "description": "CTA to switch the application to the color scheme that is controled by thier operating system"
@@ -30,6 +38,10 @@
   "N47zqY": {
     "defaultMessage": "Explore | {productName}",
     "description": "Title for the explore page of website"
+  },
+  "NkkKCx": {
+    "defaultMessage": "{repostCount,plural,one{<b>#</b> repost} other{<b>#</b> reposts}}",
+    "description": "Number of reposts a post has gained"
   },
   "O5x/5l": {
     "defaultMessage": "Light mode",

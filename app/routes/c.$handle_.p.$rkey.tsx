@@ -1,4 +1,4 @@
-import { AppBskyFeedDefs, type AppBskyFeedPost } from "@atproto/api";
+import * as React from "react";
 import {
   type LoaderFunctionArgs,
   redirect,
@@ -8,27 +8,34 @@ import {
   Await,
   type ClientLoaderFunctionArgs,
   useLoaderData,
+  useNavigate,
 } from "@remix-run/react";
 import { Suspense } from "react";
 import { Link } from "react-aria-components";
-import { FormattedDate, FormattedTime } from "react-intl";
+import { FormattedDate, FormattedMessage, FormattedTime } from "react-intl";
 import { $path } from "remix-routes";
+import { useEvent } from "react-use-event-hook";
 import { MainLayout } from "~/components/mainLayout";
 import {
+  FeedPostContent,
   FeedPostContentText,
   FeedPostControls,
   FeedPostEmbed,
+  FeedPostEyebrow,
+  FeedPostHeader,
 } from "~/components/post";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { loadFeedPost } from "~/db.client";
+import { loadFeedPost, saveFeedPost } from "~/db.client";
 import {
-  bSkyPostFeedViewPostToVStreamPostItem,
+  createThreadSkeleton,
   hydrateFeedViewVStreamPost,
+  loadPostThread,
   makeRecordUri,
+  sortPostThread,
 } from "~/lib/bsky.server";
-import { linkToProfile } from "~/lib/linkHelpers";
-
-const REPLY_TREE_DEPTH = 10;
+import { linkToPost, linkToProfile } from "~/lib/linkHelpers";
+import type { VStreamFeedViewPost, VStreamPostThread } from "~/types";
+import { cn } from "~/lib/utils";
 
 export async function loader(args: LoaderFunctionArgs) {
   const { handle, rkey } = args.params;
@@ -49,35 +56,55 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const uri = makeRecordUri(handle!, "app.bsky.feed.post", rkey!);
 
-  const res = await agent.getPostThread({
-    uri,
-    depth: REPLY_TREE_DEPTH,
-  });
+  const thread = await loadPostThread(uri, (params) =>
+    agent.getPostThread(params),
+  );
 
-  if (!AppBskyFeedDefs.isThreadViewPost(res.data.thread)) {
+  if (thread.$type !== "post") {
     throw new Response("Not found", { status: 404 });
   }
 
-  const record = res.data.thread.post.record as AppBskyFeedPost.Record;
-  const post = bSkyPostFeedViewPostToVStreamPostItem({
-    post: res.data.thread.post,
-    record,
-  });
+  const skeleton = createThreadSkeleton(
+    sortPostThread(thread, agent.assertDid),
+    agent.assertDid,
+  );
+
   const finders = {
     getProfile: (did: string) =>
       args.context.bsky.cachedFindProfile(agent, did),
   };
-  await hydrateFeedViewVStreamPost(post, record, finders);
+  const hydrations: Promise<unknown>[] = [];
+  for (const thread of [
+    ...skeleton.parents,
+    skeleton.highlightedPost,
+    ...skeleton.replies,
+  ]) {
+    if (thread.$type !== "post") continue;
+    hydrations.push(hydrateFeedViewVStreamPost(thread.post, finders));
+  }
+  await Promise.all(hydrations);
 
-  return { thread: { post } };
+  return skeleton;
 }
 
 export function clientLoader(args: ClientLoaderFunctionArgs) {
   const post = loadFeedPost(args.params.handle!, args.params.rkey!);
 
   if (!post) return args.serverLoader<typeof loader>();
+  const thread: VStreamPostThread = {
+    $type: "post",
+    _reactKey: post.uri,
+    uri: post.uri,
+    post,
+    ctx: { depth: 0, isHighlightedPost: true },
+  };
 
-  return { thread: { post }, serverData: args.serverLoader<typeof loader>() };
+  return {
+    parents: [],
+    highlightedPost: thread,
+    replies: [],
+    serverData: args.serverLoader<typeof loader>(),
+  } satisfies SerializeFrom<typeof loader> & { serverData: unknown };
 }
 
 export default function PostPageScreen() {
@@ -86,59 +113,264 @@ export default function PostPageScreen() {
   return (
     <MainLayout>
       {"serverData" in data ? (
-        <Suspense
-          fallback={
-            <PostPage
-              thread={data.thread as SerializeFrom<typeof loader>["thread"]}
-            />
-          }
-        >
+        <Suspense fallback={<PostPage {...data} />}>
           <Await resolve={data.serverData}>
-            {(data) => <PostPage {...data} />}
+            {(data) => <PostPage key={data.highlightedPost.uri} {...data} />}
           </Await>
         </Suspense>
       ) : (
-        <PostPage {...data} />
+        <PostPage key={data.highlightedPost.uri} {...data} />
       )}
     </MainLayout>
   );
 }
 
-export function PostPage({ thread }: SerializeFrom<typeof loader>) {
-  const profileLink = linkToProfile(thread.post.author);
+function PostPage(data: SerializeFrom<typeof loader>) {
+  const { parents, highlightedPost, replies } = data;
+  const posts = React.useMemo(() => {
+    return [...parents, highlightedPost, ...replies];
+  }, [parents, highlightedPost, replies]);
+  const highlightedPostRef = React.useRef<HTMLDivElement | null>(null);
+  const didAdjustScrollWeb = React.useRef<boolean>(false);
+  React.useEffect(() => {
+    // only run once
+    if (didAdjustScrollWeb.current) {
+      return;
+    }
+    if (highlightedPost.$type === "post" && !!highlightedPost.parent) {
+      console.log("got here");
+      highlightedPostRef.current?.scrollIntoView();
+      didAdjustScrollWeb.current = true;
+    }
+  }, [highlightedPost]);
 
   return (
-    <div className="mx-auto w-full max-w-[37.5rem]">
+    <div className="mx-auto w-full max-w-[37.5rem] border-x border-x-muted-foreground">
+      {posts.map((item, idx) => {
+        switch (item.$type) {
+          case "unknown":
+            return null;
+          case "post": {
+            if (item.ctx.isHighlightedPost) {
+              return (
+                <HighlightedPostPageItem
+                  ref={highlightedPostRef}
+                  key={item._reactKey}
+                  post={item.post}
+                  hasPrecedingItem={idx > 0}
+                />
+              );
+            }
+            const prev = isThreadPost(posts[idx - 1])
+              ? (posts[idx - 1] as VStreamPostThread)
+              : undefined;
+            const next = isThreadPost(posts[idx + 1])
+              ? (posts[idx + 1] as VStreamPostThread)
+              : undefined;
+            const showChildReplyLine = (next?.ctx.depth || 0) > item.ctx.depth;
+            const showParentReplyLine =
+              (item.ctx.depth < 0 && !!item.parent) || item.ctx.depth > 1;
+
+            return (
+              <PostPageItem
+                key={item._reactKey}
+                post={item.post}
+                depth={item.ctx.depth}
+                prevItem={prev}
+                nextItem={next}
+                showChildReplyLine={showChildReplyLine}
+                showParentReplyLine={showParentReplyLine}
+                hasPrecedingItem={showParentReplyLine}
+                hideTopBorder={idx === 0 && !item.ctx.isParentLoading}
+              />
+            );
+          }
+          case "not-found":
+            return <span key={item._reactKey}>Not found</span>;
+          case "blocked":
+            return <span key={item._reactKey}>Blocked</span>;
+          default:
+            item satisfies never;
+            return null;
+        }
+      })}
+      <div className="h-[calc(100vh-200px)] w-full border-t border-t-muted-foreground" />
+    </div>
+  );
+}
+
+const HighlightedPostPageItem = React.forwardRef<
+  HTMLDivElement,
+  { post: VStreamFeedViewPost; hasPrecedingItem: boolean }
+>(function HighlightedPostPageItem({ post, hasPrecedingItem }, ref) {
+  const profileLink = linkToProfile(post.author);
+  const b = (nodes: React.ReactNode[]) => (
+    <span className="font-bold text-foreground">{nodes}</span>
+  );
+
+  return (
+    <article ref={ref} className="px-4 pb-5">
+      <FeedPostEyebrow isThreadChild={hasPrecedingItem} reason={undefined} />
       <div className="flex w-full items-center gap-4">
         <Link href={profileLink} className="cursor-pointer">
           <Avatar className="size-16">
-            <AvatarImage src={thread.post.author.avatar} />
+            <AvatarImage src={post.author.avatar} />
             <AvatarFallback>@</AvatarFallback>
           </Avatar>
         </Link>
         <div className="flex-grow">
           <h2 className="text-lg">
             <Link href={profileLink} className="cursor-pointer">
-              {thread.post.author.displayName}
+              {post.author.displayName}
             </Link>
           </h2>
           <div className="text-muted-foreground">
             <Link href={profileLink} className="cursor-pointer">
-              {thread.post.author.handle}
+              {post.author.handle}
             </Link>
           </div>
         </div>
       </div>
       <div className="pt-4">
-        <FeedPostContentText post={thread.post} />
+        <FeedPostContentText post={post} />
       </div>
-      <FeedPostEmbed post={thread.post} />
+      <FeedPostEmbed post={post} />
       <div className="pb-4 pt-5 text-sm text-muted-foreground">
-        <FormattedTime value={thread.post.createdAt} />
+        <FormattedTime value={post.createdAt} />
         &nbsp;&middot;&nbsp;
-        <FormattedDate value={thread.post.createdAt} dateStyle="long" />
+        <FormattedDate value={post.createdAt} dateStyle="long" />
       </div>
-      <FeedPostControls post={thread.post} />
-    </div>
+      {post.quoteCount > 0 || post.repostCount > 0 || post.likeCount > 0 ? (
+        <div className="flex gap-4 border-y border-y-muted-foreground py-2">
+          {post.repostCount > 0 ? (
+            <span className="cursor-pointer text-muted-foreground">
+              <FormattedMessage
+                defaultMessage="{repostCount, plural, one {<b>#</b> repost} other {<b>#</b> reposts}}"
+                description="Number of reposts a post has gained"
+                values={{ repostCount: post.repostCount, b }}
+              />
+            </span>
+          ) : null}
+          {post.quoteCount > 0 ? (
+            <span className="cursor-pointer text-muted-foreground">
+              <FormattedMessage
+                defaultMessage="{quoteCount, plural, one {<b>#</b> quote} other {<b>#</b> quotes}}"
+                description="Number of quotes a post has gained"
+                values={{ quoteCount: post.quoteCount, b }}
+              />
+            </span>
+          ) : null}
+          {post.likeCount > 0 ? (
+            <span className="cursor-pointer text-muted-foreground">
+              <FormattedMessage
+                defaultMessage="{likeCount, plural, one {<b>#</b> like} other {<b>#</b> likes}}"
+                description="Number of likes a post has gained"
+                values={{ likeCount: post.likeCount, b }}
+              />
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      <FeedPostControls post={post} />
+    </article>
   );
+});
+
+function PostPageItem(props: {
+  post: VStreamFeedViewPost;
+  depth: number;
+  prevItem?: VStreamPostThread;
+  nextItem?: VStreamPostThread;
+  showChildReplyLine: boolean;
+  showParentReplyLine: boolean;
+  hasPrecedingItem: boolean;
+  hideTopBorder: boolean;
+}) {
+  const { post } = props;
+  const url = linkToPost(post);
+  const navigate = useNavigate();
+  const ref = React.useRef<HTMLElement | null>(null);
+  const onClick = useEvent<React.MouseEventHandler<HTMLElement>>((event) => {
+    if (
+      event.target instanceof HTMLElement &&
+      // The target isn't an anchor/button/form or inside one
+      !event.target.closest("a") &&
+      !event.target.closest("button") &&
+      !event.target.closest("form") &&
+      // The target isn't inside the user flyout / popover
+      !event.target.closest(".react-aria-Popover") &&
+      // The target isn't inside a dialog
+      !event.target.closest("[role=dialog]") &&
+      // The target isn't the black overlay behind modals
+      !event.target.closest(".fixed.inset-0")
+    ) {
+      // If we click a post inside a quote, don't bubble up to the wider
+      // quoted post
+      event.stopPropagation();
+      navigate(url);
+    }
+  });
+
+  const onKeyUp = useEvent<React.KeyboardEventHandler<HTMLElement>>((event) => {
+    if (event.key !== "Enter") return;
+    if (event.target === ref.current) {
+      // If the current target is the container
+      navigate(url);
+    }
+  });
+
+  React.useEffect(() => {
+    // Save the post in local client DB for fast loading later
+    saveFeedPost(post);
+  }, [post]);
+
+  return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+    <article
+      ref={ref}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={0}
+      onClick={onClick}
+      onKeyUp={onKeyUp}
+      className={cn(
+        "cursor-pointer border-t border-t-muted-foreground px-4 hover:bg-muted",
+        {
+          "pb-5": !props.showChildReplyLine,
+          "border-t-0":
+            props.hideTopBorder ||
+            (props.showParentReplyLine && props.hasPrecedingItem),
+        },
+      )}
+    >
+      <FeedPostEyebrow
+        isThreadChild={props.showParentReplyLine}
+        reason={undefined}
+      />
+      <div className="flex gap-4">
+        <div className="flex w-[3.25rem] flex-col">
+          <Avatar className="aspect-square h-auto w-full">
+            <AvatarImage
+              src={post.author.avatar}
+              alt={post.author.displayName}
+            />
+            <AvatarFallback>@</AvatarFallback>
+          </Avatar>
+          {/* Line connecting related posts */}
+          {props.showChildReplyLine && (
+            <div className="mx-auto mt-1 w-0.5 grow bg-muted-foreground" />
+          )}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <FeedPostHeader post={post} />
+          <FeedPostContent post={post} />
+          <FeedPostEmbed post={post} />
+          <FeedPostControls post={post} />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function isThreadPost(v: unknown): v is VStreamPostThread {
+  return !!v && typeof v === "object" && "$type" in v && v.$type === "post";
 }

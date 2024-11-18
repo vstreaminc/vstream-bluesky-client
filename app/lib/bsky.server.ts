@@ -1,9 +1,10 @@
 import {
   AppBskyEmbedImages,
   AppBskyFeedDefs,
-  type AppBskyFeedPost,
+  AppBskyFeedPost,
   AtUri,
   RichText as AtProtoRichText,
+  type AppBskyFeedGetPostThread,
 } from "@atproto/api";
 import type {
   BSkyFeedViewPost,
@@ -93,9 +94,9 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
     rkey: new AtUri(item.post.uri).rkey,
     cid: item.post.cid,
     replyCount: item.post.replyCount,
-    repostCount: item.post.repostCount,
-    likeCount: item.post.likeCount,
-    quoteCount: item.post.quoteCount,
+    repostCount: item.post.repostCount ?? 0,
+    likeCount: item.post.likeCount ?? 0,
+    quoteCount: item.post.quoteCount ?? 0,
     indexedAt: item.post.indexedAt,
     viewer: item.post.viewer,
     author: {
@@ -291,4 +292,255 @@ export async function hydrateFeedViewVStreamPost(
   post.plainText = "";
   post.facets = [];
   return post;
+}
+
+const REPLY_TREE_DEPTH = 10;
+
+export async function loadPostThread(
+  uri: string,
+  load: (
+    query: AppBskyFeedGetPostThread.QueryParams,
+  ) => Promise<AppBskyFeedGetPostThread.Response>,
+): Promise<VStreamPostThreadNode> {
+  const res = await load({ uri, depth: REPLY_TREE_DEPTH });
+
+  if (!res.success) {
+    return { $type: "unknown", uri };
+  }
+
+  const hydrations: Promise<unknown>[] = [];
+  const thread = bSkyThreadNodeToVStreamThreadNode(res.data.thread);
+  annotateSelfThread(thread);
+  await Promise.all(hydrations);
+
+  return thread;
+}
+
+export function bSkyThreadNodeToVStreamThreadNode(
+  node: AppBskyFeedGetPostThread.Response["data"]["thread"],
+  depth = 0,
+  direction: "up" | "down" | "start" = "start",
+): VStreamPostThreadNode {
+  if (
+    AppBskyFeedDefs.isThreadViewPost(node) &&
+    AppBskyFeedPost.isRecord(node.post.record) &&
+    AppBskyFeedPost.validateRecord(node.post.record).success
+  ) {
+    const post = node.post;
+    const vstreamPost = bSkyPostFeedViewPostToVStreamPostItem({
+      post,
+      record: node.post.record,
+    });
+    let parent;
+    if (node.parent && direction !== "down") {
+      parent = bSkyThreadNodeToVStreamThreadNode(node.parent, depth - 1, "up");
+    }
+    let replies;
+    if (node.replies?.length && direction !== "up") {
+      replies = node.replies
+        .map((reply) =>
+          bSkyThreadNodeToVStreamThreadNode(reply, depth + 1, "down"),
+        )
+        // do not show blocked posts in replies
+        .filter((node) => node.$type !== "blocked");
+    }
+
+    return {
+      $type: "post",
+      _reactKey: node.post.uri,
+      uri: node.post.uri,
+      post: vstreamPost,
+      parent,
+      replies,
+      ctx: {
+        depth,
+        isHighlightedPost: depth === 0,
+        hasMore:
+          direction === "down" && !node.replies?.length && !!node.replyCount,
+        isSelfThread: false, // populated `annotateSelfThread`
+        hasMoreSelfThread: false, // populated in `annotateSelfThread`
+      },
+    };
+  } else if (AppBskyFeedDefs.isBlockedPost(node)) {
+    return {
+      $type: "blocked",
+      _reactKey: node.uri,
+      uri: node.uri,
+      ctx: { depth },
+    };
+  } else if (AppBskyFeedDefs.isNotFoundPost(node)) {
+    return {
+      $type: "not-found",
+      _reactKey: node.uri,
+      uri: node.uri,
+      ctx: { depth },
+    };
+  } else {
+    return { $type: "unknown", uri: "" };
+  }
+}
+
+function annotateSelfThread(thread: VStreamPostThreadNode) {
+  if (thread.$type !== "post") {
+    return;
+  }
+  const selfThreadNodes: VStreamPostThread[] = [thread];
+
+  let parent: VStreamPostThreadNode | undefined = thread.parent;
+  while (parent) {
+    if (
+      parent.$type !== "post" ||
+      parent.post.author.did !== thread.post.author.did
+    ) {
+      // not a self-thread
+      return;
+    }
+    selfThreadNodes.unshift(parent);
+    parent = parent.parent;
+  }
+
+  let node = thread;
+  for (let i = 0; i < 10; i++) {
+    const reply = node.replies?.find(
+      (r) => r.$type === "post" && r.post.author.did === thread.post.author.did,
+    );
+    if (reply?.$type !== "post") {
+      break;
+    }
+    selfThreadNodes.push(reply);
+    node = reply;
+  }
+
+  if (selfThreadNodes.length > 1) {
+    for (const selfThreadNode of selfThreadNodes) {
+      selfThreadNode.ctx.isSelfThread = true;
+    }
+    const last = selfThreadNodes[selfThreadNodes.length - 1];
+    if (
+      last &&
+      last.ctx.depth === REPLY_TREE_DEPTH && // at the edge of the tree depth
+      last.post.replyCount && // has replies
+      !last.replies?.length // replies were not hydrated
+    ) {
+      last.ctx.hasMoreSelfThread = true;
+    }
+  }
+}
+
+export function sortPostThread(
+  node: VStreamPostThreadNode,
+  currentDid: string | undefined,
+): VStreamPostThreadNode {
+  if (node.$type !== "post") {
+    return node;
+  }
+  if (node.replies) {
+    node.replies.sort((a, b) => {
+      if (a.$type !== "post") {
+        return 1;
+      }
+      if (b.$type !== "post") {
+        return -1;
+      }
+
+      const aIsByOp = a.post.author.did === node.post?.author.did;
+      const bIsByOp = b.post.author.did === node.post?.author.did;
+      if (aIsByOp && bIsByOp) {
+        return a.post.indexedAt.localeCompare(b.post.indexedAt); // oldest
+      } else if (aIsByOp) {
+        return -1; // op's own reply
+      } else if (bIsByOp) {
+        return 1; // op's own reply
+      }
+
+      const aIsBySelf = a.post.author.did === currentDid;
+      const bIsBySelf = b.post.author.did === currentDid;
+      if (aIsBySelf && bIsBySelf) {
+        return a.post.indexedAt.localeCompare(b.post.indexedAt); // oldest
+      } else if (aIsBySelf) {
+        return -1; // current account's reply
+      } else if (bIsBySelf) {
+        return 1; // current account's reply
+      }
+
+      const af = a.post.author.viewer?.following;
+      const bf = b.post.author.viewer?.following;
+      if (af && !bf) {
+        return -1;
+      } else if (!af && bf) {
+        return 1;
+      }
+
+      if (a.post.likeCount === b.post.likeCount) {
+        return b.post.indexedAt.localeCompare(a.post.indexedAt); // newest
+      } else {
+        return (b.post.likeCount || 0) - (a.post.likeCount || 0); // most likes
+      }
+    });
+    node.replies.forEach((reply) => sortPostThread(reply, currentDid));
+  }
+  return node;
+}
+
+export function createThreadSkeleton(
+  node: VStreamPostThreadNode,
+  currentDid: string | undefined,
+): {
+  parents: VStreamPostThreadNode[];
+  highlightedPost: VStreamPostThreadNode;
+  replies: VStreamPostThreadNode[];
+} {
+  return {
+    parents: Array.from(flattenThreadParents(node, !!currentDid)),
+    highlightedPost: node,
+    replies: Array.from(flattenThreadReplies(node, currentDid)),
+  };
+}
+
+function* flattenThreadParents(
+  node: VStreamPostThreadNode,
+  isSignedIn: boolean,
+): Generator<
+  Extract<VStreamPostThreadNode, { $type: "post" | "not-found" | "blocked" }>,
+  void
+> {
+  if (node.$type === "post") {
+    if (node.parent) {
+      yield* flattenThreadParents(node.parent, isSignedIn);
+    }
+    if (!node.ctx.isHighlightedPost) {
+      yield node;
+    }
+  } else if (node.$type === "not-found") {
+    yield node;
+  } else if (node.$type === "blocked") {
+    yield node;
+  }
+}
+
+function* flattenThreadReplies(
+  node: VStreamPostThreadNode,
+  currentDid: string | undefined,
+): Generator<
+  Extract<VStreamPostThreadNode, { $type: "post" | "not-found" | "blocked" }>,
+  void
+> {
+  if (node.$type === "post") {
+    if (!node.ctx.isHighlightedPost) {
+      yield node;
+    }
+
+    if (node.replies?.length) {
+      for (const reply of node.replies) {
+        yield* flattenThreadReplies(reply, currentDid);
+        if (!node.ctx.isHighlightedPost) {
+          break;
+        }
+      }
+    }
+  } else if (node.$type === "not-found") {
+    yield node;
+  } else if (node.$type === "blocked") {
+    yield node;
+  }
 }

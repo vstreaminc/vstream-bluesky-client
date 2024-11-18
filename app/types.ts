@@ -53,13 +53,7 @@ export type VStreamEmbedImages = {
 
 export type VStreamFeedViewPost = Pick<
   BSkyFeedViewPost["post"],
-  | "uri"
-  | "cid"
-  | "replyCount"
-  | "repostCount"
-  | "likeCount"
-  | "quoteCount"
-  | "indexedAt"
+  "uri" | "cid" | "indexedAt"
 > & {
   author: Pick<
     BSkyFeedViewPost["post"]["author"],
@@ -79,6 +73,10 @@ export type VStreamFeedViewPost = Pick<
     | "embeddingDisabled"
     | "pinned"
   >;
+  replyCount: number;
+  repostCount: number;
+  likeCount: number;
+  quoteCount: number;
   rkey: string;
   embed?: VStreamEmbedImages;
   _reactKey: string;
@@ -128,4 +126,49 @@ export type VStreamFeedViewPostSlice = {
   items: VStreamFeedViewPost[];
   isIncompleteThread: boolean;
   reason?: VStreamReasonRepost;
+};
+
+interface ThreadCtx {
+  depth: number;
+  isHighlightedPost?: boolean;
+  hasMore?: boolean;
+  isParentLoading?: boolean;
+  isChildLoading?: boolean;
+  isSelfThread?: boolean;
+  hasMoreSelfThread?: boolean;
+}
+
+export type VStreamPostThreadNode =
+  | VStreamPostThread
+  | VStreamPostThreadNotFound
+  | VStreamPostThreadBlocked
+  | VStreamPostThreadUnknown;
+
+export type VStreamPostThread = {
+  $type: "post";
+  _reactKey: string;
+  uri: string;
+  post: VStreamFeedViewPost;
+  parent?: VStreamPostThreadNode;
+  replies?: VStreamPostThreadNode[];
+  ctx: ThreadCtx;
+};
+
+export type VStreamPostThreadNotFound = {
+  $type: "not-found";
+  _reactKey: string;
+  uri: string;
+  ctx: ThreadCtx;
+};
+
+export type VStreamPostThreadBlocked = {
+  $type: "blocked";
+  _reactKey: string;
+  uri: string;
+  ctx: ThreadCtx;
+};
+
+export type VStreamPostThreadUnknown = {
+  $type: "unknown";
+  uri: string;
 };

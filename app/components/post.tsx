@@ -145,7 +145,7 @@ export function FeedPost(props: FeedPostProps) {
   );
 }
 
-function FeedPostEyebrow({
+export function FeedPostEyebrow({
   isThreadChild,
   reason,
 }: {
@@ -178,7 +178,7 @@ function FeedPostEyebrow({
   );
 }
 
-function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
+export function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
   return (
     <>
       <div className="truncate pb-0.5">
@@ -203,7 +203,7 @@ function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
   );
 }
 
-function FeedPostContent({ post }: { post: VStreamFeedViewPost }) {
+export function FeedPostContent({ post }: { post: VStreamFeedViewPost }) {
   return (
     <div className="mt-2">
       <FeedPostContentText post={post} />
@@ -280,7 +280,7 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
       <div className="flex-1 items-start">
         <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
           <Undo2 className="size-4 stroke-slate-400" />
-          {typeof post.replyCount === "number" && post.replyCount > 0 ? (
+          {post.replyCount > 0 ? (
             <span className="text-sm text-slate-400">
               <FormattedNumber value={post.replyCount} notation="compact" />
             </span>
@@ -290,9 +290,12 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
       <div className="flex-1 items-start">
         <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
           <Repeat className="size-4 stroke-slate-400" />
-          {typeof post.repostCount === "number" && post.repostCount > 0 ? (
+          {post.repostCount + post.quoteCount > 0 ? (
             <span className="text-sm text-slate-400">
-              <FormattedNumber value={post.repostCount} notation="compact" />
+              <FormattedNumber
+                value={post.repostCount + post.quoteCount}
+                notation="compact"
+              />
             </span>
           ) : null}
         </button>
@@ -300,7 +303,7 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
       <div className="flex-1 items-start">
         <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
           <Heart className="size-4 stroke-slate-400" />
-          {typeof post.likeCount === "number" && post.likeCount > 0 ? (
+          {post.likeCount > 0 ? (
             <span className="text-sm text-slate-400">
               <FormattedNumber value={post.likeCount} notation="compact" />
             </span>
