@@ -58,7 +58,7 @@ export function RelativeTime({
   const title = useClientOnlyTitle(date);
 
   return (
-    <time dateTime={date.toJSON()} title={title}>
+    <time dateTime={date.toJSON()} title={title} suppressHydrationWarning>
       <FormattedRelativeTime
         {...rest}
         value={val}
