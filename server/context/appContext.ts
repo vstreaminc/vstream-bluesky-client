@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { JoseKey } from "@atproto/jwk-jose";
 import type { NodeOAuthClient } from "@atproto/oauth-client-node";
 import { createClient as createAtProtoClient } from "../atProto";
@@ -11,7 +12,13 @@ export async function fromConfig(cfg: ServerConfig): Promise<AppContext> {
   const bskyKeys =
     cfg.bsky.keys && cfg.bsky.keys.length > 0
       ? await Promise.all(
-          cfg.bsky.keys.map((key) => JoseKey.fromImportable(key)),
+          cfg.bsky.keys.map((key) =>
+            JoseKey.fromImportable(
+              Buffer.from(key, "base64").toString("utf8"),
+              // kid is the MD5 of the base64
+              crypto.createHash("md5").update(key).digest("hex"),
+            ),
+          ),
         )
       : // TODO: Generate some temporary keys for local dev
         [];

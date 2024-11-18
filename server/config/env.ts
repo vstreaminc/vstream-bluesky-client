@@ -14,6 +14,7 @@ export const readEnv = (): ServerEnvironment => {
 
     // keys
     privateKeys: envList("PRIVATE_KEYS"),
+    signingAlg: envStr("PRIVATE_KEYS_SIGNING_ALG"),
   };
 };
 
@@ -30,4 +31,5 @@ export type ServerEnvironment = {
 
   // keys
   privateKeys?: string[];
+  signingAlg?: string;
 };

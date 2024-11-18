@@ -88,6 +88,12 @@ export class Machine {
         res.json(appContext.atProtoClient.clientMetadata);
       }),
     );
+    app.get(
+      "/.well-known/jwks.json",
+      handler((_req, res) => {
+        res.json(appContext.atProtoClient.jwks);
+      }),
+    );
 
     // handle asset requests
     if (viteDevServer) {

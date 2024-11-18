@@ -50,6 +50,7 @@ export function createClient(
       // TODO: Remove this when we're generating JWTs locally
       token_endpoint_auth_method:
         Array.from(keyset).length > 0 ? "private_key_jwt" : "none",
+      token_endpoint_auth_signing_alg: cfg.bsky.signingAlg,
       dpop_bound_access_tokens: true,
       jwks_uri: `${cfg.service.publicUrl}/.well-known/jwks.json`,
     },

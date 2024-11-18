@@ -26,6 +26,7 @@ export const envToCfg = (env: ServerEnvironment): ServerConfig => {
   const bsky: BlueSkyConfig = {
     keys: env.privateKeys,
     stateStoreExpiresIn: 10 * MINUTE,
+    signingAlg: env.signingAlg,
   };
 
   return {
@@ -58,5 +59,6 @@ export type DatabaseConfig = {
 
 export type BlueSkyConfig = {
   keys?: string[];
+  signingAlg?: string;
   stateStoreExpiresIn: number;
 };
