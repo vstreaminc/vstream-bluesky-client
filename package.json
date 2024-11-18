@@ -57,6 +57,7 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/plugin-syntax-typescript": "^7.25.9",
+    "@flydotio/dockerfile": "^0.5.9",
     "@formatjs/cli-lib": "^6.6.3",
     "@react-aria/optimize-locales-plugin": "^1.1.2",
     "@remix-run/dev": "2.13.1",
