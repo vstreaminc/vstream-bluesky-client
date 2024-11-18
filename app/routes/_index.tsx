@@ -1,3 +1,4 @@
+import * as React from "react";
 import type {
   LoaderFunctionArgs,
   MetaDescriptor,
@@ -6,6 +7,11 @@ import type {
 import type { Organization, WithContext } from "schema-dts";
 import { useLoaderData } from "@remix-run/react";
 import { SECOND } from "@atproto/common";
+import {
+  type CacheSnapshot,
+  WindowVirtualizer,
+  type WindowVirtualizerHandle,
+} from "virtua";
 import { MainLayout } from "~/components/mainLayout";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
@@ -134,13 +140,48 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export default function Index() {
   const { slices } = useLoaderData<typeof loader>();
+  const cacheKey = "window-list-cache-home";
+  const ref = React.useRef<WindowVirtualizerHandle>(null);
+  const cache = React.useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+    const serialized = sessionStorage.getItem(cacheKey);
+    if (!serialized) return undefined;
+    try {
+      return JSON.parse(serialized) as CacheSnapshot;
+    } catch (e) {
+      return undefined;
+    }
+  }, []);
+
+  React.useLayoutEffect(() => {
+    const handle = ref.current;
+    if (!handle) return;
+    return () => {
+      sessionStorage.setItem(cacheKey, JSON.stringify(handle.cache));
+    };
+  }, []);
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-[100vw] border-x border-muted-foreground md:max-w-[42.5rem]">
-        {slices.map((s, idx) => (
-          <FeedSlice key={s._reactKey} hideTopBorder={idx === 0} slice={s} />
-        ))}
+      <div className="mx-auto w-full max-w-[100vw] md:max-w-[42.5rem]">
+        <WindowVirtualizer
+          ref={ref}
+          cache={cache}
+          count={slices.length}
+          itemSize={200}
+          ssrCount={Math.min(slices.length, 10)}
+        >
+          {(idx) => {
+            const s = slices[idx];
+            return (
+              <FeedSlice
+                key={s._reactKey}
+                hideTopBorder={idx === 0}
+                slice={s}
+              />
+            );
+          }}
+        </WindowVirtualizer>
       </div>
     </MainLayout>
   );

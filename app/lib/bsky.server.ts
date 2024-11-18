@@ -93,7 +93,7 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
     uri: item.post.uri,
     rkey: new AtUri(item.post.uri).rkey,
     cid: item.post.cid,
-    replyCount: item.post.replyCount,
+    replyCount: item.post.replyCount ?? 0,
     repostCount: item.post.repostCount ?? 0,
     likeCount: item.post.likeCount ?? 0,
     quoteCount: item.post.quoteCount ?? 0,

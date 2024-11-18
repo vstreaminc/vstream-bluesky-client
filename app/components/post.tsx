@@ -108,13 +108,16 @@ export function FeedPost(props: FeedPostProps) {
       tabIndex={0}
       onClick={onClick}
       onKeyUp={onKeyUp}
-      className={cn("cursor-pointer px-4 hover:bg-muted", {
-        "pb-5":
-          props.isThreadLastChild ||
-          (!props.isThreadChild && !props.isThreadParent),
-        "border-t border-t-muted-foreground":
-          !props.hideTopBorder && !props.isThreadChild,
-      })}
+      className={cn(
+        "cursor-pointer border-x border-x-muted-foreground px-4 hover:bg-muted",
+        {
+          "pb-5":
+            props.isThreadLastChild ||
+            (!props.isThreadChild && !props.isThreadParent),
+          "border-t border-t-muted-foreground":
+            !props.hideTopBorder && !props.isThreadChild,
+        },
+      )}
     >
       <FeedPostEyebrow
         isThreadChild={props.isThreadChild}
