@@ -1,12 +1,12 @@
 import * as React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
 import { useEvent } from "react-use-event-hook";
 import { Button, Link, type PressEvent } from "react-aria-components";
 import { useNavigate } from "@remix-run/react";
 import type { VStreamFeedViewPost, VStreamFeedViewPostSlice } from "~/types";
 import { cn } from "~/lib/utils";
-import { Avatar, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { RelativeTime } from "~/components/relativeTime";
 import { ImageMosaic } from "~/components/imageMosaic";
 import { useHydrated } from "~/hooks/useHydrated";
@@ -122,11 +122,12 @@ export function FeedPost(props: FeedPostProps) {
       />
       <div className="flex gap-4">
         <div className="flex w-[3.25rem] flex-col">
-          <Avatar className="h-auto w-full">
+          <Avatar className="aspect-square h-auto w-full">
             <AvatarImage
               src={post.author.avatar}
               alt={post.author.displayName}
             />
+            <AvatarFallback>@</AvatarFallback>
           </Avatar>
           {/* Line connecting related posts */}
           {props.isThreadParent && (
@@ -280,7 +281,9 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
         <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
           <Undo2 className="size-4 stroke-slate-400" />
           {typeof post.replyCount === "number" && post.replyCount > 0 ? (
-            <span className="text-sm text-slate-400">{post.replyCount}</span>
+            <span className="text-sm text-slate-400">
+              <FormattedNumber value={post.replyCount} notation="compact" />
+            </span>
           ) : null}
         </button>
       </div>
@@ -288,7 +291,9 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
         <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
           <Repeat className="size-4 stroke-slate-400" />
           {typeof post.repostCount === "number" && post.repostCount > 0 ? (
-            <span className="text-sm text-slate-400">{post.repostCount}</span>
+            <span className="text-sm text-slate-400">
+              <FormattedNumber value={post.repostCount} notation="compact" />
+            </span>
           ) : null}
         </button>
       </div>
@@ -296,7 +301,9 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
         <button className="flex items-center justify-center gap-1 rounded-full p-1 hover:bg-slate-50 focus:bg-slate-50">
           <Heart className="size-4 stroke-slate-400" />
           {typeof post.likeCount === "number" && post.likeCount > 0 ? (
-            <span className="text-sm text-slate-400">{post.likeCount}</span>
+            <span className="text-sm text-slate-400">
+              <FormattedNumber value={post.likeCount} notation="compact" />
+            </span>
           ) : null}
         </button>
       </div>
