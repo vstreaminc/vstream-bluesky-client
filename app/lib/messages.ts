@@ -9,4 +9,8 @@ export const ctas = defineMessages({
     defaultMessage: "Log out",
     description: "CTA to log out of the appliation",
   },
+  logIn: {
+    defaultMessage: "Log in",
+    description: "CTA to log in of the appliation",
+  },
 });

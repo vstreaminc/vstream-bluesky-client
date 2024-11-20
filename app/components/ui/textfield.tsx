@@ -60,10 +60,13 @@ const TextArea = ({ className, ...props }: AriaTextAreaProps) => {
 };
 
 interface JollyTextFieldProps extends AriaTextFieldProps {
-  label?: string;
-  description?: string;
-  errorMessage?: string | ((validation: AriaValidationResult) => string);
+  label?: React.ReactNode;
+  description?: React.ReactNode;
+  errorMessage?:
+    | React.ReactNode
+    | ((validation: AriaValidationResult) => React.ReactNode);
   textArea?: boolean;
+  children?: React.ReactNode;
 }
 
 function JollyTextField({
@@ -72,6 +75,7 @@ function JollyTextField({
   errorMessage,
   textArea,
   className,
+  children,
   ...props
 }: JollyTextFieldProps) {
   return (
@@ -82,7 +86,7 @@ function JollyTextField({
       {...props}
     >
       <Label>{label}</Label>
-      {textArea ? <TextArea /> : <Input />}
+      {children ? children : textArea ? <TextArea /> : <Input />}
       {description && (
         <Text className="text-sm text-muted-foreground" slot="description">
           {description}

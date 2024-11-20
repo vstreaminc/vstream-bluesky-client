@@ -1,4 +1,8 @@
 {
+  "/2XQM+": {
+    "defaultMessage": "Enter your handle (eg alice.bsky.social)",
+    "description": "Placeholder text for hande input on login page"
+  },
   "/MphzK": {
     "defaultMessage": "{likeCount,plural,one{<b>#</b> like} other{<b>#</b> likes}}",
     "description": "Number of likes a post has gained"
@@ -31,6 +35,10 @@
     "defaultMessage": "Toggle Sidebar",
     "description": "Action text toggle open and closed a sidebar panel"
   },
+  "KhO13z": {
+    "defaultMessage": "BlueSky Handle",
+    "description": "Label of the handle input on login page"
+  },
   "MG/jut": {
     "defaultMessage": "Home | {productName}",
     "description": "Title for the home page of website"
@@ -46,6 +54,18 @@
   "O5x/5l": {
     "defaultMessage": "Light mode",
     "description": "CTA to switch the application to the color scheme that is much lighter and brighter"
+  },
+  "Q6mLD/": {
+    "defaultMessage": "Login into VStream",
+    "description": "Header for the login page"
+  },
+  "U4wDG6": {
+    "defaultMessage": "Don’t have an account on BlueSky? <a>Sign up for Bluesky</a> to create one now!",
+    "description": "Description of the handle input on login page"
+  },
+  "hprdnf": {
+    "defaultMessage": "Log in",
+    "description": "CTA to log in of the appliation"
   },
   "jAIYp9": {
     "defaultMessage": "Reposted by {name}",
