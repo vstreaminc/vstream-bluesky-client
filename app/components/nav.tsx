@@ -14,7 +14,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import { Link } from "@remix-run/react";
+import { Link, useFetcher } from "@remix-run/react";
 import { $path } from "remix-routes";
 import {
   Sidebar,
@@ -160,15 +160,29 @@ function ApplicationSidebarFooter() {
               <LocaleSwitcher />
               <ColorSchemeSwitcher />
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut />
-                <FormattedMessage {...ctas.logOut} />
-              </DropdownMenuItem>
+              <LogoutItem />
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarFooter>
+  );
+}
+
+function LogoutItem() {
+  const logout = useFetcher();
+  const ref = React.useRef<HTMLFormElement>(null);
+
+  return (
+    <logout.Form method="post" action="/auth/logout" ref={ref}>
+      <DropdownMenuItem
+        onClick={() => ref.current?.requestSubmit()}
+        className="cursor-pointer"
+      >
+        <LogOut />
+        <FormattedMessage {...ctas.logOut} />
+      </DropdownMenuItem>
+    </logout.Form>
   );
 }
 
@@ -188,12 +202,14 @@ const LocaleSwitcher = React.memo(function LocaleSwitcher() {
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
           {locales.map((l) => (
-            <DropdownMenuItem key={l} onClick={() => updateLocale(l)}>
-              <span>
-                <IntlProvider locale={l}>
-                  <FormattedDisplayName type="language" value={l} />
-                </IntlProvider>
-              </span>
+            <DropdownMenuItem
+              key={l}
+              onClick={() => updateLocale(l)}
+              className="cursor-pointer"
+            >
+              <IntlProvider locale={l}>
+                <FormattedDisplayName type="language" value={l} />
+              </IntlProvider>
             </DropdownMenuItem>
           ))}
         </DropdownMenuSubContent>
@@ -248,7 +264,10 @@ function ColorSchemeSwitcher() {
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          <DropdownMenuItem onClick={() => switchColorScheme("light")}>
+          <DropdownMenuItem
+            onClick={() => switchColorScheme("light")}
+            className="cursor-pointer"
+          >
             <Sun />
             <span>
               <FormattedMessage
@@ -257,7 +276,10 @@ function ColorSchemeSwitcher() {
               />
             </span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => switchColorScheme("dark")}>
+          <DropdownMenuItem
+            onClick={() => switchColorScheme("dark")}
+            className="cursor-pointer"
+          >
             <Moon />
             <span>
               <FormattedMessage
@@ -266,7 +288,10 @@ function ColorSchemeSwitcher() {
               />
             </span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => switchColorScheme(null)}>
+          <DropdownMenuItem
+            onClick={() => switchColorScheme(null)}
+            className="cursor-pointer"
+          >
             <Cpu />
             <span>
               <FormattedMessage
