@@ -45,7 +45,7 @@
     "react-aria-components": "^1.4.1",
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^4.6.1",
-    "react-intl": "^6.8.5",
+    "react-intl": "^7.0.1",
     "react-router-dom": "6.27.0",
     "react-use-event-hook": "^0.9.6",
     "remix-routes": "^1.7.7",
