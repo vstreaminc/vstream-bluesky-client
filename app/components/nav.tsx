@@ -45,6 +45,7 @@ import { useViewer } from "~/hooks/useViewer";
 import { ctas } from "~/lib/messages";
 import { SUPPORTED_LOCALES } from "~/lib/locale";
 import { useHydrated } from "~/hooks/useHydrated";
+import { VStreamLocaleContext } from "./vstreamIntlProvider";
 
 export function ApplicationSidebar() {
   return (
@@ -173,6 +174,7 @@ function ApplicationSidebarFooter() {
 
 const LocaleSwitcher = React.memo(function LocaleSwitcher() {
   const locales = SUPPORTED_LOCALES.filter((l) => l.length !== 2);
+  const { updateLocale } = React.useContext(VStreamLocaleContext);
 
   return (
     <DropdownMenuSub>
@@ -186,7 +188,7 @@ const LocaleSwitcher = React.memo(function LocaleSwitcher() {
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
           {locales.map((l) => (
-            <DropdownMenuItem key={l}>
+            <DropdownMenuItem key={l} onClick={() => updateLocale(l)}>
               <span>
                 <IntlProvider locale={l}>
                   <FormattedDisplayName type="language" value={l} />
