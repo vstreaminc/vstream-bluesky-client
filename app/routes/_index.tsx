@@ -1,4 +1,3 @@
-import * as React from "react";
 import type {
   LoaderFunctionArgs,
   MetaDescriptor,
@@ -7,17 +6,14 @@ import type {
 import type { Organization, WithContext } from "schema-dts";
 import { useLoaderData } from "@remix-run/react";
 import { SECOND } from "@atproto/common";
-import {
-  type CacheSnapshot,
-  WindowVirtualizer,
-  type WindowVirtualizerHandle,
-} from "virtua";
+import { WindowVirtualizer } from "virtua";
 import { MainLayout } from "~/components/mainLayout";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
 import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { FeedSlice } from "~/components/post";
 import { take } from "~/lib/utils";
+import { useWindowVirtualizeCached } from "~/hooks/useWindowVirtualizeCached";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
@@ -140,47 +136,15 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export default function Index() {
   const { slices } = useLoaderData<typeof loader>();
-  const cacheKey = "window-list-cache-home";
-  const ref = React.useRef<WindowVirtualizerHandle>(null);
-  const cache = React.useMemo(() => {
-    if (typeof window === "undefined") return undefined;
-    const serialized = sessionStorage.getItem(cacheKey);
-    if (!serialized) return undefined;
-    try {
-      return JSON.parse(serialized) as CacheSnapshot;
-    } catch (e) {
-      return undefined;
-    }
-  }, []);
-
-  React.useLayoutEffect(() => {
-    const handle = ref.current;
-    if (!handle) return;
-    return () => {
-      sessionStorage.setItem(cacheKey, JSON.stringify(handle.cache));
-    };
-  }, []);
+  const { cache, ref } = useWindowVirtualizeCached("window-list-cache-home");
 
   return (
     <MainLayout>
       <div className="mx-auto w-full max-w-[100vw] md:max-w-[42.5rem]">
-        <WindowVirtualizer
-          ref={ref}
-          cache={cache}
-          count={slices.length}
-          itemSize={200}
-          ssrCount={Math.min(slices.length, 10)}
-        >
-          {(idx) => {
-            const s = slices[idx];
-            return (
-              <FeedSlice
-                key={s._reactKey}
-                hideTopBorder={idx === 0}
-                slice={s}
-              />
-            );
-          }}
+        <WindowVirtualizer ref={ref} cache={cache} itemSize={500} ssrCount={10}>
+          {slices.map((s, idx) => (
+            <FeedSlice key={s._reactKey} hideTopBorder={idx === 0} slice={s} />
+          ))}
         </WindowVirtualizer>
       </div>
     </MainLayout>
