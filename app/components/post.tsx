@@ -18,6 +18,7 @@ import { linkToProfile, linkToPost } from "~/lib/linkHelpers";
 import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
+import { ProfileFlyout } from "./profileFlyout";
 
 /**
  * Main component for rendering slices in the feed
@@ -125,13 +126,21 @@ export function FeedPost(props: FeedPostProps) {
       />
       <div className="flex gap-4">
         <div className="flex w-[3.25rem] flex-col">
-          <Avatar className="aspect-square h-auto w-full">
-            <AvatarImage
-              src={post.author.avatar}
-              alt={post.author.displayName}
-            />
-            <AvatarFallback>@</AvatarFallback>
-          </Avatar>
+          <ProfileFlyout profile={post.author}>
+            {(hoverProps) => (
+              <div {...hoverProps}>
+                <Link href={linkToProfile(post.author)}>
+                  <Avatar className="aspect-square h-auto w-full">
+                    <AvatarImage
+                      src={post.author.avatar}
+                      alt={post.author.displayName}
+                    />
+                    <AvatarFallback>@</AvatarFallback>
+                  </Avatar>
+                </Link>
+              </div>
+            )}
+          </ProfileFlyout>
           {/* Line connecting related posts */}
           {props.isThreadParent && (
             <div className="mx-auto mt-1 w-0.5 grow bg-muted-foreground" />
@@ -184,21 +193,25 @@ export function FeedPostEyebrow({
 export function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
   return (
     <>
-      <div className="truncate pb-0.5">
-        <Link
-          href={linkToProfile(post.author)}
-          className="font-sm cursor-pointer"
-        >
-          {post.author.displayName}
-        </Link>
-        &nbsp;
-        <Link
-          href={linkToProfile(post.author)}
-          className="cursor-pointer text-muted-foreground"
-        >
-          {post.author.handle}
-        </Link>
-      </div>
+      <ProfileFlyout profile={post.author}>
+        {(hoverProps) => (
+          <div className="truncate pb-0.5" {...hoverProps}>
+            <Link
+              href={linkToProfile(post.author)}
+              className="font-sm cursor-pointer"
+            >
+              {post.author.displayName}
+            </Link>
+            &nbsp;
+            <Link
+              href={linkToProfile(post.author)}
+              className="cursor-pointer text-muted-foreground"
+            >
+              {post.author.handle}
+            </Link>
+          </div>
+        )}
+      </ProfileFlyout>
       <div className="text-sm text-muted-foreground">
         <RelativeTime value={post.createdAt} />
       </div>

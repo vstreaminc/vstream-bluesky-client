@@ -3,10 +3,17 @@ import {
   redirect,
   type SerializeFrom,
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import {
+  Await,
+  type ClientLoaderFunctionArgs,
+  useLoaderData,
+} from "@remix-run/react";
+import { Suspense } from "react";
 import { $path } from "remix-routes";
 import { MainLayout } from "~/components/mainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import * as clientDB from "~/db.client";
+import { profiledDetailedToSimple } from "~/lib/bsky.server";
 
 export async function loader(args: LoaderFunctionArgs) {
   const { handle } = args.params;
@@ -27,17 +34,44 @@ export async function loader(args: LoaderFunctionArgs) {
   const res = await agent.getProfile({
     actor: handle!.startsWith("@") ? handle!.slice(1) : handle!,
   });
-  const profile = res.data;
+  const profile = profiledDetailedToSimple(res.data);
 
   return { profile };
 }
 
+export function clientLoader(args: ClientLoaderFunctionArgs) {
+  const handleOrDid = args.params.handle!;
+  const profile = clientDB.loadProfile(handleOrDid);
+  if (profile) {
+    return {
+      profile,
+      serverData: args.serverLoader<typeof loader>().then((p) => {
+        clientDB.saveProfile(handleOrDid, p.profile);
+        return p;
+      }),
+    };
+  }
+
+  return args.serverLoader<typeof loader>().then((p) => {
+    clientDB.saveProfile(handleOrDid, p.profile);
+    return p;
+  });
+}
+
 export default function ProfilePageScreen() {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader | typeof clientLoader>();
 
   return (
     <MainLayout>
-      <ProfilePage {...data} />
+      {"serverData" in data ? (
+        <Suspense fallback={<ProfilePage key={data.profile.did} {...data} />}>
+          <Await resolve={data.serverData}>
+            {(data) => <ProfilePage key={data.profile.did} {...data} />}
+          </Await>
+        </Suspense>
+      ) : (
+        <ProfilePage key={data.profile.did} {...data} />
+      )}
     </MainLayout>
   );
 }

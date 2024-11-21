@@ -15,6 +15,10 @@
     "defaultMessage": "Close",
     "description": "CTA to close something"
   },
+  "8x8JXQ": {
+    "defaultMessage": "Following since the beginning of time",
+    "description": "Lets a user know that this other user has been following another channel since forever"
+  },
   "9UlEfa": {
     "defaultMessage": "Log out",
     "description": "CTA to log out of the appliation"
@@ -22,6 +26,10 @@
   "Adls26": {
     "defaultMessage": "VStream Logo",
     "description": "SVG title for the VStream logo"
+  },
+  "AxEfS4": {
+    "defaultMessage": "Following since {since, date, long}",
+    "description": "Lets a user know that this other user has been following another channel from some time"
   },
   "B94LjD": {
     "defaultMessage": "{quoteCount,plural,one{<b>#</b> quote} other{<b>#</b> quotes}}",
@@ -59,9 +67,17 @@
     "defaultMessage": "Login into VStream",
     "description": "Header for the login page"
   },
+  "SUKhm2": {
+    "defaultMessage": "<b>{followingCount, number, ::compact-short}</b> following",
+    "description": "Explains how many channels _this_ channel follows"
+  },
   "U4wDG6": {
     "defaultMessage": "Don’t have an account on BlueSky? <a>Sign up for Bluesky</a> to create one now!",
     "description": "Description of the handle input on login page"
+  },
+  "gLb6nw": {
+    "defaultMessage": "{followerCount,plural,one{<b>{followerCount, number, ::compact-short}</b> follower} other{<b>{followerCount, number, ::compact-short}</b> followers}}",
+    "description": "Explains how many followers this channel has"
   },
   "hprdnf": {
     "defaultMessage": "Log in",

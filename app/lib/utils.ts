@@ -5,6 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const INVALID_HANDLE = "handle.invalid";
+type Author = {
+  did: string;
+  handle: string;
+};
+export function handleOrDid<T extends Author>(author: T): string {
+  return author.handle.endsWith(INVALID_HANDLE) ? author.did : author.handle;
+}
+
 export async function take<T>(
   iter: AsyncIterableIterator<T>,
   num: number,

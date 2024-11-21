@@ -36,6 +36,7 @@ import {
 import { linkToPost, linkToProfile } from "~/lib/linkHelpers";
 import type { VStreamFeedViewPost, VStreamPostThread } from "~/types";
 import { cn } from "~/lib/utils";
+import { ProfileFlyout } from "~/components/profileFlyout";
 
 export async function loader(args: LoaderFunctionArgs) {
   const { handle, rkey } = args.params;
@@ -212,12 +213,18 @@ const HighlightedPostPageItem = React.forwardRef<
     <article ref={ref} className="px-4 pb-5">
       <FeedPostEyebrow isThreadChild={hasPrecedingItem} reason={undefined} />
       <div className="flex w-full items-center gap-4">
-        <Link href={profileLink} className="cursor-pointer">
-          <Avatar className="size-16">
-            <AvatarImage src={post.author.avatar} />
-            <AvatarFallback>@</AvatarFallback>
-          </Avatar>
-        </Link>
+        <ProfileFlyout profile={post.author}>
+          {(hoverProps) => (
+            <div {...hoverProps}>
+              <Link href={profileLink}>
+                <Avatar className="size-16">
+                  <AvatarImage src={post.author.avatar} />
+                  <AvatarFallback>@</AvatarFallback>
+                </Avatar>
+              </Link>
+            </div>
+          )}
+        </ProfileFlyout>
         <div className="flex-grow">
           <h2 className="text-lg">
             <Link href={profileLink} className="cursor-pointer">
@@ -348,13 +355,21 @@ function PostPageItem(props: {
       />
       <div className="flex gap-4">
         <div className="flex w-[3.25rem] flex-col">
-          <Avatar className="aspect-square h-auto w-full">
-            <AvatarImage
-              src={post.author.avatar}
-              alt={post.author.displayName}
-            />
-            <AvatarFallback>@</AvatarFallback>
-          </Avatar>
+          <ProfileFlyout profile={post.author}>
+            {(hoverProps) => (
+              <div {...hoverProps}>
+                <Link href={linkToProfile(post.author)}>
+                  <Avatar className="aspect-square h-auto w-full">
+                    <AvatarImage
+                      src={post.author.avatar}
+                      alt={post.author.displayName}
+                    />
+                    <AvatarFallback>@</AvatarFallback>
+                  </Avatar>
+                </Link>
+              </div>
+            )}
+          </ProfileFlyout>
           {/* Line connecting related posts */}
           {props.showChildReplyLine && (
             <div className="mx-auto mt-1 w-0.5 grow bg-muted-foreground" />
