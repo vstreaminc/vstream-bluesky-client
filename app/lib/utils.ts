@@ -15,7 +15,7 @@ export function handleOrDid<T extends Author>(author: T): string {
 }
 
 export async function take<T>(
-  iter: AsyncIterableIterator<T>,
+  iter: AsyncIterable<T>,
   num: number,
 ): Promise<T[]> {
   const items: T[] = [];

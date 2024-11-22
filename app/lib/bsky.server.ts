@@ -158,28 +158,32 @@ function bSkySliceToVStreamSlice(
   };
 }
 
-export async function* feedGenerator(
+export function feedGenerator(
   fn: (options?: {
     cursor?: string;
     limit?: number;
   }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
   userDid: string,
   initalCusor?: string,
-): AsyncIterableIterator<VStreamFeedViewPostSlice> {
+): AsyncIterable<VStreamFeedViewPostSlice> & { cursor: string | undefined } {
   const tuner = new FeedTuner([
     FeedTuner.removeOrphans,
     FeedTuner.followedRepliesOnly({ userDid }),
     FeedTuner.dedupThreads,
   ]);
 
-  let cursor = initalCusor;
-  do {
-    const res = await fn({ cursor, limit: 100 });
-    cursor = res.data.cursor;
-    const slices = tuner.tune(res.data.feed);
+  return {
+    cursor: initalCusor,
+    async *[Symbol.asyncIterator]() {
+      do {
+        const res = await fn({ cursor: this.cursor, limit: 100 });
+        this.cursor = res.data.cursor;
+        const slices = tuner.tune(res.data.feed);
 
-    yield* slices.map((slice) => bSkySliceToVStreamSlice(slice));
-  } while (cursor);
+        yield* slices.map((slice) => bSkySliceToVStreamSlice(slice));
+      } while (this.cursor);
+    },
+  };
 }
 
 export async function* exploreGenerator(
