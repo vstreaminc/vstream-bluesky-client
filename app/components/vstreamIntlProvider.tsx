@@ -37,7 +37,7 @@ export function VStreamIntlProvider(props: Props) {
           method: "POST",
           body: JSON.stringify({ locale: l }),
         }).then((res) => res.json());
-
+        document.documentElement.setAttribute("lang", l);
         setLocale(l);
         setMessages(newMessages);
       }

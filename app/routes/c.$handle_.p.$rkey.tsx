@@ -1,8 +1,10 @@
 import * as React from "react";
 import {
   type LoaderFunctionArgs,
+  type MetaFunction,
   redirect,
   type SerializeFrom,
+  type MetaDescriptor,
 } from "@remix-run/node";
 import {
   Await,
@@ -33,10 +35,12 @@ import {
   makeRecordUri,
   sortPostThread,
 } from "~/lib/bsky.server";
-import { linkToPost, linkToProfile } from "~/lib/linkHelpers";
+import { canonicalURL, linkToPost, linkToProfile } from "~/lib/linkHelpers";
 import type { VStreamFeedViewPost, VStreamPostThread } from "~/types";
 import { cn } from "~/lib/utils";
 import { ProfileFlyout } from "~/components/profileFlyout";
+import { PRODUCT_NAME, TWITTER_HANDLE_EN } from "~/lib/constants";
+import type { SupportedLocale } from "~/lib/locale";
 
 export async function loader(args: LoaderFunctionArgs) {
   const { handle, rkey } = args.params;
@@ -53,7 +57,10 @@ export async function loader(args: LoaderFunctionArgs) {
       ),
     );
   }
-  const agent = await args.context.requireLoggedInUser();
+  const [agent, locale] = await Promise.all([
+    args.context.requireLoggedInUser(),
+    args.context.intl.locale(),
+  ]);
 
   const uri = makeRecordUri(handle!, "app.bsky.feed.post", rkey!);
 
@@ -64,6 +71,8 @@ export async function loader(args: LoaderFunctionArgs) {
   if (thread.$type !== "post") {
     throw new Response("Not found", { status: 404 });
   }
+
+  const postPlainText = thread.post.plainText;
 
   const skeleton = createThreadSkeleton(
     sortPostThread(thread, agent.assertDid),
@@ -85,7 +94,11 @@ export async function loader(args: LoaderFunctionArgs) {
   }
   await Promise.all(hydrations);
 
-  return skeleton;
+  return {
+    ...skeleton,
+    postPlainText,
+    canonicalURL: canonicalURL(args.request.url, locale),
+  };
 }
 
 export function clientLoader(args: ClientLoaderFunctionArgs) {
@@ -104,9 +117,77 @@ export function clientLoader(args: ClientLoaderFunctionArgs) {
     parents: [],
     highlightedPost: thread,
     replies: [],
+    postPlainText: post.plainText,
+    canonicalURL: canonicalURL(
+      args.request.url,
+      document.documentElement.getAttribute("lang") as SupportedLocale,
+    ),
     serverData: args.serverLoader<typeof loader>(),
   } satisfies SerializeFrom<typeof loader> & { serverData: unknown };
 }
+
+export const meta: MetaFunction<typeof loader> = (args) => {
+  if (!args.data) return [];
+  const { highlightedPost: post, postPlainText, canonicalURL } = args.data;
+  if (!post || post.$type !== "post") return [];
+  const author = post.post.author;
+
+  const postText =
+    postPlainText.length > 96
+      ? `${postPlainText.slice(0, 96)}...`
+      : postPlainText;
+
+  const title = [author.handle, postText, PRODUCT_NAME]
+    .filter(Boolean)
+    .join(" | ");
+
+  const metas: MetaDescriptor[] = [
+    { title },
+    { tagName: "link", rel: "canonical", href: canonicalURL },
+  ];
+  const ogImage = (() => {
+    if (
+      !post.post.embed ||
+      post.post.embed.$type !== "com.vstream.embed.images#view"
+    )
+      return undefined;
+    return post.post.embed.images[0];
+  })();
+  const description = postPlainText.slice(0, 240) || ogImage?.alt.slice(0, 240);
+  if (description) {
+    metas.push({ description });
+  }
+
+  const ogInfo = {
+    "og:description": description,
+    // Show OG image of post or creator's PFP of that's missing
+    "og:image": ogImage ? ogImage.fullsize : post.post.author.avatar,
+    "og:site_name": PRODUCT_NAME,
+    "og:title": `${author.displayName} (${author.handle}) on ${PRODUCT_NAME}`,
+    "og:type": "article",
+    "og:url": canonicalURL,
+  };
+
+  const twitterInfo = {
+    "twitter:card": ogImage ? "summary_large_image" : "summary",
+    "twitter:description": description,
+    "twitter:image": ogInfo["og:image"],
+    "twitter:site": TWITTER_HANDLE_EN,
+    "twitter:title": ogInfo["og:title"],
+  };
+
+  for (const [property, content] of Object.entries(ogInfo)) {
+    if (!content) continue;
+    metas.push({ property, content });
+  }
+
+  for (const [property, content] of Object.entries(twitterInfo)) {
+    if (!content) continue;
+    metas.push({ property, content });
+  }
+
+  return metas;
+};
 
 export default function PostPageScreen() {
   const data = useLoaderData<typeof loader | typeof clientLoader>();

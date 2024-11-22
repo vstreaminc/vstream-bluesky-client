@@ -19,7 +19,7 @@ export function fromRequest(
   ctx: AppContext,
   _cfg: ServerConfig,
 ): RequestContext {
-  const currentLocale: RequestContext["currentLocale"] = memoize0(() =>
+  const currentLocale: IntlContext["locale"] = memoize0(() =>
     extractCurrentLocale(req, ctx),
   );
 
@@ -71,6 +71,7 @@ export function fromRequest(
 
   const intl: IntlContext = {
     t,
+    locale: currentLocale,
   };
 
   const profileLoader: BSkyContext["profileLoader"] = memoizeObject1(
@@ -131,7 +132,6 @@ export function fromRequest(
   return {
     bsky,
     cache: requestCache,
-    currentLocale,
     intl,
     maybeLoggedInUser,
     requireLoggedInUser,
@@ -147,7 +147,6 @@ export type RequestContext = {
   bsky: BSkyContext;
   cache: () => Promise<Cache<unknown>>;
   intl: IntlContext;
-  currentLocale: () => Promise<SupportedLocale>;
   maybeLoggedInUser: () => Promise<Agent | null>;
   requireLoggedInUser: () => Promise<Agent>;
 };
@@ -163,4 +162,5 @@ export type BSkyContext = {
 
 export type IntlContext = {
   t: () => Promise<IntlShape>;
+  locale: () => Promise<SupportedLocale>;
 };

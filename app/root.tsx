@@ -42,7 +42,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const headers = new Headers();
   const [agent, currentLocale, session] = await Promise.all([
     context.maybeLoggedInUser(),
-    context.currentLocale(),
+    context.intl.locale(),
     context.session.get(request),
   ]);
 
