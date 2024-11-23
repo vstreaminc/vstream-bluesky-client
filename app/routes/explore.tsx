@@ -4,9 +4,10 @@ import type {
   MetaDescriptor,
   MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useEvent } from "react-use-event-hook";
 import { SECOND } from "@atproto/common";
+import { $path } from "remix-routes";
 import { MainLayout } from "~/components/mainLayout";
 import {
   FeedPostContentText,
@@ -26,6 +27,11 @@ import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
 import { linkToPost } from "~/lib/linkHelpers";
+import { ObserverLoader } from "~/components/observer";
+
+export type SearchParams = {
+  cursor?: string;
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const [agent, t] = await Promise.all([
@@ -44,34 +50,37 @@ export async function loader(args: LoaderFunctionArgs) {
       "Discover new and interesting posts from artists and creators",
     description: "Description for the explore page of website",
   });
-  const posts = await (
-    await args.context.cache()
-  ).getOrSet(
-    "explorePosts",
-    async () => {
-      const gen = exploreGenerator((opts) =>
+  const cursorFromQuery =
+    new URLSearchParams(args.request.url.split("?")[1]).get("cursor") ??
+    undefined;
+  async function getExplorePosts(cursor?: string) {
+    const gen = exploreGenerator(
+      (opts) =>
         agent.app.bsky.feed.getFeed({
           ...opts,
           feed: DISCOVER_FEED_URI,
         }),
-      );
-      const posts = await take(gen, 20);
-      const finders = {
-        getProfile: (did: string) =>
-          args.context.bsky.cachedFindProfile(agent, did),
-      };
-      await Promise.all(
-        posts.map((post) => hydrateFeedViewVStreamPost(post, finders)),
-      );
-      return posts;
-    },
-    {
-      expiresIn: 10 * SECOND,
-      staleWhileRevalidate: 50 * SECOND,
-    },
-  );
+      cursor,
+    );
+    const posts = await take(gen, 20);
+    const finders = {
+      getProfile: (did: string) =>
+        args.context.bsky.cachedFindProfile(agent, did),
+    };
+    await Promise.all(
+      posts.map((post) => hydrateFeedViewVStreamPost(post, finders)),
+    );
+    return { posts, cursor: gen.cursor };
+  }
+  const { posts, cursor } = await (cursorFromQuery
+    ? getExplorePosts(cursorFromQuery)
+    : // Only cache when no cursor
+      (await args.context.cache()).getOrSet("explorePosts", getExplorePosts, {
+        expiresIn: 10 * SECOND,
+        staleWhileRevalidate: 50 * SECOND,
+      }));
 
-  return { title, description, posts };
+  return { title, description, posts, cursor };
 }
 
 export const meta: MetaFunction<typeof loader> = (args) => {
@@ -92,7 +101,25 @@ const MIN_ROW_HEIGHT = 200;
 const MAX_ROW_HEIGHT = 400;
 
 export default function ExplorePage() {
-  const { posts } = useLoaderData<typeof loader>();
+  const serverData = useLoaderData<typeof loader>();
+  const [posts, setPosts] = React.useState(serverData.posts);
+  const [cursor, setCursor] = React.useState(serverData.cursor);
+  const { data, load } = useFetcher<typeof loader>({ key: `explore-feed` });
+  const fetchedCountRef = React.useRef(-1);
+
+  const count = posts.length;
+  const hasMore = !!cursor && fetchedCountRef.current < count;
+  const loadMore = useEvent(async () => {
+    if (fetchedCountRef.current < count) {
+      load($path("/explore", { cursor }));
+    }
+  });
+
+  React.useEffect(() => {
+    if (!data) return;
+    setCursor(data.cursor);
+    setPosts((posts) => [...posts, ...data.posts]);
+  }, [data]);
 
   return (
     <MainLayout>
@@ -100,6 +127,7 @@ export default function ExplorePage() {
         {posts.map((post) => (
           <ExploreItem key={post._reactKey} post={post} />
         ))}
+        <ObserverLoader onLoad={loadMore} shouldLoad={hasMore} margin="200px" />
       </div>
     </MainLayout>
   );

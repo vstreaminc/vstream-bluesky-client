@@ -221,7 +221,7 @@ function FeedPage({
   feed: "home";
 }) {
   const [slices, setSlices] = React.useState(props.slices);
-  const [cursor, setCusor] = React.useState(props.cursor);
+  const [cursor, setCursor] = React.useState(props.cursor);
   const count = slices.length;
   const { data, load } = useFetcher<typeof loader>({ key: `feed-${feed}` });
   const { cache, ref } = useWindowVirtualizeCached(feed, slices[0]._reactKey);
@@ -238,7 +238,7 @@ function FeedPage({
   });
   React.useEffect(() => {
     if (!data) return;
-    setCusor(data.cursor);
+    setCursor(data.cursor);
     setSlices((slices) => [...slices, ...data.slices]);
   }, [data]);
 

@@ -186,13 +186,13 @@ export function feedGenerator(
   };
 }
 
-export async function* exploreGenerator(
+export function exploreGenerator(
   fn: (options?: {
     cursor?: string;
     limit?: number;
   }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
   initalCusor?: string,
-): AsyncIterableIterator<VStreamFeedViewPost> {
+): AsyncIterable<VStreamFeedViewPost> & { cursor: string | undefined } {
   const tuner = new FeedTuner([
     FeedTuner.dedupThreads,
     FeedTuner.removeReposts,
@@ -214,35 +214,41 @@ export async function* exploreGenerator(
     "image",
   ] as const;
 
-  let cursor = initalCusor;
-  do {
-    const res = await fn({ cursor, limit: 100 });
-    cursor = res.data.cursor;
-    const slices = tuner.tune(res.data.feed);
-    for (const slice of slices) {
-      if (AppBskyEmbedImages.isView(slice.items[0].post.embed)) {
-        imagePosts.push(slice);
-      } else {
-        basicPosts.push(slice);
-      }
-    }
-    for (const type of order) {
-      switch (type) {
-        case "image": {
-          const slice = imagePosts.shift();
-          if (!slice) continue;
-          yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
-          break;
+  return {
+    cursor: initalCusor,
+    async *[Symbol.asyncIterator]() {
+      do {
+        const res = await fn({ cursor: this.cursor, limit: 30 });
+        this.cursor = res.data.feed.length ? res.data.cursor : undefined;
+        const slices = tuner.tune(res.data.feed);
+        for (const slice of slices) {
+          if (AppBskyEmbedImages.isView(slice.items[0].post.embed)) {
+            imagePosts.push(slice);
+          } else {
+            basicPosts.push(slice);
+          }
         }
-        case "basic": {
-          const slice = basicPosts.shift();
-          if (!slice) continue;
-          yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
-          break;
+        while (imagePosts.length > 0 && basicPosts.length > 0) {
+          for (const type of order) {
+            switch (type) {
+              case "image": {
+                const slice = imagePosts.shift();
+                if (!slice) continue;
+                yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
+                break;
+              }
+              case "basic": {
+                const slice = basicPosts.shift();
+                if (!slice) continue;
+                yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
+                break;
+              }
+            }
+          }
         }
-      }
-    }
-  } while (cursor);
+      } while (this.cursor);
+    },
+  };
 }
 
 export async function hydrateFeedViewVStreamPost(

@@ -7,6 +7,10 @@
     "defaultMessage": "{likeCount,plural,one{<b>#</b> like} other{<b>#</b> likes}}",
     "description": "Number of likes a post has gained"
   },
+  "0yOM1e": {
+    "defaultMessage": "Loading...",
+    "description": "Message shown while loading new items into a list"
+  },
   "6QjI8l": {
     "defaultMessage": "Explore",
     "description": "Link to explore page in main navigation"
