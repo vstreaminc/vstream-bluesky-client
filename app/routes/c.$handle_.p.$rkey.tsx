@@ -220,7 +220,6 @@ function PostPage(data: SerializeFrom<typeof loader>) {
       return;
     }
     if (highlightedPost.$type === "post" && !!highlightedPost.parent) {
-      console.log("got here");
       highlightedPostRef.current?.scrollIntoView();
       didAdjustScrollWeb.current = true;
     }

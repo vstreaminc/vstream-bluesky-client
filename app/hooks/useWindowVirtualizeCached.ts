@@ -35,7 +35,5 @@ export function useWindowVirtualizeCached(
     [state, ref, cached],
   );
 
-  console.log(state, toReturn.cache);
-
   return toReturn;
 }
