@@ -9,6 +9,7 @@ import type { loader as profileApiLoader } from "~/routes/api.profile.$handleOrD
 import type { VStreamProfileViewSimple } from "~/types";
 import { linkToProfile } from "~/lib/linkHelpers";
 import { Avatar, AvatarImage } from "./ui/avatar";
+import { DescriptionAutoLinker } from "./descriptionAutoLinker";
 
 type Profile = Partial<VStreamProfileViewSimple> & {
   did: string;
@@ -132,7 +133,9 @@ function ChannelHighlight(props: ChannelHighlightProps) {
           <div className="text-sm text-muted-foreground">{profile.handle}</div>
         </div>
         {profile.description ? (
-          <div className="line-clamp-3 text-xs">{profile.description}</div>
+          <div className="line-clamp-6 text-xs">
+            <DescriptionAutoLinker description={profile.description} />
+          </div>
         ) : null}
         <div className="flex gap-3">
           {typeof profile.followersCount === "number" ? (

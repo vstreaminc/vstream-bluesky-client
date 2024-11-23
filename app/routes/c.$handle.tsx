@@ -10,6 +10,7 @@ import {
 } from "@remix-run/react";
 import { Suspense } from "react";
 import { $path } from "remix-routes";
+import { DescriptionAutoLinker } from "~/components/descriptionAutoLinker";
 import { MainLayout } from "~/components/mainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import * as clientDB from "~/db.client";
@@ -90,7 +91,7 @@ export function ProfilePage({ profile }: SerializeFrom<typeof loader>) {
         <div>
           <h1 className="text-3xl text-foreground">{profile.displayName}</h1>
           <div className="max-w-2xl text-sm text-muted-foreground">
-            {profile.description}
+            <DescriptionAutoLinker description={profile.description} />
           </div>
         </div>
       </div>
