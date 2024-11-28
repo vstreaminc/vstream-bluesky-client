@@ -23,11 +23,11 @@ import { useDimensions } from "~/hooks/useDimensions";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
 import { linkToProfile, linkToPost } from "~/lib/linkHelpers";
+import { clamp } from "~/lib/numbers";
 import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
 import { ProfileFlyout } from "./profileFlyout";
-import { clamp } from "~/lib/numbers";
 
 /**
  * Main component for rendering slices in the feed
