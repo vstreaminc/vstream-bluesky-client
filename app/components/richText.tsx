@@ -10,6 +10,7 @@ import type {
   RichText,
   TextNode,
 } from "~/types";
+import { ProfileFlyout } from "./profileFlyout";
 
 type Props = {
   textRenderer?: (node: TextNode) => React.ReactNode;
@@ -30,12 +31,18 @@ export function RichTextRenderer({
     throw new Error("Not implemented");
   },
   mentionRenderer = (node) => (
-    <Link
-      href={linkToProfile(node)}
-      className="cursor-pointer text-blue-400 hover:underline"
-    >
-      {node.handle}
-    </Link>
+    <ProfileFlyout profile={node}>
+      {(hoverProps) => (
+        <span {...hoverProps}>
+          <Link
+            href={linkToProfile(node)}
+            className="cursor-pointer text-blue-400 hover:underline"
+          >
+            {node.handle}
+          </Link>
+        </span>
+      )}
+    </ProfileFlyout>
   ),
   hashtagRenderer = (node) => (
     <span className="cursor-pointer text-blue-400 hover:underline">
