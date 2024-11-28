@@ -1,5 +1,6 @@
 import { $path } from "remix-routes";
 import { handleOrDid } from "./utils";
+import { SUPPORTED_LOCALES } from "./locale";
 
 export function linkToProfile<T extends { handle: string; did: string }>(
   author: T,
@@ -61,4 +62,31 @@ export function canonicalURL(
     `${url.pathname}${paramsString}`,
     `https://${url.host}`,
   ).toString();
+}
+
+/**
+ * Generates a link to a locale given a certain existing URL
+ */
+export function linkToLocale(url: URL | string, locale: string | null): URL {
+  const clone = new URL(url);
+  if (locale) {
+    clone.searchParams.set("lang", locale);
+  } else {
+    clone.searchParams.delete("lang");
+  }
+  return clone;
+}
+
+/**
+ * Add links to alternative locales
+ * https://developers.google.com/search/docs/specialty/international/localized-versions
+ */
+export function hrefLangs(url: string): { locale: string; href: string }[] {
+  return SUPPORTED_LOCALES.map((locale): { locale: string; href: string } => ({
+    locale,
+    href: linkToLocale(url, locale).toString(),
+  })).concat({
+    locale: "x-default",
+    href: linkToLocale(url, null).toString(),
+  });
 }

@@ -1,6 +1,13 @@
 import { OAuthResolverError } from "@atproto/oauth-client-node";
 import { isValidHandle } from "@atproto/syntax";
-import { type ActionFunctionArgs, json, redirect } from "@remix-run/node";
+import {
+  type ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  type MetaDescriptor,
+  redirect,
+} from "@remix-run/node";
 import { useActionData, useSubmit } from "@remix-run/react";
 import { Form, Text } from "react-aria-components";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -13,7 +20,10 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input, JollyTextField } from "~/components/ui/textfield";
+import { PRODUCT_NAME } from "~/lib/constants";
+import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
 import { ctas } from "~/lib/messages";
+import { BooleanFilter } from "~/lib/utils";
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const { handle } = Object.fromEntries(await request.formData());
@@ -36,6 +46,56 @@ export async function action({ request, context }: ActionFunctionArgs) {
     });
   }
 }
+
+export async function loader(args: LoaderFunctionArgs) {
+  const t = await args.context.intl.t();
+  const title = t.formatMessage(
+    {
+      defaultMessage: "Log in | {productName}",
+      description: "Title for the log in page of website",
+    },
+    { productName: PRODUCT_NAME },
+  );
+  const description = t.formatMessage(
+    {
+      defaultMessage: "Log into your {productName} account",
+      description: "Description for the explore page of website",
+    },
+    { productName: PRODUCT_NAME },
+  );
+
+  return {
+    title,
+    description,
+    canonicalURL: canonicalURL(args.request.url, t.locale),
+    hrefLangs: hrefLangs(args.request.url),
+  };
+}
+
+export const meta: MetaFunction<typeof loader> = (args) => {
+  const metas: MetaDescriptor[] = [
+    // TODO: Remove before going live
+    { name: "robots", content: "noindex" },
+    args.data?.title && { title: args.data.title },
+    args.data?.description && {
+      name: "description",
+      content: args.data.description,
+    },
+    args.data?.canonicalURL && {
+      tagName: "link",
+      rel: "canonical",
+      href: args.data.canonicalURL,
+    },
+    ...(args.data?.hrefLangs ?? []).map(({ locale, href }) => ({
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: locale,
+      href,
+    })),
+  ].filter(BooleanFilter);
+
+  return metas;
+};
 
 export default function Login() {
   const actionData = useActionData<typeof action>();

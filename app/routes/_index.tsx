@@ -20,9 +20,10 @@ import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
 import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { FeedSlice } from "~/components/post";
-import { take } from "~/lib/utils";
+import { BooleanFilter, take } from "~/lib/utils";
 import { useWindowVirtualizeCached } from "~/hooks/useWindowVirtualizeCached";
 import type { VStreamFeedViewPostSlice } from "~/types";
+import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
 
 export type SearchParams = {
   cursor?: string;
@@ -30,11 +31,21 @@ export type SearchParams = {
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
-    { title: args.data?.title ?? PRODUCT_NAME },
-    { name: "description", content: "~~~Under Construction~~~" },
     // TODO: Remove before going live
     { name: "robots", content: "noindex" },
-  ];
+    args.data?.title && { title: args.data.title },
+    args.data?.canonicalURL && {
+      tagName: "link",
+      rel: "canonical",
+      href: args.data.canonicalURL,
+    },
+    ...(args.data?.hrefLangs ?? []).map(({ locale, href }) => ({
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: locale,
+      href,
+    })),
+  ].filter(BooleanFilter);
 
   // https://developers.google.com/search/docs/appearance/structured-data/sitelinks-searchbox
   // https://developers.google.com/search/docs/appearance/site-names
@@ -151,7 +162,13 @@ export async function loader(args: LoaderFunctionArgs) {
     { productName: PRODUCT_NAME },
   );
 
-  return { title, slices, cursor };
+  return {
+    title,
+    slices,
+    cursor,
+    canonicalURL: canonicalURL(args.request.url, t.locale),
+    hrefLangs: hrefLangs(args.request.url),
+  };
 }
 
 const cache = new Map<string, SerializeFrom<typeof loader>>();

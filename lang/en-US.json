@@ -79,6 +79,10 @@
     "defaultMessage": "Don’t have an account on BlueSky? <a>Sign up for Bluesky</a> to create one now!",
     "description": "Description of the handle input on login page"
   },
+  "VdxpkB": {
+    "defaultMessage": "Log into your {productName} account",
+    "description": "Description for the explore page of website"
+  },
   "gLb6nw": {
     "defaultMessage": "{followerCount,plural,one{<b>{followerCount, number, ::compact-short}</b> follower} other{<b>{followerCount, number, ::compact-short}</b> followers}}",
     "description": "Explains how many followers this channel has"
@@ -94,6 +98,10 @@
   "l3XlNZ": {
     "defaultMessage": "Dark mode",
     "description": "CTA to switch the application to the color scheme that is darker"
+  },
+  "lzlE+K": {
+    "defaultMessage": "Log in | {productName}",
+    "description": "Title for the log in page of website"
   },
   "pWTd95": {
     "defaultMessage": "Discover new and interesting posts from artists and creators",

@@ -35,7 +35,12 @@ import {
   makeRecordUri,
   sortPostThread,
 } from "~/lib/bsky.server";
-import { canonicalURL, linkToPost, linkToProfile } from "~/lib/linkHelpers";
+import {
+  canonicalURL,
+  hrefLangs,
+  linkToPost,
+  linkToProfile,
+} from "~/lib/linkHelpers";
 import type { VStreamFeedViewPost, VStreamPostThread } from "~/types";
 import { cn } from "~/lib/utils";
 import { ProfileFlyout } from "~/components/profileFlyout";
@@ -98,6 +103,7 @@ export async function loader(args: LoaderFunctionArgs) {
     ...skeleton,
     postPlainText,
     canonicalURL: canonicalURL(args.request.url, locale),
+    hrefLangs: hrefLangs(args.request.url),
   };
 }
 
@@ -122,6 +128,7 @@ export function clientLoader(args: ClientLoaderFunctionArgs) {
       args.request.url,
       document.documentElement.getAttribute("lang") as SupportedLocale,
     ),
+    hrefLangs: hrefLangs(args.request.url),
     serverData: args.serverLoader<typeof loader>(),
   } satisfies SerializeFrom<typeof loader> & { serverData: unknown };
 }
@@ -144,6 +151,12 @@ export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
     { title },
     { tagName: "link", rel: "canonical", href: canonicalURL },
+    ...(args.data?.hrefLangs ?? []).map(({ locale, href }) => ({
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: locale,
+      href,
+    })),
   ];
   const ogImage = (() => {
     if (

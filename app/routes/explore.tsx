@@ -26,7 +26,7 @@ import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
-import { linkToPost } from "~/lib/linkHelpers";
+import { hrefLangs, linkToPost } from "~/lib/linkHelpers";
 import { ObserverLoader } from "~/components/observer";
 
 export type SearchParams = {
@@ -84,7 +84,13 @@ export async function loader(args: LoaderFunctionArgs) {
         staleWhileRevalidate: 50 * SECOND,
       }));
 
-  return { title, description, posts, cursor };
+  return {
+    title,
+    description,
+    posts,
+    cursor,
+    hrefLangs: hrefLangs(args.request.url),
+  };
 }
 
 export const meta: MetaFunction<typeof loader> = (args) => {
@@ -96,6 +102,12 @@ export const meta: MetaFunction<typeof loader> = (args) => {
     },
     // TODO: Remove before going live
     { name: "robots", content: "noindex" },
+    ...(args.data?.hrefLangs ?? []).map(({ locale, href }) => ({
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: locale,
+      href,
+    })),
   ].filter(BooleanFilter);
 
   return metas;
