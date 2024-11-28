@@ -38,6 +38,7 @@ export async function loader(args: LoaderFunctionArgs) {
     args.context.requireLoggedInUser(),
     args.context.intl.t(),
   ]);
+  const moderationOpts = await args.context.bsky.cachedModerationOpts(agent);
   const title = t.formatMessage(
     {
       defaultMessage: "Explore | {productName}",
@@ -60,7 +61,10 @@ export async function loader(args: LoaderFunctionArgs) {
           ...opts,
           feed: DISCOVER_FEED_URI,
         }),
-      cursor,
+      {
+        initalCusor: cursor,
+        moderationOpts,
+      },
     );
     const posts = await take(gen, 20);
     const finders = {

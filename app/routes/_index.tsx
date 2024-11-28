@@ -110,6 +110,7 @@ export async function loader(args: LoaderFunctionArgs) {
     args.context.requireLoggedInUser(),
     args.context.intl.t(),
   ]);
+  const moderationOpts = await args.context.bsky.cachedModerationOpts(agent);
   const cursorFromQuery =
     new URLSearchParams(args.request.url.split("?")[1]).get("cursor") ??
     undefined;
@@ -118,11 +119,11 @@ export async function loader(args: LoaderFunctionArgs) {
     slices: VStreamFeedViewPostSlice[];
     cursor: string | undefined;
   }> {
-    const gen = feedGenerator(
-      (opts) => agent.getTimeline(opts),
-      agent.assertDid,
-      cursor,
-    );
+    const gen = feedGenerator((opts) => agent.getTimeline(opts), {
+      userDid: agent.assertDid,
+      initalCusor: cursor,
+      moderationOpts,
+    });
     const res = await take(gen, 20);
     const finders = {
       getProfile: (did: string) =>

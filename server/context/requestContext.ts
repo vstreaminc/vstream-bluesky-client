@@ -1,6 +1,13 @@
 import type express from "express";
 import { redirect } from "@remix-run/node";
-import { Agent } from "@atproto/api";
+import {
+  Agent,
+  type AppBskyLabelerDefs,
+  BskyAgent,
+  type BskyPreferences,
+  interpretLabelValueDefinitions,
+  type ModerationOpts,
+} from "@atproto/api";
 import { DAY, MINUTE } from "@atproto/common";
 import type { IntlShape } from "react-intl";
 import DataLoader from "dataloader";
@@ -9,6 +16,10 @@ import type { SupportedLocale } from "~/lib/locale";
 import { createIntl } from "~/lib/locale.server";
 import { memoize0, memoizeObject1 } from "~/lib/memoize";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
+import {
+  DEFAULT_LOGGED_OUT_LABEL_PREFERENCES,
+  DEFAULT_LOGGED_OUT_PREFERENCES,
+} from "~/lib/constants";
 import { extractCurrentLocale } from "../locale";
 import { type Cache, createCache, createRequestCache } from "../cache";
 import type { ServerConfig } from "../config";
@@ -115,16 +126,82 @@ export function fromRequest(
     );
   };
 
-  const currentProfile: BSkyContext["currentProfile"] = async (agent) => {
-    return (await requestCache()).getOrSet(
-      agent.assertDid,
-      () => profileLoader(agent).load(agent.assertDid),
-      { expiresIn: 30 * MINUTE, staleWhileRevalidate: 1 * DAY },
+  const currentProfile: BSkyContext["currentProfile"] = memoizeObject1(
+    async (agent) => {
+      return (await requestCache()).getOrSet(
+        agent.assertDid,
+        () => profileLoader(agent).load(agent.assertDid),
+        { expiresIn: 30 * MINUTE, staleWhileRevalidate: 1 * DAY },
+      );
+    },
+  );
+
+  async function bSkyPreferences(agent: Agent) {
+    if (!agent.did) return DEFAULT_LOGGED_OUT_PREFERENCES;
+    const res = await agent.getPreferences();
+    return {
+      ...res,
+      savedFeeds: res.savedFeeds.filter((f) => f.type !== "unknown"),
+    };
+  }
+
+  async function labelDefinitions(agent: Agent, prefs: BskyPreferences) {
+    const dids = Array.from(
+      new Set(
+        BskyAgent.appLabelers.concat(
+          prefs.moderationPrefs.labelers.map((l) => l.did) || [],
+        ),
+      ),
     );
-  };
+    const res = await agent.app.bsky.labeler.getServices({
+      dids,
+      detailed: true,
+    });
+    const labelers = res.data.views as AppBskyLabelerDefs.LabelerViewDetailed[];
+    return {
+      labelDefs: Object.fromEntries(
+        labelers.map((labeler) => [
+          labeler.creator.did,
+          interpretLabelValueDefinitions(labeler),
+        ]),
+      ),
+      labelers,
+    };
+  }
+
+  async function moderationOpts(agent: Agent): Promise<ModerationOpts> {
+    const prefs = await bSkyPreferences(agent);
+    const { moderationPrefs } = prefs;
+    const { labelDefs } = await labelDefinitions(agent, prefs);
+    const userDid = agent.did;
+    return {
+      userDid,
+      prefs: {
+        ...moderationPrefs,
+        labelers: moderationPrefs.labelers.length
+          ? moderationPrefs.labelers
+          : BskyAgent.appLabelers.map((did) => ({
+              did,
+              labels: DEFAULT_LOGGED_OUT_LABEL_PREFERENCES,
+            })),
+        hiddenPosts: [],
+      },
+      labelDefs,
+    };
+  }
+
+  const cachedModerationOpts: BSkyContext["cachedModerationOpts"] =
+    memoizeObject1(async (agent) => {
+      return (await requestCache()).getOrSet(
+        "moderationOpts",
+        () => moderationOpts(agent),
+        { expiresIn: 5 * MINUTE, staleWhileRevalidate: 1 * DAY },
+      );
+    });
 
   const bsky: BSkyContext = {
     cachedFindProfile,
+    cachedModerationOpts,
     currentProfile,
     profileLoader,
   };
@@ -158,6 +235,7 @@ export type BSkyContext = {
     did: string,
   ) => Promise<VStreamProfileViewSimple>;
   currentProfile: (agent: Agent) => Promise<VStreamProfileViewSimple>;
+  cachedModerationOpts: (agent: Agent) => Promise<ModerationOpts>;
 };
 
 export type IntlContext = {

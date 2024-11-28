@@ -80,6 +80,12 @@ export type VStreamFeedViewPost = Pick<
   rkey: string;
   embed?: VStreamEmbedImages;
   _reactKey: string;
+  moderation: {
+    filter: boolean;
+    blur: boolean;
+    alert: boolean;
+    inform: boolean;
+  };
   /**
    * Real type `BskyPostRecord["facets"]`. Typed as `unknown` to make remix okay
    * Should never need to touch underlying types unless hydrating.

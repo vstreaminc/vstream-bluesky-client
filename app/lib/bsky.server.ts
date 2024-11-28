@@ -5,6 +5,9 @@ import {
   AtUri,
   RichText as AtProtoRichText,
   type AppBskyFeedGetPostThread,
+  moderatePost,
+  type ModerationOpts,
+  type ModerationBehavior,
 } from "@atproto/api";
 import type {
   BSkyFeedViewPost,
@@ -87,7 +90,14 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
     post: AppBskyFeedDefs.PostView;
     record: AppBskyFeedPost.Record;
   },
->(item: T): VStreamFeedViewPost {
+>(
+  item: T,
+  opts?: { moderationOpts: ModerationOpts; context: keyof ModerationBehavior },
+): VStreamFeedViewPost {
+  const moderation = opts
+    ? moderatePost(item.post, opts.moderationOpts).ui(opts.context)
+    : undefined;
+
   return {
     _reactKey: item.post.uri,
     uri: item.post.uri,
@@ -131,11 +141,18 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
     plainText: item.record.text,
     // TODO: Handle this
     richText: [],
+    moderation: {
+      filter: moderation?.filter ?? false,
+      blur: moderation?.blur ?? false,
+      alert: moderation?.alert ?? false,
+      inform: moderation?.inform ?? false,
+    },
   };
 }
 
 function bSkySliceToVStreamSlice(
   slice: FeedViewPostsSlice,
+  opts?: { moderationOpts: ModerationOpts; context: keyof ModerationBehavior },
 ): VStreamFeedViewPostSlice {
   return {
     _reactKey: slice._reactKey,
@@ -152,7 +169,7 @@ function bSkySliceToVStreamSlice(
         }
       : undefined,
     items: slice.items.map((item, i) => ({
-      ...bSkyPostFeedViewPostToVStreamPostItem(item),
+      ...bSkyPostFeedViewPostToVStreamPostItem(item, opts),
       _reactKey: `${slice._reactKey}-${i}-${item.post.uri}`,
     })),
   };
@@ -163,24 +180,34 @@ export function feedGenerator(
     cursor?: string;
     limit?: number;
   }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
-  userDid: string,
-  initalCusor?: string,
+  opts: {
+    moderationOpts?: ModerationOpts;
+    userDid: string;
+    initalCusor?: string;
+  },
 ): AsyncIterable<VStreamFeedViewPostSlice> & { cursor: string | undefined } {
   const tuner = new FeedTuner([
     FeedTuner.removeOrphans,
-    FeedTuner.followedRepliesOnly({ userDid }),
+    FeedTuner.followedRepliesOnly({ userDid: opts.userDid }),
     FeedTuner.dedupThreads,
   ]);
 
   return {
-    cursor: initalCusor,
+    cursor: opts.initalCusor,
     async *[Symbol.asyncIterator]() {
       do {
         const res = await fn({ cursor: this.cursor, limit: 100 });
         this.cursor = res.data.cursor;
         const slices = tuner.tune(res.data.feed);
 
-        yield* slices.map((slice) => bSkySliceToVStreamSlice(slice));
+        yield* slices.map((slice) =>
+          bSkySliceToVStreamSlice(
+            slice,
+            opts.moderationOpts
+              ? { moderationOpts: opts.moderationOpts, context: "contentList" }
+              : undefined,
+          ),
+        );
       } while (this.cursor);
     },
   };
@@ -191,15 +218,18 @@ export function exploreGenerator(
     cursor?: string;
     limit?: number;
   }) => Promise<{ data: { cursor?: string; feed: BSkyFeedViewPost[] } }>,
-  initalCusor?: string,
+  opts?: {
+    moderationOpts?: ModerationOpts;
+    initalCusor?: string;
+  },
 ): AsyncIterable<VStreamFeedViewPost> & { cursor: string | undefined } {
   const tuner = new FeedTuner([
     FeedTuner.dedupThreads,
     FeedTuner.removeReposts,
     FeedTuner.removeReplies,
   ]);
-  const basicPosts: FeedViewPostsSlice[] = [];
-  const imagePosts: FeedViewPostsSlice[] = [];
+  const basicPosts: VStreamFeedViewPost[] = [];
+  const imagePosts: VStreamFeedViewPost[] = [];
   const order = [
     "image",
     "image",
@@ -215,32 +245,49 @@ export function exploreGenerator(
   ] as const;
 
   return {
-    cursor: initalCusor,
+    cursor: opts?.initalCusor,
     async *[Symbol.asyncIterator]() {
       do {
         const res = await fn({ cursor: this.cursor, limit: 30 });
         this.cursor = res.data.feed.length ? res.data.cursor : undefined;
         const slices = tuner.tune(res.data.feed);
         for (const slice of slices) {
+          const post = bSkyPostFeedViewPostToVStreamPostItem(
+            slice.items[0],
+            opts?.moderationOpts
+              ? {
+                  moderationOpts: opts.moderationOpts,
+                  context: "contentList",
+                }
+              : undefined,
+          );
+          if (
+            post.moderation.filter ||
+            post.moderation.blur ||
+            post.moderation.inform ||
+            post.moderation.alert
+          ) {
+            continue;
+          }
           if (AppBskyEmbedImages.isView(slice.items[0].post.embed)) {
-            imagePosts.push(slice);
+            imagePosts.push(post);
           } else {
-            basicPosts.push(slice);
+            basicPosts.push(post);
           }
         }
         while (imagePosts.length > 0 && basicPosts.length > 0) {
           for (const type of order) {
             switch (type) {
               case "image": {
-                const slice = imagePosts.shift();
-                if (!slice) continue;
-                yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
+                const post = imagePosts.shift();
+                if (!post) continue;
+                yield post;
                 break;
               }
               case "basic": {
-                const slice = basicPosts.shift();
-                if (!slice) continue;
-                yield bSkyPostFeedViewPostToVStreamPostItem(slice.items[0]);
+                const post = basicPosts.shift();
+                if (!post) continue;
+                yield post;
                 break;
               }
             }
