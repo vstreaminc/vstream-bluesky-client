@@ -6,6 +6,7 @@ import { Button, Link, type PressEvent } from "react-aria-components";
 import HlsVideo from "hls-video-element/react";
 import MediaThemeMinimal from "player.style/minimal/react";
 import { useNavigate } from "@remix-run/react";
+import { MediaPosterImage } from "media-chrome/react";
 import type {
   VStreamEmbedImages,
   VStreamEmbedVideo,
@@ -326,7 +327,6 @@ export function FeedPostVideoEmbed({ embed }: { embed: VStreamEmbedVideo }) {
       <MediaThemeMinimal style={{ aspectRatio }} className="w-full">
         <HlsVideo
           slot="media"
-          poster={embed.thumbnail}
           src={embed.playlist}
           playsInline
           crossOrigin="use-credentials"
@@ -334,6 +334,9 @@ export function FeedPostVideoEmbed({ embed }: { embed: VStreamEmbedVideo }) {
           loop
           muted
         ></HlsVideo>
+        {embed.thumbnail && (
+          <MediaPosterImage slot="poster" src={embed.thumbnail} />
+        )}
       </MediaThemeMinimal>
       {embed.alt && (
         <div id={figId} className="sr-only">

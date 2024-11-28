@@ -101,6 +101,9 @@ importers:
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.3.1)
+      media-chrome:
+        specifier: ^4.2.3
+        version: 4.2.3
       player.style:
         specifier: ^0.0.13
         version: 0.0.13
