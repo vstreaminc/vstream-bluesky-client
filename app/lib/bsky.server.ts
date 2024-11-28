@@ -8,6 +8,7 @@ import {
   moderatePost,
   type ModerationOpts,
   type ModerationBehavior,
+  AppBskyEmbedVideo,
 } from "@atproto/api";
 import type {
   BSkyFeedViewPost,
@@ -135,7 +136,19 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
             width: i.aspectRatio?.width,
           })),
         }
-      : undefined,
+      : AppBskyEmbedVideo.isView(item.post.embed)
+        ? {
+            $type: "com.vstream.embed.video#view",
+            cid: item.post.embed.cid,
+            alt: item.post.embed.alt,
+            aspectRatio: item.post.embed.aspectRatio
+              ? item.post.embed.aspectRatio.width /
+                item.post.embed.aspectRatio.height
+              : undefined,
+            playlist: item.post.embed.playlist,
+            thumbnail: item.post.embed.thumbnail,
+          }
+        : undefined,
     createdAt: item.record.createdAt,
     facets: item.record.facets,
     plainText: item.record.text,

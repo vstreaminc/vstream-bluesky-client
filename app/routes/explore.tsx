@@ -21,7 +21,7 @@ import {
 } from "~/lib/bsky.server";
 import { PRODUCT_NAME } from "~/lib/constants";
 import { BooleanFilter, cn, take } from "~/lib/utils";
-import type { VStreamFeedViewPost } from "~/types";
+import type { VStreamEmbedImages, VStreamFeedViewPost } from "~/types";
 import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { saveFeedPost } from "~/db.client";
@@ -199,7 +199,7 @@ function ExploreItemPostImage({
   post,
 }: {
   post: VStreamFeedViewPost & {
-    embed: NonNullable<VStreamFeedViewPost["embed"]>;
+    embed: NonNullable<VStreamEmbedImages>;
   };
 }) {
   const [getShadow] = useImageShadows();

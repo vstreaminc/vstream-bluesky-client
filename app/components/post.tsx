@@ -3,8 +3,15 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
 import { useEvent } from "react-use-event-hook";
 import { Button, Link, type PressEvent } from "react-aria-components";
+import HlsVideo from "hls-video-element/react";
+import MediaThemeMinimal from "player.style/minimal/react";
 import { useNavigate } from "@remix-run/react";
-import type { VStreamFeedViewPost, VStreamFeedViewPostSlice } from "~/types";
+import type {
+  VStreamEmbedImages,
+  VStreamEmbedVideo,
+  VStreamFeedViewPost,
+  VStreamFeedViewPostSlice,
+} from "~/types";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { RelativeTime } from "~/components/relativeTime";
@@ -19,6 +26,7 @@ import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
 import { ProfileFlyout } from "./profileFlyout";
+import { clamp } from "~/lib/numbers";
 
 /**
  * Main component for rendering slices in the feed
@@ -74,6 +82,10 @@ export function FeedPost(props: FeedPostProps) {
       !event.target.closest("a") &&
       !event.target.closest("button") &&
       !event.target.closest("form") &&
+      // The target isn't a video player
+      !event.target.closest("video") &&
+      !event.target.closest("hls-video") &&
+      !event.target.closest("media-theme-minimal") &&
       // The target isn't inside the user flyout / popover
       !event.target.closest(".react-aria-Popover") &&
       // The target isn't inside a dialog
@@ -251,10 +263,22 @@ export function FeedPostContentText({
 }
 
 export function FeedPostEmbed({ post }: { post: VStreamFeedViewPost }) {
-  const [getExtraInfo] = useImageShadows();
   if (!post.embed) return null;
+  switch (post.embed.$type) {
+    case "com.vstream.embed.images#view":
+      return <FeedPostImagesEmbed embed={post.embed} />;
+    case "com.vstream.embed.video#view":
+      return <FeedPostVideoEmbed embed={post.embed} />;
+    default:
+      post.embed satisfies never;
+      return null;
+  }
+}
 
-  const images = post.embed.images.map((i) => {
+export function FeedPostImagesEmbed({ embed }: { embed: VStreamEmbedImages }) {
+  const [getExtraInfo] = useImageShadows();
+
+  const images = embed.images.map((i) => {
     const img = {
       ...i,
       id: i.fullsize,
@@ -286,6 +310,36 @@ export function FeedPostEmbed({ post }: { post: VStreamFeedViewPost }) {
           </ManualDialogTrigger>
         )}
       />
+    </div>
+  );
+}
+
+export function FeedPostVideoEmbed({ embed }: { embed: VStreamEmbedVideo }) {
+  const aspectRatio = embed.aspectRatio
+    ? // min: square, max: 3/1
+      clamp(embed.aspectRatio, 1 / 1, 3 / 1)
+    : 16 / 9;
+  const figId = React.useId();
+
+  return (
+    <div className="mt-2">
+      <MediaThemeMinimal style={{ aspectRatio }} className="w-full">
+        <HlsVideo
+          slot="media"
+          poster={embed.thumbnail}
+          src={embed.playlist}
+          playsInline
+          crossOrigin="use-credentials"
+          aria-labelledby={embed.alt ? figId : undefined}
+          loop
+          muted
+        ></HlsVideo>
+      </MediaThemeMinimal>
+      {embed.alt && (
+        <div id={figId} className="sr-only">
+          {embed.alt}
+        </div>
+      )}
     </div>
   );
 }

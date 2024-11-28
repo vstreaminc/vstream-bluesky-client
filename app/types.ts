@@ -1,6 +1,7 @@
 import type {
   AppBskyActorDefs,
   AppBskyEmbedImages,
+  AppBskyEmbedVideo,
   AppBskyFeedDefs,
   AppBskyFeedPost,
 } from "@atproto/api";
@@ -51,6 +52,11 @@ export type VStreamEmbedImages = {
   })[];
 };
 
+export type VStreamEmbedVideo = {
+  $type: "com.vstream.embed.video#view";
+  aspectRatio?: number;
+} & Pick<AppBskyEmbedVideo.View, "cid" | "playlist" | "thumbnail" | "alt">;
+
 export type VStreamFeedViewPost = Pick<
   BSkyFeedViewPost["post"],
   "uri" | "cid" | "indexedAt"
@@ -78,7 +84,7 @@ export type VStreamFeedViewPost = Pick<
   likeCount: number;
   quoteCount: number;
   rkey: string;
-  embed?: VStreamEmbedImages;
+  embed?: VStreamEmbedImages | VStreamEmbedVideo;
   _reactKey: string;
   moderation: {
     filter: boolean;
