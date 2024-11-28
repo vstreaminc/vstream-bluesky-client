@@ -36,6 +36,30 @@ export const links: LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  {
+    rel: "icon",
+    href: "/favicon_32.png",
+    type: "image/png",
+    sizes: "32x32",
+  },
+  {
+    rel: "icon",
+    href: "/favicon_128.png",
+    type: "image/png",
+    sizes: "128x128",
+  },
+  {
+    rel: "apple-touch-icon",
+    href: "/favicon_180.png",
+    type: "image/png",
+    sizes: "180x180",
+  },
+  {
+    rel: "shortcut icon",
+    href: "/favicon_192.png",
+    type: "image/png",
+    sizes: "192x192",
+  },
 ];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
