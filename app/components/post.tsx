@@ -24,13 +24,13 @@ import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
 import { linkToProfile, linkToPost } from "~/lib/linkHelpers";
 import { clamp } from "~/lib/numbers";
+import { useShouldAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
 import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
 import { ProfileFlyout } from "./profileFlyout";
 import { UnstyledLink } from "./ui/link";
 import { UnstyledButton } from "./ui/button";
-import { useShouldAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
 
 /**
  * Main component for rendering slices in the feed
@@ -345,6 +345,27 @@ export function FeedPostVideoEmbed({ embed }: { embed: VStreamEmbedVideo }) {
       if (!player.paused) player.pause();
     };
   }, [inView, autoplay]);
+
+  React.useEffect(() => {
+    const player = playerRef.current;
+    let wasPaused: boolean;
+    function pauseWhenHidden() {
+      if (!player) return;
+      if (document.hidden) {
+        // Tab was made hidden
+        wasPaused = player.paused;
+        if (player.muted && !player.paused) player.pause();
+      } else {
+        // Tab was made visable
+        if (!wasPaused && player.paused) player.play();
+      }
+    }
+
+    document.addEventListener("visibilitychange", pauseWhenHidden);
+    return () => {
+      document.removeEventListener("visibilitychange", pauseWhenHidden);
+    };
+  }, []);
 
   return (
     <div className="mt-2" ref={ref}>
