@@ -202,9 +202,8 @@ function ExploreItemPostImage({
     embed: NonNullable<VStreamEmbedImages>;
   };
 }) {
-  const [getShadow] = useImageShadows();
   const image = post.embed.images[0];
-  const shadow = getShadow(image.fullsize);
+  const [shadow] = useImageShadows(image.fullsize);
   const width = shadow.width ?? image.width ?? 1;
   const height = shadow.height ?? image.height ?? 1;
   const url = linkToPost(post);

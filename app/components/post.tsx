@@ -21,7 +21,7 @@ import { useHydrated } from "~/hooks/useHydrated";
 import { useDevicePixelRatio } from "~/hooks/useDevicePixelRatio";
 import { useDimensions } from "~/hooks/useDimensions";
 import { saveFeedPost } from "~/db.client";
-import { useImageShadows } from "~/hooks/useImgShadow";
+import { useImageShadows, useUpdateImageShadow } from "~/hooks/useImgShadow";
 import { linkToProfile, linkToPost } from "~/lib/linkHelpers";
 import { clamp } from "~/lib/numbers";
 import { useShouldAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
@@ -280,13 +280,13 @@ export function FeedPostEmbed({ post }: { post: VStreamFeedViewPost }) {
 }
 
 export function FeedPostImagesEmbed({ embed }: { embed: VStreamEmbedImages }) {
-  const [getExtraInfo] = useImageShadows();
+  const shadows = useImageShadows(embed.images.map((i) => i.fullsize));
 
-  const images = embed.images.map((i) => {
+  const images = embed.images.map((i, idx) => {
     const img = {
       ...i,
       id: i.fullsize,
-      ...getExtraInfo(i.fullsize),
+      ...shadows[idx],
     };
     return { ...img, aspectRatio: (img.width ?? 1) / (img.height ?? 1) };
   });
@@ -448,7 +448,7 @@ export function PostMediaImage(props: {
   // as it loads in, which matches expected browser behavior. This improves user experience on slow connections
   // where the images may load faster than the javascript.
   const hydrated = useHydrated();
-  const [, updateImageDims] = useImageShadows();
+  const updateImageDims = useUpdateImageShadow(props.fullsizeSrc);
 
   // Track the state of the primary image and whether to show it
   // We always want to prefer the primary image if it's set and fully loaded
@@ -460,7 +460,7 @@ export function PostMediaImage(props: {
   const onMount = useEvent((img: HTMLImageElement | null) => {
     if (img?.complete) {
       if (props.width === undefined || props.height === undefined) {
-        updateImageDims(props.fullsizeSrc, {
+        updateImageDims({
           width: img.naturalWidth,
           height: img.naturalHeight,
         });
