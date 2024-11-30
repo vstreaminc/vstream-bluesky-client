@@ -8,11 +8,14 @@ import {
   type ClientLoaderFunctionArgs,
   useLoaderData,
 } from "@remix-run/react";
+import { Bell } from "lucide-react";
 import { Suspense } from "react";
 import { $path } from "remix-routes";
 import { DescriptionAutoLinker } from "~/components/descriptionAutoLinker";
+import { FollowButton } from "~/components/followButton";
 import { MainLayout } from "~/components/mainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import * as clientDB from "~/db.client";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
 
@@ -88,11 +91,17 @@ export function ProfilePage({ profile }: SerializeFrom<typeof loader>) {
           <AvatarImage src={profile.avatar} />
           <AvatarFallback>@</AvatarFallback>
         </Avatar>
-        <div>
+        <div className="max-w-2xl">
           <h1 className="text-3xl text-foreground">{profile.displayName}</h1>
-          <div className="max-w-2xl text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             <DescriptionAutoLinker description={profile.description} />
           </div>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <FollowButton profile={profile} size="lg" />
+          <Button size="icon">
+            <Bell />
+          </Button>
         </div>
       </div>
     </div>

@@ -43,6 +43,10 @@
     "defaultMessage": "OS preference",
     "description": "CTA to switch the application to the color scheme that is controled by thier operating system"
   },
+  "HzDgHf": {
+    "defaultMessage": "Follow back",
+    "description": "Follow button text when the current user does not follow the profile, but the profile follows the current user"
+  },
   "JhrI2s": {
     "defaultMessage": "Toggle Sidebar",
     "description": "Action text toggle open and closed a sidebar panel"
@@ -83,6 +87,10 @@
     "defaultMessage": "Log into your {productName} account",
     "description": "Description for the explore page of website"
   },
+  "X8eJGc": {
+    "defaultMessage": "Following",
+    "description": "Follow button text when the current user follows the profile"
+  },
   "gLb6nw": {
     "defaultMessage": "{followerCount,plural,one{<b>{followerCount, number, ::compact-short}</b> follower} other{<b>{followerCount, number, ::compact-short}</b> followers}}",
     "description": "Explains how many followers this channel has"
@@ -115,6 +123,10 @@
     "defaultMessage": "VStream Mark",
     "description": "SVG title for the VStream Mark"
   },
+  "rYbFoE": {
+    "defaultMessage": "<emoji></emoji> Mutuals",
+    "description": "Follow button text when users both follow one another"
+  },
   "stjYo/": {
     "defaultMessage": "Home",
     "description": "Name of root page of application"
@@ -122,5 +134,9 @@
   "txF3NB": {
     "defaultMessage": "Switch color scheme",
     "description": "CTA to switch the current color scheme"
+  },
+  "uqJlSv": {
+    "defaultMessage": "Follow",
+    "description": "Follow button text when the current user does not follow the profile"
   }
 }

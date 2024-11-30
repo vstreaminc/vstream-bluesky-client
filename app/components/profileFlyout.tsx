@@ -11,6 +11,7 @@ import { linkToProfile } from "~/lib/linkHelpers";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { DescriptionAutoLinker } from "./descriptionAutoLinker";
 import { UnstyledLink } from "./ui/link";
+import { FollowButton } from "./followButton";
 
 type Profile = Partial<VStreamProfileViewSimple> & {
   did: string;
@@ -57,7 +58,7 @@ export function ProfileFlyout(props: Props) {
         isKeyboardDismissDisabled
       >
         <div className="w-[18.75rem] bg-muted shadow-2xl shadow-black data-[exiting]:duration-300 data-[entering]:animate-in data-[exiting]:animate-out data-[entering]:fade-in-0 data-[exiting]:fade-out-0">
-          <ChannelHighlight
+          <ProfileCard
             profile={props.profile}
             onHoverChange={setIsHighlightHovered}
           />
@@ -67,7 +68,7 @@ export function ProfileFlyout(props: Props) {
   );
 }
 
-interface ChannelHighlightProps {
+interface ProfileCardProps {
   profile: Profile;
   onAvatarClicked?: () => void;
   onChannelFollowed?: () => void;
@@ -77,9 +78,9 @@ interface ChannelHighlightProps {
 }
 
 /**
- * Renders a channel "flyout"/popover with channel details
+ * Renders a profile "card"/popover with profile details
  */
-function ChannelHighlight(props: ChannelHighlightProps) {
+function ProfileCard(props: ProfileCardProps) {
   const { load, data: serverProfile } = useFetcher<typeof profileApiLoader>({
     key: `flyout-${props.profile.did}`,
   });
@@ -109,7 +110,7 @@ function ChannelHighlight(props: ChannelHighlightProps) {
         }}
       />
       <div className="flex -translate-y-8 flex-col gap-2 px-4 py-0">
-        <div>
+        <div className="flex">
           <UnstyledLink
             href={profileLink}
             className="inline-block"
@@ -119,6 +120,13 @@ function ChannelHighlight(props: ChannelHighlightProps) {
               <AvatarImage alt={profile.displayName} src={profile.avatar} />
             </Avatar>
           </UnstyledLink>
+          {profile.viewer ? (
+            <FollowButton
+              profile={profile as VStreamProfileViewSimple}
+              size="sm"
+              className="ml-auto translate-y-10"
+            />
+          ) : null}
         </div>
         <div className="flex flex-col">
           <h3 className="truncate font-semibold">

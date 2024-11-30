@@ -83,6 +83,18 @@ export function profiledDetailedToSimple(
     handle: formatHandle(profile.handle),
     indexedAt: profile.indexedAt,
     postsCount: profile.postsCount,
+    viewer: {
+      blocking: profile.viewer?.blocking,
+      blockedBy: profile.viewer?.blockedBy,
+      muted: profile.viewer?.muted,
+      following: profile.viewer?.following,
+      followedBy: profile.viewer?.followedBy,
+      knownFollowers: profile.viewer?.knownFollowers?.followers.map((f) => ({
+        did: f.did,
+        handle: f.handle,
+        avatar: f.avatar,
+      })),
+    },
   };
 }
 

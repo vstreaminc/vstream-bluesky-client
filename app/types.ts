@@ -117,7 +117,17 @@ export type VStreamProfileViewSimple = Pick<
   | "handle"
   | "indexedAt"
   | "postsCount"
->;
+> & {
+  viewer: Pick<
+    AppBskyActorDefs.ViewerState,
+    "muted" | "blockedBy" | "blocking" | "following" | "followedBy"
+  > & {
+    knownFollowers?: Pick<
+      AppBskyActorDefs.ProfileViewBasic,
+      "did" | "handle" | "avatar"
+    >[];
+  };
+};
 
 type VStreamReasonRepost = {
   $type: "com.vstream.feed.defs#reasonRepost";
