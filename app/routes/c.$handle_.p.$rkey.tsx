@@ -13,7 +13,6 @@ import {
   useNavigate,
 } from "@remix-run/react";
 import { Suspense } from "react";
-import { Link } from "react-aria-components";
 import { FormattedDate, FormattedMessage, FormattedTime } from "react-intl";
 import { $path } from "remix-routes";
 import { useEvent } from "react-use-event-hook";
@@ -46,6 +45,7 @@ import { cn } from "~/lib/utils";
 import { ProfileFlyout } from "~/components/profileFlyout";
 import { PRODUCT_NAME, TWITTER_HANDLE_EN } from "~/lib/constants";
 import type { SupportedLocale } from "~/lib/locale";
+import { UnstyledLink } from "~/components/ui/link";
 
 export async function loader(args: LoaderFunctionArgs) {
   const { handle, rkey } = args.params;
@@ -309,25 +309,25 @@ const HighlightedPostPageItem = React.forwardRef<
         <ProfileFlyout profile={post.author}>
           {(hoverProps) => (
             <div {...hoverProps}>
-              <Link href={profileLink}>
+              <UnstyledLink href={profileLink}>
                 <Avatar className="size-16">
                   <AvatarImage src={post.author.avatar} />
                   <AvatarFallback>@</AvatarFallback>
                 </Avatar>
-              </Link>
+              </UnstyledLink>
             </div>
           )}
         </ProfileFlyout>
         <div className="flex-grow">
           <h2 className="text-lg">
-            <Link href={profileLink} className="cursor-pointer">
+            <UnstyledLink href={profileLink} className="cursor-pointer">
               {post.author.displayName}
-            </Link>
+            </UnstyledLink>
           </h2>
           <div className="text-muted-foreground">
-            <Link href={profileLink} className="cursor-pointer">
+            <UnstyledLink href={profileLink} className="cursor-pointer">
               {post.author.handle}
-            </Link>
+            </UnstyledLink>
           </div>
         </div>
       </div>
@@ -451,7 +451,7 @@ function PostPageItem(props: {
           <ProfileFlyout profile={post.author}>
             {(hoverProps) => (
               <div {...hoverProps}>
-                <Link href={linkToProfile(post.author)}>
+                <UnstyledLink href={linkToProfile(post.author)}>
                   <Avatar className="aspect-square h-auto w-full">
                     <AvatarImage
                       src={post.author.avatar}
@@ -459,7 +459,7 @@ function PostPageItem(props: {
                     />
                     <AvatarFallback>@</AvatarFallback>
                   </Avatar>
-                </Link>
+                </UnstyledLink>
               </div>
             )}
           </ProfileFlyout>

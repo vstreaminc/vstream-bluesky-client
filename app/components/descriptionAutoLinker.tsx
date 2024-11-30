@@ -1,6 +1,6 @@
 import { Fragment, memo } from "react";
-import { Link } from "react-aria-components";
 import { $path } from "remix-routes";
+import { UnstyledLink } from "./ui/link";
 
 const URL_REGEX =
   /((?:https?:\/\/)?(?:(?:[a-z0-9]?(?:[a-z0-9-]{1,61}[a-z0-9])?\.[^.|\s])+[a-z.]*[a-z]+|(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})(?::\d{1,5})*[a-zA-Z0-9.,@_/~#&=;%+?\-\\(\\)]*)/g;
@@ -29,7 +29,7 @@ export const DescriptionAutoLinker = memo(function DescriptionAutoLinker({
           return <br key={idx} />;
         } else if (URL_REGEX.test(word)) {
           return (
-            <Link
+            <UnstyledLink
               key={idx}
               className="text-blue-400"
               href={word.startsWith("http") ? word : `https://${word}`}
@@ -37,7 +37,7 @@ export const DescriptionAutoLinker = memo(function DescriptionAutoLinker({
               target="_blank"
             >
               {word}
-            </Link>
+            </UnstyledLink>
           );
         } else if (HASH_REGEX.test(word)) {
           return (
@@ -47,13 +47,13 @@ export const DescriptionAutoLinker = memo(function DescriptionAutoLinker({
           );
         } else if (HANDLE_REGEX.test(word)) {
           return (
-            <Link
+            <UnstyledLink
               key={idx}
               className="text-blue-400"
               href={$path("/c/:handle", { handle: word })}
             >
               {word}
-            </Link>
+            </UnstyledLink>
           );
         }
 

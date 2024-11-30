@@ -2,7 +2,7 @@ import * as React from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
 import { useEvent } from "react-use-event-hook";
-import { Button, Link, type PressEvent } from "react-aria-components";
+import type { PressEvent } from "react-aria-components";
 import HlsVideo from "hls-video-element/react";
 import MediaThemeMinimal from "player.style/minimal/react";
 import { useNavigate } from "@remix-run/react";
@@ -28,6 +28,8 @@ import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
 import { ProfileFlyout } from "./profileFlyout";
+import { UnstyledLink } from "./ui/link";
+import { UnstyledButton } from "./ui/button";
 
 /**
  * Main component for rendering slices in the feed
@@ -142,7 +144,7 @@ export function FeedPost(props: FeedPostProps) {
           <ProfileFlyout profile={post.author}>
             {(hoverProps) => (
               <div {...hoverProps}>
-                <Link href={linkToProfile(post.author)}>
+                <UnstyledLink href={linkToProfile(post.author)}>
                   <Avatar className="aspect-square h-auto w-full">
                     <AvatarImage
                       src={post.author.avatar}
@@ -150,7 +152,7 @@ export function FeedPost(props: FeedPostProps) {
                     />
                     <AvatarFallback>@</AvatarFallback>
                   </Avatar>
-                </Link>
+                </UnstyledLink>
               </div>
             )}
           </ProfileFlyout>
@@ -209,19 +211,19 @@ export function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
       <ProfileFlyout profile={post.author}>
         {(hoverProps) => (
           <div className="truncate pb-0.5" {...hoverProps}>
-            <Link
+            <UnstyledLink
               href={linkToProfile(post.author)}
               className="font-sm cursor-pointer"
             >
               {post.author.displayName}
-            </Link>
+            </UnstyledLink>
             &nbsp;
-            <Link
+            <UnstyledLink
               href={linkToProfile(post.author)}
               className="cursor-pointer text-muted-foreground"
             >
               {post.author.handle}
-            </Link>
+            </UnstyledLink>
           </div>
         )}
       </ProfileFlyout>
@@ -491,7 +493,7 @@ export function PostMediaImage(props: {
     return containerAR > imageAR ? ("height" as const) : ("width" as const);
   }, [dim.width, dim.height, props.width, props.height]);
 
-  const Container = props.onPress ? Button : "div";
+  const Container = props.onPress ? UnstyledButton : "div";
 
   return (
     <div

@@ -69,5 +69,9 @@ const Button = ({ className, variant, size, ...props }: ButtonProps) => {
   );
 };
 
-export { Button, buttonVariants };
+function UnstyledButton(props: AriaButtonProps) {
+  return <AriaButton {...props} />;
+}
+
+export { Button, UnstyledButton, buttonVariants };
 export type { ButtonProps };

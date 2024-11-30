@@ -1,9 +1,9 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import * as React from "react";
-import { Button } from "react-aria-components";
 import { useHotkeys as useReactHotKeys } from "react-hotkeys-hook";
 import { useEvent } from "react-use-event-hook";
 import { cn } from "~/lib/utils";
+import { UnstyledButton } from "./ui/button";
 
 /**
  * Generic Slider component, can slide anything!
@@ -103,7 +103,7 @@ export function Slider({
       </div>
       {nodes.length > 1 && (
         <>
-          <Button
+          <UnstyledButton
             className={cn(
               "z-raised absolute right-4 top-[50%] hidden -translate-y-1/2 rounded-full transition-opacity md:block",
               page >= nodes.length - 1 && "pointer-events-none opacity-0",
@@ -114,9 +114,9 @@ export function Slider({
             }}
           >
             <ArrowRight color="white" />
-          </Button>
+          </UnstyledButton>
 
-          <Button
+          <UnstyledButton
             className={cn(
               "z-raised absolute left-4 top-[50%] hidden -translate-y-1/2 rounded-full transition-opacity md:block",
               page <= 0 && "pointer-events-none opacity-0",
@@ -127,7 +127,7 @@ export function Slider({
             }}
           >
             <ArrowLeft color="white" />
-          </Button>
+          </UnstyledButton>
 
           <div className="relative flex flex-initial gap-1 self-center pt-4">
             {nodes.map((_, i) => (

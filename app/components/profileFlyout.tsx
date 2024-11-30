@@ -3,13 +3,14 @@ import { useFetcher } from "@remix-run/react";
 import { useHover } from "@react-aria/interactions";
 import { FormattedMessage } from "react-intl";
 import { $path } from "remix-routes";
-import { Link, Popover } from "react-aria-components";
+import { Popover } from "react-aria-components";
 import { handleOrDid } from "~/lib/utils";
 import type { loader as profileApiLoader } from "~/routes/api.profile.$handleOrDid";
 import type { VStreamProfileViewSimple } from "~/types";
 import { linkToProfile } from "~/lib/linkHelpers";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { DescriptionAutoLinker } from "./descriptionAutoLinker";
+import { UnstyledLink } from "./ui/link";
 
 type Profile = Partial<VStreamProfileViewSimple> & {
   did: string;
@@ -109,7 +110,7 @@ function ChannelHighlight(props: ChannelHighlightProps) {
       />
       <div className="flex -translate-y-8 flex-col gap-2 px-4 py-0">
         <div>
-          <Link
+          <UnstyledLink
             href={profileLink}
             className="inline-block"
             onPress={props.onAvatarClicked}
@@ -117,13 +118,16 @@ function ChannelHighlight(props: ChannelHighlightProps) {
             <Avatar className="size-20 border-4 border-muted">
               <AvatarImage alt={profile.displayName} src={profile.avatar} />
             </Avatar>
-          </Link>
+          </UnstyledLink>
         </div>
         <div className="flex flex-col">
           <h3 className="truncate font-semibold">
-            <Link href={profileLink} onPress={props.onDisplayNameClicked}>
+            <UnstyledLink
+              href={profileLink}
+              onPress={props.onDisplayNameClicked}
+            >
               {profile.displayName}{" "}
-            </Link>
+            </UnstyledLink>
             {pronouns.length > 0 ? (
               <span className="text-xs text-muted-foreground">
                 ({pronouns.join("/")})
@@ -139,7 +143,7 @@ function ChannelHighlight(props: ChannelHighlightProps) {
         ) : null}
         <div className="flex gap-3">
           {typeof profile.followersCount === "number" ? (
-            <Link className="cursor-pointer text-sm text-muted-foreground">
+            <UnstyledLink className="cursor-pointer text-sm text-muted-foreground">
               <FormattedMessage
                 description="Explains how many followers this channel has"
                 defaultMessage="<b>{followerCount, number, ::compact-short}</b> {followerCount, plural, one {follower} other {followers}}"
@@ -150,10 +154,10 @@ function ChannelHighlight(props: ChannelHighlightProps) {
                   followerCount: profile.followersCount,
                 }}
               />
-            </Link>
+            </UnstyledLink>
           ) : null}
           {typeof profile.followsCount === "number" ? (
-            <Link className="cursor-pointer text-sm text-muted-foreground">
+            <UnstyledLink className="cursor-pointer text-sm text-muted-foreground">
               <FormattedMessage
                 description="Explains how many channels _this_ channel follows"
                 defaultMessage="<b>{followingCount, number, ::compact-short}</b> following"
@@ -164,7 +168,7 @@ function ChannelHighlight(props: ChannelHighlightProps) {
                   followingCount: profile.followsCount,
                 }}
               />
-            </Link>
+            </UnstyledLink>
           ) : null}
         </div>
       </div>

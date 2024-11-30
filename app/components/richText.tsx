@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Link } from "react-aria-components";
 import { linkToProfile } from "~/lib/linkHelpers";
 import type {
   EmojiNode,
@@ -11,6 +10,7 @@ import type {
   TextNode,
 } from "~/types";
 import { ProfileFlyout } from "./profileFlyout";
+import { UnstyledLink } from "./ui/link";
 
 type Props = {
   textRenderer?: (node: TextNode) => React.ReactNode;
@@ -34,12 +34,12 @@ export function RichTextRenderer({
     <ProfileFlyout profile={node}>
       {(hoverProps) => (
         <span {...hoverProps}>
-          <Link
+          <UnstyledLink
             href={linkToProfile(node)}
             className="cursor-pointer text-blue-400 hover:underline"
           >
             {node.handle}
-          </Link>
+          </UnstyledLink>
         </span>
       )}
     </ProfileFlyout>
@@ -50,14 +50,14 @@ export function RichTextRenderer({
     </span>
   ),
   linkRenderer = (node) => (
-    <Link
+    <UnstyledLink
       href={node.href}
       className="text-blue-400 hover:underline"
       target="_blank"
       rel="noreferrer"
     >
       {node.text}
-    </Link>
+    </UnstyledLink>
   ),
   richText,
 }: Props) {

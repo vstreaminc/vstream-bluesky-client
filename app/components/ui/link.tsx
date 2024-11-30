@@ -173,5 +173,33 @@ const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
 );
 Link.displayName = "Link";
 
-export { Link };
+const UnstyledLink = React.forwardRef<
+  HTMLAnchorElement,
+  AriaLinkProps & {
+    prefetch?: PrefetchBehavior;
+  }
+>(({ prefetch = "none", ...props }, forwardedRef) => {
+  const isAbsolute =
+    typeof props.href === "string" && ABSOLUTE_URL_REGEX.test(props.href);
+  const [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(
+    prefetch,
+    props,
+  );
+
+  return (
+    <>
+      <AriaLink
+        {...props}
+        {...prefetchHandlers}
+        ref={mergeRefs(forwardedRef, ref)}
+      />
+      {shouldPrefetch && props.href && !isAbsolute ? (
+        <PrefetchPageLinks page={props.href} />
+      ) : null}
+    </>
+  );
+});
+UnstyledLink.displayName = "UnstyledLink";
+
+export { Link, UnstyledLink };
 export type { LinkProps };
