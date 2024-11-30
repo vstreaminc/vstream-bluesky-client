@@ -30,6 +30,7 @@ import { ManualDialogTrigger } from "./ui/dialog";
 import { ProfileFlyout } from "./profileFlyout";
 import { UnstyledLink } from "./ui/link";
 import { UnstyledButton } from "./ui/button";
+import { useShouldAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
 
 /**
  * Main component for rendering slices in the feed
@@ -323,18 +324,39 @@ export function FeedPostVideoEmbed({ embed }: { embed: VStreamEmbedVideo }) {
       clamp(embed.aspectRatio, 1 / 1, 3 / 1)
     : 16 / 9;
   const figId = React.useId();
+  const playerRef = React.useRef<HTMLVideoElement>(null);
+
+  // When a video is in view, we want to replace the thumbnail with the video player.
+  // However, only one visible video should autoplay.
+  const { ref, inView, autoplay } = useShouldAutoplaySingleton(true);
+
+  React.useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    if (inView && autoplay) {
+      player.muted = true;
+      if (player.paused) player.play();
+    } else if (!inView) {
+      if (!player.paused) player.pause();
+    }
+
+    return () => {
+      if (!player.paused) player.pause();
+    };
+  }, [inView, autoplay]);
 
   return (
-    <div className="mt-2">
+    <div className="mt-2" ref={ref}>
       <MediaThemeMinimal style={{ aspectRatio }} className="w-full">
         <HlsVideo
+          ref={playerRef}
           slot="media"
           src={embed.playlist}
           playsInline
           crossOrigin="use-credentials"
           aria-labelledby={embed.alt ? figId : undefined}
           loop
-          muted
         ></HlsVideo>
         {embed.thumbnail && (
           <MediaPosterImage slot="poster" src={embed.thumbnail} />

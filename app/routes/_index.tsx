@@ -24,6 +24,7 @@ import { BooleanFilter, take } from "~/lib/utils";
 import { useWindowVirtualizeCached } from "~/hooks/useWindowVirtualizeCached";
 import type { VStreamFeedViewPostSlice } from "~/types";
 import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
+import { useAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
 
 export type SearchParams = {
   cursor?: string;
@@ -259,6 +260,9 @@ function FeedPage({
     setCursor(data.cursor);
     setSlices((slices) => [...slices, ...data.slices]);
   }, [data]);
+
+  // Autoplay a single video in the feed at a time
+  useAutoplaySingleton();
 
   return (
     <div className="mx-auto w-full max-w-[100vw] md:max-w-[42.5rem]">
