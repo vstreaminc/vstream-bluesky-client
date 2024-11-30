@@ -37,7 +37,7 @@ export function FollowButton({
         description: "Follow button text when users both follow one another",
       },
       {
-        emoji: () => <span className="emoji">&#x2764; &#xfe0f;</span>,
+        emoji: () => <span className="font-emoji mr-1">&#x2764;&#xfe0f;</span>,
       },
     );
   } else if (viewerFollowsProfile) {

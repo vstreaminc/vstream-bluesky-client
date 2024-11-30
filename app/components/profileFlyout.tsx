@@ -198,7 +198,7 @@ function FollowingSince({ value }: { value: string | null | undefined }) {
     <span className="text-sm">
       {since ? (
         <>
-          <span className="emoji">&#x2764;&#xfe0f;</span>{" "}
+          <span className="font-emoji">&#x2764;&#xfe0f;</span>{" "}
           <FormattedMessage
             description="Lets a user know that this other user has been following another channel from some time"
             defaultMessage="Following since {since, date, long}"
@@ -207,7 +207,7 @@ function FollowingSince({ value }: { value: string | null | undefined }) {
         </>
       ) : (
         <>
-          <span className="emoji">&#x2764;&#xfe0f;</span>{" "}
+          <span className="font-emoji">&#x2764;&#xfe0f;</span>{" "}
           <FormattedMessage
             description="Lets a user know that this other user has been following another channel since forever"
             defaultMessage="Following since the beginning of time"
