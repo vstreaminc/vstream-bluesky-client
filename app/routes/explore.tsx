@@ -26,8 +26,11 @@ import { RelativeTime } from "~/components/relativeTime";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { saveFeedPost } from "~/db.client";
 import { useImageShadows } from "~/hooks/useImgShadow";
-import { hrefLangs, linkToPost } from "~/lib/linkHelpers";
+import { hrefLangs, linkToPost, linkToProfile } from "~/lib/linkHelpers";
 import { ObserverLoader } from "~/components/observer";
+import { ProfileFlyout } from "~/components/profileFlyout";
+import { UnstyledLink } from "~/components/ui/link";
+import { linkToLocale } from "~/lib/locale";
 
 export type SearchParams = {
   cursor?: string;
@@ -237,20 +240,40 @@ function PostItem(props: {
   return (
     <>
       <div className="flex items-center gap-4">
-        <Avatar>
-          <AvatarImage alt={post.author.displayName} src={post.author.avatar} />
-        </Avatar>
-        <div className="flex min-w-0 flex-1 flex-col items-start">
-          <span className="max-w-full truncate text-lg font-semibold text-foreground">
-            {post.author.displayName}
-          </span>
-          <span className="max-w-full truncate text-sm text-muted md:text-foreground">
+        <ProfileFlyout profile={post.author}>
+          {(hoverProps) => (
+            <div {...hoverProps}>
+              <UnstyledLink href={linkToProfile(post.author)}>
+                <Avatar>
+                  <AvatarImage
+                    src={post.author.avatar}
+                    alt={post.author.displayName}
+                  />
+                </Avatar>
+              </UnstyledLink>
+            </div>
+          )}
+        </ProfileFlyout>
+        <div className="min-w-0 flex-1">
+          <ProfileFlyout profile={post.author}>
+            {(hoverProps) => (
+              <div
+                className="max-w-full truncate text-lg font-semibold text-foreground"
+                {...hoverProps}
+              >
+                <UnstyledLink href={linkToProfile(post.author)}>
+                  {post.author.displayName}
+                </UnstyledLink>
+              </div>
+            )}
+          </ProfileFlyout>
+          <div className="max-w-full truncate text-sm text-muted md:text-foreground">
             <RelativeTime
               value={post.createdAt}
               style="narrow"
               numeric="always"
             />
-          </span>
+          </div>
         </div>
       </div>
       {props.children}
