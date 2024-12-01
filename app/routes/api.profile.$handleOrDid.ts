@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import type { ClientLoaderFunctionArgs } from "@remix-run/react";
-import * as db from "~/db.client";
+import { loadProfile, saveProfile } from "~/hooks/useLoadedProfile";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -19,9 +19,9 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export async function clientLoader(args: ClientLoaderFunctionArgs) {
-  let profile = db.loadProfile(args.params.handleOrDid!);
+  let profile = loadProfile(args.params.handleOrDid!);
   if (profile) return profile;
   profile = await args.serverLoader<typeof loader>();
-  db.saveProfile(args.params.handleOrDid!, profile);
+  saveProfile(args.params.handleOrDid!, profile);
   return profile;
 }

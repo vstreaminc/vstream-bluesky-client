@@ -1,13 +1,10 @@
 import * as React from "react";
-import { useFetcher } from "@remix-run/react";
 import { useHover } from "@react-aria/interactions";
 import { FormattedMessage } from "react-intl";
-import { $path } from "remix-routes";
 import { Popover } from "react-aria-components";
-import { handleOrDid } from "~/lib/utils";
-import type { loader as profileApiLoader } from "~/routes/api.profile.$handleOrDid";
 import type { VStreamProfileViewSimple } from "~/types";
 import { linkToProfile } from "~/lib/linkHelpers";
+import { useLoadedProfile } from "~/hooks/useLoadedProfile";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { DescriptionAutoLinker } from "./descriptionAutoLinker";
 import { UnstyledLink } from "./ui/link";
@@ -81,22 +78,14 @@ interface ProfileCardProps {
  * Renders a profile "card"/popover with profile details
  */
 function ProfileCard(props: ProfileCardProps) {
-  const { load, data: serverProfile } = useFetcher<typeof profileApiLoader>({
-    key: `flyout-${props.profile.did}`,
-  });
   const { hoverProps } = useHover({ onHoverChange: props.onHoverChange });
-  const profileApiPath = $path("/api/profile/:handleOrDid", {
-    handleOrDid: handleOrDid(props.profile),
-  });
   const profileLink = linkToProfile(props.profile);
+  const profile = useLoadedProfile(props.profile);
 
-  const profile = serverProfile ?? props.profile;
   // TODO: Figure out how to get these back
   const pronouns: string[] = [];
 
-  React.useEffect(() => {
-    load(profileApiPath);
-  }, [load, profileApiPath]);
+  if (!profile) return null;
 
   return (
     <div className="hidden md:block" {...hoverProps}>

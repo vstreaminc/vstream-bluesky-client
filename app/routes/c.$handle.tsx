@@ -16,7 +16,7 @@ import { FollowButton } from "~/components/followButton";
 import { MainLayout } from "~/components/mainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import * as clientDB from "~/db.client";
+import { loadProfile, saveProfile } from "~/hooks/useLoadedProfile";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -45,19 +45,19 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export function clientLoader(args: ClientLoaderFunctionArgs) {
   const handleOrDid = args.params.handle!;
-  const profile = clientDB.loadProfile(handleOrDid);
+  const profile = loadProfile(handleOrDid);
   if (profile) {
     return {
       profile,
       serverData: args.serverLoader<typeof loader>().then((p) => {
-        clientDB.saveProfile(handleOrDid, p.profile);
+        saveProfile(handleOrDid, p.profile);
         return p;
       }),
     };
   }
 
   return args.serverLoader<typeof loader>().then((p) => {
-    clientDB.saveProfile(handleOrDid, p.profile);
+    saveProfile(handleOrDid, p.profile);
     return p;
   });
 }

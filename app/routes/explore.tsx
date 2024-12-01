@@ -30,7 +30,6 @@ import { hrefLangs, linkToPost, linkToProfile } from "~/lib/linkHelpers";
 import { ObserverLoader } from "~/components/observer";
 import { ProfileFlyout } from "~/components/profileFlyout";
 import { UnstyledLink } from "~/components/ui/link";
-import { linkToLocale } from "~/lib/locale";
 
 export type SearchParams = {
   cursor?: string;
