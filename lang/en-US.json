@@ -11,6 +11,10 @@
     "defaultMessage": "Loading...",
     "description": "Message shown while loading new items into a list"
   },
+  "6JqaVv": {
+    "defaultMessage": "This quote has been blocked",
+    "description": "Message when a certain quoted post cannot be seen due to the current user being blocked"
+  },
   "6QjI8l": {
     "defaultMessage": "Explore",
     "description": "Link to explore page in main navigation"
@@ -26,6 +30,10 @@
   "9UlEfa": {
     "defaultMessage": "Log out",
     "description": "CTA to log out of the appliation"
+  },
+  "9udb6+": {
+    "defaultMessage": "Quoted post cannot be found",
+    "description": "Message when a certain quoted post cannot be seen due to it being missing"
   },
   "Adls26": {
     "defaultMessage": "VStream Logo",

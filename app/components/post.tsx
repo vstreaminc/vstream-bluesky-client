@@ -449,8 +449,121 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
   );
 }
 
-function FeedPostQuote({ embed: _ }: { embed: VStreamEmbedPost }) {
-  return <>TODO: Quoted post</>;
+function FeedPostQuote({ embed }: { embed: VStreamEmbedPost }) {
+  const { post } = embed;
+  const url =
+    post.$type === "com.vstream.embed.post#postRecord" ? linkToPost(post) : "";
+  const navigate = useNavigate();
+  const ref = React.useRef<HTMLDivElement>(null);
+  const onClick = useEvent<React.MouseEventHandler<HTMLDivElement>>((event) => {
+    if (
+      event.target instanceof HTMLElement &&
+      // The target isn't an anchor/button/form or inside one
+      !event.target.closest("a") &&
+      !event.target.closest("button") &&
+      !event.target.closest("form") &&
+      // The target isn't a video player
+      !event.target.closest("video") &&
+      !event.target.closest("hls-video") &&
+      !event.target.closest("media-theme-minimal") &&
+      // The target isn't inside the user flyout / popover
+      !event.target.closest(".react-aria-Popover") &&
+      // The target isn't inside a dialog
+      !event.target.closest("[role=dialog]") &&
+      // The target isn't the black overlay behind modals
+      !event.target.closest(".fixed.inset-0")
+    ) {
+      // If we click a post inside a quote, don't bubble up to the wider
+      // quoted post
+      event.stopPropagation();
+      navigate(url);
+    }
+  });
+
+  const onKeyUp = useEvent<React.KeyboardEventHandler<HTMLElement>>((event) => {
+    if (event.key !== "Enter") return;
+    if (event.target === ref.current) {
+      // If the current target is the container
+      navigate(url);
+    }
+  });
+  if (post.$type === "com.vstream.embed.post#postBlocked") {
+    return (
+      <div className="mt-2 flex w-full justify-center border p-4">
+        <FormattedMessage
+          defaultMessage="This quote has been blocked"
+          description="Message when a certain quoted post cannot be seen due to the current user being blocked"
+        />
+      </div>
+    );
+  }
+
+  if (post.$type === "com.vstream.embed.post#postNotFound") {
+    return (
+      <div className="mt-2 flex w-full justify-center border p-4">
+        <FormattedMessage
+          defaultMessage="Quoted post cannot be found"
+          description="Message when a certain quoted post cannot be seen due to it being missing"
+        />
+      </div>
+    );
+  }
+
+  if (post.$type === "com.vstream.embed.post#postDetached") {
+    return null;
+  }
+
+  return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
+      ref={ref}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={0}
+      onClick={onClick}
+      onKeyUp={onKeyUp}
+      className="mt-2 w-full border p-4 hover:bg-gray-200/50"
+    >
+      <div className="flex min-w-0 items-center">
+        <ProfileFlyout profile={post.author}>
+          {(hoverProps) => (
+            <div {...hoverProps}>
+              <UnstyledLink href={linkToProfile(post.author)}>
+                <Avatar className="mr-3 size-6">
+                  <AvatarImage
+                    src={post.author.avatar}
+                    alt={post.author.displayName}
+                  />
+                </Avatar>
+              </UnstyledLink>
+            </div>
+          )}
+        </ProfileFlyout>
+        <ProfileFlyout profile={post.author}>
+          {(hoverProps) => (
+            <div className="min-w-0">
+              <UnstyledLink
+                href={linkToProfile(post.author)}
+                className="block truncate"
+                {...hoverProps}
+              >
+                <span className="font-semibold">{post.author.displayName}</span>
+                &nbsp;
+                <span className="text-muted-foreground">
+                  {post.author.handle}
+                </span>
+              </UnstyledLink>
+            </div>
+          )}
+        </ProfileFlyout>
+        <div className="shrink-0 text-muted-foreground">
+          &nbsp;&middot;&nbsp;
+          <RelativeTime value={post.createdAt} style="narrow" />
+        </div>
+      </div>
+      <FeedPostContent post={post} />
+      <FeedPostEmbed embed={post.embed} />
+    </div>
+  );
 }
 
 export function PostMediaImage(props: {
