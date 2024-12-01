@@ -1,5 +1,6 @@
 import type {
   AppBskyActorDefs,
+  AppBskyEmbedExternal,
   AppBskyEmbedImages,
   AppBskyEmbedVideo,
   AppBskyFeedDefs,
@@ -57,6 +58,13 @@ export type VStreamEmbedVideo = {
   aspectRatio?: number;
 } & Pick<AppBskyEmbedVideo.View, "cid" | "playlist" | "thumbnail" | "alt">;
 
+export type VStreamEmbedExternal = {
+  $type: "com.vstream.embed.external#view";
+} & Pick<
+  AppBskyEmbedExternal.ViewExternal,
+  "uri" | "title" | "description" | "thumb"
+>;
+
 export type VStreamFeedViewPost = Pick<
   BSkyFeedViewPost["post"],
   "uri" | "cid" | "indexedAt"
@@ -84,7 +92,7 @@ export type VStreamFeedViewPost = Pick<
   likeCount: number;
   quoteCount: number;
   rkey: string;
-  embed?: VStreamEmbedImages | VStreamEmbedVideo;
+  embed?: VStreamEmbedImages | VStreamEmbedVideo | VStreamEmbedExternal;
   _reactKey: string;
   moderation: {
     filter: boolean;

@@ -9,6 +9,7 @@ import {
   type ModerationOpts,
   type ModerationBehavior,
   AppBskyEmbedVideo,
+  AppBskyEmbedExternal,
 } from "@atproto/api";
 import type {
   BSkyFeedViewPost,
@@ -160,7 +161,15 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
             playlist: item.post.embed.playlist,
             thumbnail: item.post.embed.thumbnail,
           }
-        : undefined,
+        : AppBskyEmbedExternal.isView(item.post.embed)
+          ? {
+              $type: "com.vstream.embed.external#view",
+              uri: item.post.embed.external.uri,
+              title: item.post.embed.external.title,
+              description: item.post.embed.external.description,
+              thumb: item.post.embed.external.thumb,
+            }
+          : undefined,
     createdAt: item.record.createdAt,
     facets: item.record.facets,
     plainText: item.record.text,
