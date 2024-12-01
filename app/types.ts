@@ -65,6 +65,40 @@ export type VStreamEmbedExternal = {
   "uri" | "title" | "description" | "thumb"
 >;
 
+export type VStreamEmbedPostRecord = VStreamFeedViewPost & {
+  $type: "com.vstream.embed.post#postRecord";
+};
+
+export type VStreamEmbedPostNotFound = {
+  $type: "com.vstream.embed.post#postNotFound";
+  uri: string;
+};
+
+export type VStreamEmbedPostBlocked = {
+  $type: "com.vstream.embed.post#postBlocked";
+  uri: string;
+};
+
+export type VStreamEmbedPostDetached = {
+  $type: "com.vstream.embed.post#postDetached";
+  uri: string;
+};
+
+export type VStreamEmbedPost = {
+  $type: "com.vstream.embed.post#view";
+  post:
+    | VStreamEmbedPostRecord
+    | VStreamEmbedPostNotFound
+    | VStreamEmbedPostBlocked
+    | VStreamEmbedPostDetached;
+};
+
+export type VStreamEmbedPostWithMedia = {
+  $type: "com.vstream.embed.postWithMedia#view";
+  media: VStreamEmbedImages | VStreamEmbedVideo | VStreamEmbedExternal;
+  post: VStreamEmbedPost;
+};
+
 export type VStreamFeedViewPost = Pick<
   BSkyFeedViewPost["post"],
   "uri" | "cid" | "indexedAt"
@@ -92,9 +126,14 @@ export type VStreamFeedViewPost = Pick<
   likeCount: number;
   quoteCount: number;
   rkey: string;
-  embed?: VStreamEmbedImages | VStreamEmbedVideo | VStreamEmbedExternal;
+  embed?:
+    | VStreamEmbedImages
+    | VStreamEmbedVideo
+    | VStreamEmbedExternal
+    | VStreamEmbedPost
+    | VStreamEmbedPostWithMedia;
   _reactKey: string;
-  moderation: {
+  moderation?: {
     filter: boolean;
     blur: boolean;
     alert: boolean;

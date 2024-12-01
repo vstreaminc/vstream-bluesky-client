@@ -9,6 +9,7 @@ import { useNavigate } from "@remix-run/react";
 import { MediaPosterImage } from "media-chrome/react";
 import type {
   VStreamEmbedImages,
+  VStreamEmbedPost,
   VStreamEmbedVideo,
   VStreamFeedViewPost,
   VStreamFeedViewPostSlice,
@@ -166,7 +167,7 @@ export function FeedPost(props: FeedPostProps) {
         <div className="flex min-w-0 flex-1 flex-col">
           <FeedPostHeader post={post} />
           <FeedPostContent post={post} />
-          <FeedPostEmbed post={post} />
+          <FeedPostEmbed embed={post.embed} />
           <FeedPostControls post={post} />
         </div>
       </div>
@@ -267,17 +268,30 @@ export function FeedPostContentText({
   );
 }
 
-export function FeedPostEmbed({ post }: { post: VStreamFeedViewPost }) {
-  if (!post.embed) return null;
-  switch (post.embed.$type) {
+export function FeedPostEmbed({
+  embed,
+}: {
+  embed: VStreamFeedViewPost["embed"];
+}) {
+  if (!embed) return null;
+  switch (embed.$type) {
     case "com.vstream.embed.images#view":
-      return <FeedPostImagesEmbed embed={post.embed} />;
+      return <FeedPostImagesEmbed embed={embed} />;
     case "com.vstream.embed.video#view":
-      return <FeedPostVideoEmbed embed={post.embed} />;
+      return <FeedPostVideoEmbed embed={embed} />;
     case "com.vstream.embed.external#view":
-      return <FeedPostExternalEmbed embed={post.embed} />;
+      return <FeedPostExternalEmbed embed={embed} />;
+    case "com.vstream.embed.post#view":
+      return <FeedPostQuote embed={embed} />;
+    case "com.vstream.embed.postWithMedia#view":
+      return (
+        <>
+          <FeedPostEmbed embed={embed.media} />
+          <FeedPostQuote embed={embed.post} />
+        </>
+      );
     default:
-      post.embed satisfies never;
+      embed satisfies never;
       return null;
   }
 }
@@ -433,6 +447,10 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
       </div>
     </div>
   );
+}
+
+function FeedPostQuote({ embed: _ }: { embed: VStreamEmbedPost }) {
+  return <>TODO: Quoted post</>;
 }
 
 export function PostMediaImage(props: {

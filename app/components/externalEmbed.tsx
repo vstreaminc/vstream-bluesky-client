@@ -1,8 +1,8 @@
 import { Globe } from "lucide-react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { VStreamEmbedExternal } from "~/types";
 import { cn } from "~/lib/utils";
 import { UnstyledLink } from "./ui/link";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 const IFRAME_HOST = "https://bsky.app";
 

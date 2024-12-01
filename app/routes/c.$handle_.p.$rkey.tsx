@@ -334,7 +334,7 @@ const HighlightedPostPageItem = React.forwardRef<
       <div className="pt-4">
         <FeedPostContentText post={post} />
       </div>
-      <FeedPostEmbed post={post} />
+      <FeedPostEmbed embed={post.embed} />
       <div className="pb-4 pt-5 text-sm text-muted-foreground">
         <FormattedTime value={post.createdAt} />
         &nbsp;&middot;&nbsp;
@@ -471,7 +471,7 @@ function PostPageItem(props: {
         <div className="flex min-w-0 flex-1 flex-col">
           <FeedPostHeader post={post} />
           <FeedPostContent post={post} />
-          <FeedPostEmbed post={post} />
+          <FeedPostEmbed embed={post.embed} />
           <FeedPostControls post={post} />
         </div>
       </div>

@@ -10,6 +10,8 @@ import {
   type ModerationBehavior,
   AppBskyEmbedVideo,
   AppBskyEmbedExternal,
+  AppBskyEmbedRecord,
+  AppBskyEmbedRecordWithMedia,
 } from "@atproto/api";
 import type {
   BSkyFeedViewPost,
@@ -25,6 +27,11 @@ import type {
   VStreamPostThreadNode,
   VStreamPostThread,
   BskyPostRecord,
+  VStreamEmbedImages,
+  VStreamEmbedVideo,
+  VStreamEmbedExternal,
+  VStreamEmbedPost,
+  VStreamEmbedPostWithMedia,
 } from "~/types";
 import { FeedTuner, type FeedViewPostsSlice } from "./feedTuner";
 import { pick } from "./utils";
@@ -99,6 +106,164 @@ export function profiledDetailedToSimple(
   };
 }
 
+function parseBSkyImagesEmbed(
+  embed: AppBskyEmbedImages.View,
+): VStreamEmbedImages {
+  return {
+    $type: "com.vstream.embed.images#view",
+    images: embed.images.map((i) => ({
+      alt: i.alt,
+      fullsize: i.fullsize,
+      height: i.aspectRatio?.height,
+      thumb: i.thumb,
+      width: i.aspectRatio?.width,
+    })),
+  };
+}
+
+function parseBSkyVideoEmbed(embed: AppBskyEmbedVideo.View): VStreamEmbedVideo {
+  return {
+    $type: "com.vstream.embed.video#view",
+    cid: embed.cid,
+    alt: embed.alt,
+    aspectRatio: embed.aspectRatio
+      ? embed.aspectRatio.width / embed.aspectRatio.height
+      : undefined,
+    playlist: embed.playlist,
+    thumbnail: embed.thumbnail,
+  };
+}
+
+function parseBSkyExternalEmbed(
+  embed: AppBskyEmbedExternal.View,
+): VStreamEmbedExternal {
+  return {
+    $type: "com.vstream.embed.external#view",
+    uri: embed.external.uri,
+    title: embed.external.title,
+    description: embed.external.description,
+    thumb: embed.external.thumb,
+  };
+}
+
+function parseBSkyRecordEmbed(
+  embed: AppBskyEmbedRecord.View,
+): VStreamEmbedPost | undefined {
+  const { record } = embed;
+  let post: VStreamEmbedPost["post"] | undefined;
+  if (AppBskyEmbedRecord.isViewNotFound(record)) {
+    post = {
+      $type: "com.vstream.embed.post#postNotFound",
+      uri: record.uri,
+    };
+  } else if (AppBskyEmbedRecord.isViewBlocked(record)) {
+    post = {
+      $type: "com.vstream.embed.post#postBlocked",
+      uri: record.uri,
+    };
+  } else if (AppBskyEmbedRecord.isViewDetached(record)) {
+    post = {
+      $type: "com.vstream.embed.post#postDetached",
+      uri: record.uri,
+    };
+  } else if (AppBskyEmbedRecord.isViewRecord(record)) {
+    const { value } = embed.record;
+    if (!AppBskyFeedPost.isRecord(value)) return;
+    post = {
+      $type: "com.vstream.embed.post#postRecord",
+      _reactKey: record.uri,
+      uri: record.uri,
+      rkey: new AtUri(record.uri).rkey,
+      cid: record.cid,
+      replyCount: record.replyCount ?? 0,
+      repostCount: record.repostCount ?? 0,
+      likeCount: record.likeCount ?? 0,
+      quoteCount: record.quoteCount ?? 0,
+      indexedAt: record.indexedAt,
+      author: {
+        did: record.author.did,
+        handle: formatHandle(record.author.handle),
+        displayName: formatDisplayName(record.author.displayName),
+        avatar: record.author.avatar,
+        viewer: record.author.viewer
+          ? pick(record.author.viewer, [
+              "muted",
+              "blockedBy",
+              "blocking",
+              "following",
+              "followedBy",
+            ])
+          : undefined,
+      },
+      embed: bSkyEmbedToVStremEmbed(record.embeds?.[0]),
+      createdAt: value.createdAt,
+      facets: value.facets,
+      plainText: value.text,
+      // TODO: Handle this
+      richText: [],
+    };
+  }
+
+  if (!post) {
+    console.log("Unknown record type", record.$type);
+    return;
+  }
+  return {
+    $type: "com.vstream.embed.post#view",
+    post,
+  };
+}
+
+function parseBSkyRecordWithMediaEmbed(
+  embed: AppBskyEmbedRecordWithMedia.View,
+): VStreamEmbedPostWithMedia | undefined {
+  const post = parseBSkyRecordEmbed(embed.record);
+  if (!post) return;
+
+  const media = AppBskyEmbedImages.isView(embed.media)
+    ? parseBSkyImagesEmbed(embed.media)
+    : AppBskyEmbedVideo.isView(embed.media)
+      ? parseBSkyVideoEmbed(embed.media)
+      : AppBskyEmbedExternal.isView(embed.media)
+        ? parseBSkyExternalEmbed(embed.media)
+        : undefined;
+
+  if (!media) {
+    console.warn("Unknown media type", embed.media.$type);
+    return;
+  }
+
+  return {
+    $type: "com.vstream.embed.postWithMedia#view",
+    post,
+    media,
+  };
+}
+
+function bSkyEmbedToVStremEmbed(
+  embed?: AppBskyFeedDefs.PostView["embed"],
+): VStreamFeedViewPost["embed"] {
+  if (!embed) return;
+
+  if (AppBskyEmbedImages.isView(embed)) {
+    return parseBSkyImagesEmbed(embed);
+  }
+  if (AppBskyEmbedVideo.isView(embed)) {
+    return parseBSkyVideoEmbed(embed);
+  }
+  if (AppBskyEmbedExternal.isView(embed)) {
+    return parseBSkyExternalEmbed(embed);
+  }
+  if (AppBskyEmbedRecord.isView(embed)) {
+    return parseBSkyRecordEmbed(embed);
+  }
+  if (AppBskyEmbedRecordWithMedia.isView(embed)) {
+    return parseBSkyRecordWithMediaEmbed(embed);
+  }
+
+  console.warn("Unknown embed type", embed.$type);
+}
+
 export function bSkyPostFeedViewPostToVStreamPostItem<
   T extends {
     post: AppBskyFeedDefs.PostView;
@@ -138,38 +303,7 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
           ])
         : undefined,
     },
-    embed: AppBskyEmbedImages.isView(item.post.embed)
-      ? {
-          $type: "com.vstream.embed.images#view",
-          images: item.post.embed.images.map((i) => ({
-            alt: i.alt,
-            fullsize: i.fullsize,
-            height: i.aspectRatio?.height,
-            thumb: i.thumb,
-            width: i.aspectRatio?.width,
-          })),
-        }
-      : AppBskyEmbedVideo.isView(item.post.embed)
-        ? {
-            $type: "com.vstream.embed.video#view",
-            cid: item.post.embed.cid,
-            alt: item.post.embed.alt,
-            aspectRatio: item.post.embed.aspectRatio
-              ? item.post.embed.aspectRatio.width /
-                item.post.embed.aspectRatio.height
-              : undefined,
-            playlist: item.post.embed.playlist,
-            thumbnail: item.post.embed.thumbnail,
-          }
-        : AppBskyEmbedExternal.isView(item.post.embed)
-          ? {
-              $type: "com.vstream.embed.external#view",
-              uri: item.post.embed.external.uri,
-              title: item.post.embed.external.title,
-              description: item.post.embed.external.description,
-              thumb: item.post.embed.external.thumb,
-            }
-          : undefined,
+    embed: bSkyEmbedToVStremEmbed(item.post.embed),
     createdAt: item.record.createdAt,
     facets: item.record.facets,
     plainText: item.record.text,
@@ -296,10 +430,10 @@ export function exploreGenerator(
               : undefined,
           );
           if (
-            post.moderation.filter ||
-            post.moderation.blur ||
-            post.moderation.inform ||
-            post.moderation.alert
+            post.moderation?.filter ||
+            post.moderation?.blur ||
+            post.moderation?.inform ||
+            post.moderation?.alert
           ) {
             continue;
           }
