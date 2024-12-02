@@ -255,7 +255,7 @@ export function FeedPostContentText({
   return (
     <span
       className={cn(
-        "leading-6 text-foreground [word-break:break-word]",
+        "whitespace-pre-wrap leading-6 text-foreground [overflow-wrap:break-word] [word-break:break-word]",
         className,
       )}
     >

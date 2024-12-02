@@ -57,6 +57,7 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "tiny-invariant": "^1.3.3",
+    "tlds": "^1.255.0",
     "virtua": "^0.37.4"
   },
   "devDependencies": {
