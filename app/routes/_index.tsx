@@ -20,10 +20,6 @@ import { Feed } from "~/components/feed";
 import { loadFeed } from "~/hooks/useFeedData";
 import { loader as fetchFeedSlices } from "./api.feed.$feed";
 
-export type SearchParams = {
-  cursor?: string;
-};
-
 export const meta: MetaFunction<typeof loader> = (args) => {
   const metas: MetaDescriptor[] = [
     // TODO: Remove before going live

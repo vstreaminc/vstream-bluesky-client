@@ -20,9 +20,11 @@ export async function loader(args: LoaderFunctionArgs) {
   const moderationOpts = await args.context.bsky.cachedModerationOpts(agent);
 
   let fetcher: Parameters<typeof feedGenerator>[0];
-  const [type, _did, _opts] = name.split("|");
+  const [type, did, _opts] = name.split("|");
   if (type === "home") {
     fetcher = (opts) => agent.getTimeline(opts);
+  } else if (type === "author") {
+    fetcher = (opts) => agent.getAuthorFeed({ ...opts, actor: did });
   } else {
     throw new Error("Unknown feed type");
   }
