@@ -364,7 +364,7 @@ export function feedGenerator(
     cursor: opts.initalCusor,
     async *[Symbol.asyncIterator]() {
       do {
-        const res = await fn({ cursor: this.cursor, limit: 100 });
+        const res = await fn({ cursor: this.cursor, limit: 50 });
         this.cursor = res.data.cursor;
         const slices = tuner.tune(res.data.feed);
 

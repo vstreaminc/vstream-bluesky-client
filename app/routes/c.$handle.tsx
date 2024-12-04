@@ -1,3 +1,4 @@
+import { HOUR, SECOND } from "@atproto/common";
 import {
   type LoaderFunctionArgs,
   redirect,
@@ -20,25 +21,49 @@ import { loadProfile, saveProfile } from "~/hooks/useLoadedProfile";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
 
 export async function loader(args: LoaderFunctionArgs) {
-  const { handle } = args.params;
-  if (!handle!.startsWith("@") && !handle!.startsWith("did:")) {
+  const handleOrDid = args.params.handle!;
+  if (!handleOrDid.startsWith("@") && !handleOrDid.startsWith("did:")) {
     const searchParams = new URLSearchParams(args.request.url.split("?")[1]);
     throw redirect(
       $path(
         "/c/:handle",
         {
-          handle: `@${handle}`,
+          handle: `@${handleOrDid}`,
         },
         searchParams,
       ),
     );
   }
-  const agent = await args.context.requireLoggedInUser();
+  const [agent, cache] = await Promise.all([
+    args.context.requireLoggedInUser(),
+    args.context.cache(),
+  ]);
 
-  const res = await agent.getProfile({
-    actor: handle!.startsWith("@") ? handle!.slice(1) : handle!,
-  });
-  const profile = profiledDetailedToSimple(res.data);
+  const did = handleOrDid.startsWith("did:")
+    ? handleOrDid
+    : await cache.getOrSet(
+        `did:${handleOrDid}`,
+        () =>
+          agent.resolveHandle({ handle: handleOrDid }).then((r) => r.data.did),
+        {
+          expiresIn: 1 * HOUR,
+          staleWhileRevalidate: 23 * HOUR,
+        },
+      );
+
+  const data = await cache.getOrSet(
+    `profile:${did}`,
+    () =>
+      agent
+        .getProfile({
+          actor: did,
+        })
+        .then((r) => r.data),
+    {
+      expiresIn: 15 * SECOND,
+    },
+  );
+  const profile = profiledDetailedToSimple(data);
 
   return { profile };
 }
