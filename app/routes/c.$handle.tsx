@@ -21,11 +21,14 @@ import { loadProfile, saveProfile } from "~/hooks/useLoadedProfile";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
 import type { VStreamProfileViewSimple } from "~/types";
 import { Feed } from "~/components/feed";
+import { loadFeed } from "~/hooks/useFeedData";
 import { loader as fetchFeedSlices } from "./api.feed.$feed";
 
 export async function loader(args: LoaderFunctionArgs): Promise<{
   profile: VStreamProfileViewSimple;
-  feed?: Promise<SerializeFrom<typeof fetchFeedSlices>>;
+  feed?:
+    | SerializeFrom<typeof fetchFeedSlices>
+    | Promise<SerializeFrom<typeof fetchFeedSlices>>;
 }> {
   const handleOrDid = args.params.handle!;
   if (!handleOrDid.startsWith("@") && !handleOrDid.startsWith("did:")) {
@@ -84,11 +87,13 @@ export function clientLoader(args: ClientLoaderFunctionArgs) {
   const handleOrDid = args.params.handle!;
   const profile = loadProfile(handleOrDid);
   if (profile) {
+    const feed = loadFeed(`author|${profile.did}`)?.value;
     return {
       profile,
+      feed,
       serverData: args.serverLoader<typeof loader>().then((p) => {
         saveProfile(handleOrDid, p.profile);
-        return p;
+        return { clientFeed: feed, ...p };
       }),
     };
   }
@@ -120,7 +125,9 @@ export default function ProfilePageScreen() {
 export function ProfilePage({
   profile,
   ...props
-}: SerializeFrom<typeof loader>) {
+}: SerializeFrom<typeof loader> & {
+  clientFeed?: NonNullable<NonNullable<ReturnType<typeof loadFeed>>["value"]>;
+}) {
   return (
     <div className="mx-auto w-full max-w-5xl px-4">
       <div className="mb-6 bg-gray-50" style={{ aspectRatio: "3 / 1" }}>
@@ -145,19 +152,48 @@ export function ProfilePage({
         </div>
       </div>
 
-      {props.feed !== undefined ? (
-        <Suspense>
-          <Await resolve={props.feed}>
-            {({ slices, cursor }) => (
-              <Feed
-                name={`author|${profile.did}`}
-                initialSlices={slices}
-                initialCursor={cursor}
-              />
-            )}
-          </Await>
-        </Suspense>
-      ) : null}
+      <div className="mt-4">
+        {props.feed !== undefined ? (
+          isPromise(props.feed) ? (
+            <Suspense
+              fallback={
+                "clientFeed" in props && props.clientFeed ? (
+                  <Feed
+                    name={`author|${profile.did}`}
+                    initialSlices={props.clientFeed.slices}
+                    initialCursor={props.clientFeed.cursor}
+                    showTopBorder
+                  />
+                ) : undefined
+              }
+            >
+              <Await resolve={props.feed}>
+                {({ slices, cursor }) => (
+                  <Feed
+                    name={`author|${profile.did}`}
+                    initialSlices={slices}
+                    initialCursor={cursor}
+                    showTopBorder
+                  />
+                )}
+              </Await>
+            </Suspense>
+          ) : (
+            <Feed
+              name={`author|${profile.did}`}
+              initialSlices={props.feed.slices}
+              initialCursor={props.feed.cursor}
+              showTopBorder
+            />
+          )
+        ) : null}
+      </div>
     </div>
+  );
+}
+
+function isPromise<T>(x: unknown): x is Promise<T> {
+  return (
+    typeof x === "object" && !!x && "then" in x && typeof x.then === "function"
   );
 }

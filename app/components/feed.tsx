@@ -11,10 +11,12 @@ export function Feed({
   name,
   initialSlices,
   initialCursor,
+  showTopBorder,
 }: {
   name: string;
   initialSlices: VStreamFeedViewPostSlice[];
   initialCursor?: string;
+  showTopBorder?: boolean;
 }) {
   const { slices, loadMore } = useFeedData(name, initialSlices, initialCursor);
   const { cache, ref } = useWindowVirtualizeCached(name, slices[0]._reactKey);
@@ -45,7 +47,11 @@ export function Feed({
         onScroll={onScroll}
       >
         {slices.map((s, idx) => (
-          <FeedSlice key={s._reactKey} hideTopBorder={idx === 0} slice={s} />
+          <FeedSlice
+            key={s._reactKey}
+            hideTopBorder={!showTopBorder && idx === 0}
+            slice={s}
+          />
         ))}
       </WindowVirtualizer>
     </div>

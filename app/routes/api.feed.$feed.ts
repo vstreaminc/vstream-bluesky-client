@@ -2,12 +2,16 @@ import { SECOND } from "@atproto/common";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { take } from "~/lib/utils";
+import type { VStreamFeedViewPostSlice } from "~/types";
 
 export type SearchParams = {
   cursor?: string;
 };
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs): Promise<{
+  slices: VStreamFeedViewPostSlice[];
+  cursor?: string;
+}> {
   const cursorFromQuery =
     new URLSearchParams(args.request.url.split("?")[1]).get("cursor") ??
     undefined;
