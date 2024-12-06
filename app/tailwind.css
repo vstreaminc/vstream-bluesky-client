@@ -88,12 +88,12 @@
 
 @layer base {
   :root {
-    --youtube-short-ar: calc((9 / 16) * 1.5)px;
+    --youtube-short-ar: calc((9 / 16) * 1.5) px;
   }
 
   @media screen and (max-height: 600) {
     :root {
-      --youtube-short-ar: calc((9 / 16) * 1.75)px;
+      --youtube-short-ar: calc((9 / 16) * 1.75) px;
     }
   }
 }

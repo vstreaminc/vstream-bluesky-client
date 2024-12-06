@@ -1,10 +1,11 @@
 import { Globe } from "lucide-react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { VStreamEmbedExternal } from "~/types";
 import { cn } from "~/lib/utils";
+import { useShouldAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
+import { useHydrated } from "~/hooks/useHydrated";
 import { UnstyledLink } from "./ui/link";
-
-const IFRAME_HOST = "https://bsky.app";
+import { EventStopper } from "./ui/eventStopper";
 
 const embedPlayerSources = [
   "youtube",
@@ -67,9 +68,7 @@ interface EmbedPlayerParams {
 const giphyRegex = /media(?:[0-4]\.giphy\.com|\.giphy\.com)/i;
 const gifFilenameRegex = /^(\S+)\.(webp|gif|mp4)$/i;
 
-export function parseEmbedPlayerFromUrl(
-  url: string,
-): EmbedPlayerParams | undefined {
+function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
   let urlp;
   try {
     urlp = new URL(url);
@@ -79,6 +78,8 @@ export function parseEmbedPlayerFromUrl(
 
   // youtube
   if (urlp.hostname === "youtu.be") {
+    const origin =
+      typeof window !== "undefined" ? window.location.hostname : "";
     const videoId = urlp.pathname.split("/")[1];
     const t = urlp.searchParams.get("t") ?? "0";
     const seek = encodeURIComponent(t.replace(/s$/, ""));
@@ -87,7 +88,7 @@ export function parseEmbedPlayerFromUrl(
       return {
         type: "youtube_video",
         source: "youtube",
-        playerUri: `${IFRAME_HOST}/iframe/youtube.html?videoId=${videoId}&start=${seek}`,
+        playerUri: `https://www.youtube.com/embed/${videoId}?start=${seek}&origin=${origin}`,
       };
     }
   }
@@ -97,6 +98,8 @@ export function parseEmbedPlayerFromUrl(
     urlp.hostname === "m.youtube.com" ||
     urlp.hostname === "music.youtube.com"
   ) {
+    const origin =
+      typeof window !== "undefined" ? window.location.hostname : "";
     const [, page, shortOrLiveVideoId] = urlp.pathname.split("/");
 
     const isShorts = page === "shorts";
@@ -113,7 +116,7 @@ export function parseEmbedPlayerFromUrl(
         type: isShorts ? "youtube_short" : "youtube_video",
         source: isShorts ? "youtubeShorts" : "youtube",
         hideDetails: isShorts ? true : undefined,
-        playerUri: `${IFRAME_HOST}/iframe/youtube.html?videoId=${videoId}&start=${seek}`,
+        playerUri: `https://www.youtube.com/embed/${videoId}?start=${seek}&origin=${origin}`,
       };
     }
   }
@@ -133,19 +136,19 @@ export function parseEmbedPlayerFromUrl(
       return {
         type: "twitch_video",
         source: "twitch",
-        playerUri: `https://player.twitch.tv/?volume=0.5&!muted&autoplay&video=${clipOrId}&parent=${parent}`,
+        playerUri: `https://player.twitch.tv/?muted&autoplay&video=${clipOrId}&parent=${parent}`,
       };
     } else if (clipOrId === "clip") {
       return {
         type: "twitch_video",
         source: "twitch",
-        playerUri: `https://clips.twitch.tv/embed?volume=0.5&autoplay=true&clip=${id}&parent=${parent}`,
+        playerUri: `https://clips.twitch.tv/embed?muted&autoplay&clip=${id}&parent=${parent}`,
       };
     } else if (channelOrVideo) {
       return {
         type: "twitch_video",
         source: "twitch",
-        playerUri: `https://player.twitch.tv/?volume=0.5&!muted&autoplay&channel=${channelOrVideo}&parent=${parent}`,
+        playerUri: `https://player.twitch.tv/?muted&autoplay&channel=${channelOrVideo}&parent=${parent}`,
       };
     }
   }
@@ -159,9 +162,7 @@ export function parseEmbedPlayerFromUrl(
         return {
           type: "spotify_playlist",
           source: "spotify",
-          playerUri: `https://open.spotify.com/embed/playlist/${
-            id ?? idOrType
-          }`,
+          playerUri: `https://open.spotify.com/embed/playlist/${id ?? idOrType}`,
         };
       }
       if (typeOrLocale === "album" || idOrType === "album") {
@@ -348,9 +349,7 @@ export function parseEmbedPlayerFromUrl(
         isGif: true,
         hideDetails: true,
         metaUri: `https://giphy.com/gifs/${gifId}`,
-        playerUri: `https://i.giphy.com/media/${
-          mediaOrFilename.split(".")[0]
-        }/200.webp`,
+        playerUri: `https://i.giphy.com/media/${mediaOrFilename.split(".")[0]}/200.webp`,
       };
     }
   }
@@ -445,7 +444,7 @@ export function parseEmbedPlayerFromUrl(
   }
 }
 
-export function getPlayerAspect({
+function getPlayerAspect({
   type,
   hasThumb,
   width,
@@ -483,29 +482,7 @@ export function getPlayerAspect({
   }
 }
 
-export function getGifDims(
-  originalHeight: number,
-  originalWidth: number,
-  viewWidth: number,
-) {
-  const scaledHeight = (originalHeight / originalWidth) * viewWidth;
-
-  return {
-    height: scaledHeight > 250 ? 250 : scaledHeight,
-    width: (250 / scaledHeight) * viewWidth,
-  };
-}
-
-export function getGiphyMetaUri(url: URL) {
-  if (giphyRegex.test(url.hostname) || url.hostname === "i.giphy.com") {
-    const params = parseEmbedPlayerFromUrl(url.toString());
-    if (params && params.type === "giphy_gif") {
-      return params.metaUri;
-    }
-  }
-}
-
-export function parseTenorGif(urlp: URL):
+function parseTenorGif(urlp: URL):
   | { success: false }
   | {
       success: true;
@@ -676,18 +653,70 @@ function ExternalGifEmbed({
 
 function ExternalPlayer({
   embed,
-  params: _,
+  params,
 }: {
   embed: VStreamEmbedExternal;
   params: EmbedPlayerParams;
 }) {
-  // TODO: Complete this
+  const aspect = useMemo(() => {
+    return getPlayerAspect({
+      type: params.type,
+      width: window.innerWidth,
+      hasThumb: !!embed.thumb,
+    });
+  }, [params.type, embed.thumb]);
+  const [isLoading, setIsLoading] = useState(true);
+  const onLoad = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
+  // When a player is in view, we want to replace the thumbnail with the external player.
+  const { ref, inView } = useShouldAutoplaySingleton(false);
+
   return (
-    <img
-      className="w-full border-b border-muted object-center"
-      src={embed.thumb}
-      alt={embed.title}
-    />
+    <div
+      ref={ref}
+      className="bordered-muted relative flex w-full flex-col overflow-hidden border-b"
+      style={aspect}
+    >
+      {embed.thumb && (!inView || isLoading) ? (
+        <>
+          <img
+            className="h-full w-full object-cover"
+            src={embed.thumb}
+            alt={embed.title}
+          />
+          <div className="absolute inset-0 bg-muted/30" />
+        </>
+      ) : (
+        <div className="absolute inset-0 bg-muted/30" />
+      )}
+      <Player isActive={inView} onLoad={onLoad} params={params} />
+    </div>
+  );
+}
+
+function Player({
+  isActive,
+  onLoad,
+  params,
+}: {
+  isActive: boolean;
+  params: EmbedPlayerParams;
+  onLoad: () => void;
+}) {
+  if (!isActive) return null;
+
+  return (
+    <EventStopper className="absolute inset-0 z-30">
+      <iframe
+        title={params.type}
+        src={params.playerUri}
+        allowFullScreen
+        onLoad={onLoad}
+        className="h-full w-full overflow-hidden"
+      />
+    </EventStopper>
   );
 }
 
@@ -696,6 +725,7 @@ export function FeedPostExternalEmbed({
 }: {
   embed: VStreamEmbedExternal;
 }) {
+  const hydrated = useHydrated();
   const niceURL = useMemo(() => {
     try {
       const url = new URL(embed.uri);
@@ -707,6 +737,9 @@ export function FeedPostExternalEmbed({
   const embedPlayerParams = useMemo(() => {
     return parseEmbedPlayerFromUrl(embed.uri);
   }, [embed.uri]);
+
+  // Allows us to rely on browers APIs in these components
+  if (!hydrated) return false;
 
   if (embedPlayerParams?.source === "tenor") {
     const parsedAlt = parseAltFromGIFDescription(embed.description);

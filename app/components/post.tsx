@@ -734,7 +734,7 @@ export function PostMediaImage(props: {
         />
         <div
           className={cn(
-            "animate-shimmer h-full w-full bg-gray-200",
+            "h-full w-full animate-shimmer bg-gray-200",
             "pointer-events-none absolute inset-0",
             "opacity-0 mix-blend-plus-lighter transition-opacity ease-linear",
             showShimmer && "animate-none opacity-100",

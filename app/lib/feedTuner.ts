@@ -48,9 +48,7 @@ export class FeedViewPostsSlice {
       this.rootUri = post.uri;
     }
     this._feedPost = feedPost;
-    this._reactKey = `slice-${post.uri}-${
-      feedPost.reason?.indexedAt || post.indexedAt
-    }`;
+    this._reactKey = `slice-${post.uri}-${feedPost.reason?.indexedAt || post.indexedAt}`;
     if (
       !AppBskyFeedPost.isRecord(post.record) ||
       !AppBskyFeedPost.validateRecord(post.record).success

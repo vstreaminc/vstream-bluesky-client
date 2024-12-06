@@ -95,7 +95,7 @@ export function Slider({
         ref={onScrollMount}
         onScroll={onScroll}
         className={cn(
-          "scrollbar-hide grid min-h-0 min-w-0 flex-1 snap-x snap-mandatory auto-cols-[100%] grid-flow-col grid-rows-[1fr,min-content] overflow-x-scroll scroll-smooth",
+          "grid min-h-0 min-w-0 flex-1 snap-x snap-mandatory auto-cols-[100%] grid-flow-col grid-rows-[1fr,min-content] overflow-x-scroll scroll-smooth scrollbar-hide",
           contentClassName,
         )}
       >

@@ -195,7 +195,10 @@ export function fromRequest(
       return (await requestCache()).getOrSet(
         "moderationOpts",
         () => moderationOpts(agent),
-        { expiresIn: 5 * MINUTE, staleWhileRevalidate: 1 * DAY },
+        {
+          expiresIn: 5 * MINUTE,
+          staleWhileRevalidate: 1 * DAY,
+        },
       );
     });
 

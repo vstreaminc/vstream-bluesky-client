@@ -1,4 +1,9 @@
-import { Kysely, Migrator, type Migration, type MigrationProvider } from "kysely";
+import {
+  Kysely,
+  Migrator,
+  type Migration,
+  type MigrationProvider,
+} from "kysely";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import type { ServerConfig } from "./config";
 
