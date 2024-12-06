@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 import { ApplicationSidebar } from "~/components/nav";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "~/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import { Mark } from "./logo";
 
 type Props = {

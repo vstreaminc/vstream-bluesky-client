@@ -49,10 +49,6 @@ export function useFollowingState(
     [did],
   );
 
-  const isFollowing = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    serverSnapshot,
-  );
+  const isFollowing = useSyncExternalStore(subscribe, getSnapshot, serverSnapshot);
   return [isFollowing, updateStore];
 }

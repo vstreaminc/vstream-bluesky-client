@@ -13,8 +13,7 @@ function isStaleWhileRevalidate(obj: KVStore, staleFor: number | undefined) {
 
 export function createCache<T = unknown>(db: Database, prefix: string) {
   async function set(key: string, value: T | null, expiresIn?: number) {
-    const expiresAt =
-      typeof expiresIn === "number" ? Date.now() + expiresIn : null;
+    const expiresAt = typeof expiresIn === "number" ? Date.now() + expiresIn : null;
     const values = {
       key: prefix + key,
       value: JSON.stringify(value),
@@ -23,9 +22,7 @@ export function createCache<T = unknown>(db: Database, prefix: string) {
     await db
       .insertInto("kv_store")
       .values(values)
-      .onConflict((oc) =>
-        oc.doUpdateSet({ value: values.value, expires_at: values.expires_at }),
-      )
+      .onConflict((oc) => oc.doUpdateSet({ value: values.value, expires_at: values.expires_at }))
       .execute();
   }
 
@@ -105,16 +102,12 @@ export function createCache<T = unknown>(db: Database, prefix: string) {
     const row = await getRaw(key);
     if (
       row === undefined ||
-      (isExpired(row) &&
-        !isStaleWhileRevalidate(row, opts?.staleWhileRevalidate))
+      (isExpired(row) && !isStaleWhileRevalidate(row, opts?.staleWhileRevalidate))
     ) {
       value = await fn();
       await set(key, value, opts?.expiresIn);
       return value as V;
-    } else if (
-      isExpired(row) &&
-      isStaleWhileRevalidate(row, opts?.staleWhileRevalidate)
-    ) {
+    } else if (isExpired(row) && isStaleWhileRevalidate(row, opts?.staleWhileRevalidate)) {
       // Perform revalidation in background
       // FIXME: Some sort of lock should happen here or two calls can start
       //        two seperate revalidations at the same time
@@ -154,16 +147,14 @@ export function createRequestCache<T = unknown>(dbCache: Cache<T>): Cache<T> {
     }
     return values;
   });
-  const loaderWithoutExpiring = new DataLoader<string, T | null | undefined>(
-    async (keys) => {
-      const values = await dbCache.getMany(keys, { skipExpiredDel: true });
-      for (const [idx, key] of keys.entries()) {
-        const value = values[idx];
-        loader.prime(key, value);
-      }
-      return values;
-    },
-  );
+  const loaderWithoutExpiring = new DataLoader<string, T | null | undefined>(async (keys) => {
+    const values = await dbCache.getMany(keys, { skipExpiredDel: true });
+    for (const [idx, key] of keys.entries()) {
+      const value = values[idx];
+      loader.prime(key, value);
+    }
+    return values;
+  });
 
   const set: Cache<T>["set"] = async (key, value, expiresIn) => {
     loader.prime(key, value);

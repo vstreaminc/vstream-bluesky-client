@@ -28,11 +28,7 @@ function Disclosure({ children, className, ...props }: DisclosureProps) {
     <AriaDisclosure
       {...props}
       className={composeRenderProps(className, (className, _renderProps) =>
-        cn(
-          "group min-w-64",
-          isInGroup && "border-0 border-b last:border-b-0",
-          className,
-        ),
+        cn("group min-w-64", isInGroup && "border-0 border-b last:border-b-0", className),
       )}
     >
       {children}
@@ -46,11 +42,7 @@ export interface DisclosureHeaderProps {
   Icon?: React.ComponentType<React.ComponentProps<typeof ChevronDownIcon>>;
 }
 
-function DisclosureHeader({
-  children,
-  className,
-  Icon = ChevronDownIcon,
-}: DisclosureHeaderProps) {
+function DisclosureHeader({ children, className, Icon = ChevronDownIcon }: DisclosureHeaderProps) {
   return (
     <Heading className="flex">
       <Button
@@ -83,16 +75,9 @@ export interface DisclosurePanelProps extends AriaDisclosurePanelProps {
   children: React.ReactNode;
 }
 
-function DisclosurePanel({
-  children,
-  className,
-  ...props
-}: DisclosurePanelProps) {
+function DisclosurePanel({ children, className, ...props }: DisclosurePanelProps) {
   return (
-    <AriaDisclosurePanel
-      {...props}
-      className={"overflow-hidden text-sm transition-all"}
-    >
+    <AriaDisclosurePanel {...props} className={"overflow-hidden text-sm transition-all"}>
       <div className={cn("pb-4 pt-0", className)}>{children}</div>
     </AriaDisclosurePanel>
   );
@@ -102,17 +87,11 @@ export interface DisclosureGroupProps extends AriaDisclosureGroupProps {
   children: React.ReactNode;
 }
 
-function DisclosureGroup({
-  children,
-  className,
-  ...props
-}: DisclosureGroupProps) {
+function DisclosureGroup({ children, className, ...props }: DisclosureGroupProps) {
   return (
     <AriaDisclosureGroup
       {...props}
-      className={composeRenderProps(className, (className, _renderProps) =>
-        cn("", className),
-      )}
+      className={composeRenderProps(className, (className, _renderProps) => cn("", className))}
     >
       {children}
     </AriaDisclosureGroup>

@@ -6,12 +6,7 @@ import {
   type SerializeFrom,
   type MetaDescriptor,
 } from "@remix-run/node";
-import {
-  Await,
-  type ClientLoaderFunctionArgs,
-  useLoaderData,
-  useNavigate,
-} from "@remix-run/react";
+import { Await, type ClientLoaderFunctionArgs, useLoaderData, useNavigate } from "@remix-run/react";
 import { Suspense } from "react";
 import { FormattedDate, FormattedMessage, FormattedTime } from "react-intl";
 import { $path } from "remix-routes";
@@ -34,12 +29,7 @@ import {
   makeRecordUri,
   sortPostThread,
 } from "~/lib/bsky.server";
-import {
-  canonicalURL,
-  hrefLangs,
-  linkToPost,
-  linkToProfile,
-} from "~/lib/linkHelpers";
+import { canonicalURL, hrefLangs, linkToPost, linkToProfile } from "~/lib/linkHelpers";
 import type { VStreamFeedViewPost, VStreamPostThread } from "~/types";
 import { cn } from "~/lib/utils";
 import { ProfileFlyout } from "~/components/profileFlyout";
@@ -69,9 +59,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const uri = makeRecordUri(handle!, "app.bsky.feed.post", rkey!);
 
-  const thread = await loadPostThread(uri, (params) =>
-    agent.getPostThread(params),
-  );
+  const thread = await loadPostThread(uri, (params) => agent.getPostThread(params));
 
   if (thread.$type !== "post") {
     throw new Response("Not found", { status: 404 });
@@ -79,21 +67,13 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const postPlainText = thread.post.plainText;
 
-  const skeleton = createThreadSkeleton(
-    sortPostThread(thread, agent.assertDid),
-    agent.assertDid,
-  );
+  const skeleton = createThreadSkeleton(sortPostThread(thread, agent.assertDid), agent.assertDid);
 
   const finders = {
-    getProfile: (did: string) =>
-      args.context.bsky.cachedFindProfile(agent, did),
+    getProfile: (did: string) => args.context.bsky.cachedFindProfile(agent, did),
   };
   const hydrations: Promise<unknown>[] = [];
-  for (const thread of [
-    ...skeleton.parents,
-    skeleton.highlightedPost,
-    ...skeleton.replies,
-  ]) {
+  for (const thread of [...skeleton.parents, skeleton.highlightedPost, ...skeleton.replies]) {
     if (thread.$type !== "post") continue;
     hydrations.push(hydrateFeedViewVStreamPost(thread.post, finders));
   }
@@ -139,14 +119,9 @@ export const meta: MetaFunction<typeof loader> = (args) => {
   if (!post || post.$type !== "post") return [];
   const author = post.post.author;
 
-  const postText =
-    postPlainText.length > 96
-      ? `${postPlainText.slice(0, 96)}...`
-      : postPlainText;
+  const postText = postPlainText.length > 96 ? `${postPlainText.slice(0, 96)}...` : postPlainText;
 
-  const title = [author.handle, postText, PRODUCT_NAME]
-    .filter(Boolean)
-    .join(" | ");
+  const title = [author.handle, postText, PRODUCT_NAME].filter(Boolean).join(" | ");
 
   const metas: MetaDescriptor[] = [
     { title },
@@ -159,10 +134,7 @@ export const meta: MetaFunction<typeof loader> = (args) => {
     })),
   ];
   const ogImage = (() => {
-    if (
-      !post.post.embed ||
-      post.post.embed.$type !== "com.vstream.embed.images#view"
-    )
+    if (!post.post.embed || post.post.embed.$type !== "com.vstream.embed.images#view")
       return undefined;
     return post.post.embed.images[0];
   })();
@@ -262,8 +234,7 @@ function PostPage(data: SerializeFrom<typeof loader>) {
               ? (posts[idx + 1] as VStreamPostThread)
               : undefined;
             const showChildReplyLine = (next?.ctx.depth || 0) > item.ctx.depth;
-            const showParentReplyLine =
-              (item.ctx.depth < 0 && !!item.parent) || item.ctx.depth > 1;
+            const showParentReplyLine = (item.ctx.depth < 0 && !!item.parent) || item.ctx.depth > 1;
 
             return (
               <PostPageItem
@@ -432,20 +403,12 @@ function PostPageItem(props: {
       tabIndex={0}
       onClick={onClick}
       onKeyUp={onKeyUp}
-      className={cn(
-        "cursor-pointer border-t border-t-muted-foreground px-4 hover:bg-muted",
-        {
-          "pb-5": !props.showChildReplyLine,
-          "border-t-0":
-            props.hideTopBorder ||
-            (props.showParentReplyLine && props.hasPrecedingItem),
-        },
-      )}
+      className={cn("cursor-pointer border-t border-t-muted-foreground px-4 hover:bg-muted", {
+        "pb-5": !props.showChildReplyLine,
+        "border-t-0": props.hideTopBorder || (props.showParentReplyLine && props.hasPrecedingItem),
+      })}
     >
-      <FeedPostEyebrow
-        isThreadChild={props.showParentReplyLine}
-        reason={undefined}
-      />
+      <FeedPostEyebrow isThreadChild={props.showParentReplyLine} reason={undefined} />
       <div className="flex gap-4">
         <div className="flex w-[3.25rem] flex-col">
           <ProfileFlyout profile={post.author}>
@@ -453,10 +416,7 @@ function PostPageItem(props: {
               <div {...hoverProps}>
                 <UnstyledLink href={linkToProfile(post.author)}>
                   <Avatar className="aspect-square h-auto w-full">
-                    <AvatarImage
-                      src={post.author.avatar}
-                      alt={post.author.displayName}
-                    />
+                    <AvatarImage src={post.author.avatar} alt={post.author.displayName} />
                     <AvatarFallback>@</AvatarFallback>
                   </Avatar>
                 </UnstyledLink>

@@ -11,8 +11,7 @@ import { VStreamIntlProvider } from "./components/vstreamIntlProvider";
 
 function start() {
   const locale =
-    (document.documentElement.getAttribute("lang") as SupportedLocale | null) ??
-    DEFAULT_LOCALE;
+    (document.documentElement.getAttribute("lang") as SupportedLocale | null) ?? DEFAULT_LOCALE;
 
   const messages =
     // @ts-expect-error We know what we're doing getting these messages

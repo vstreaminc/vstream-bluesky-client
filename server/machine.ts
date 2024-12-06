@@ -12,11 +12,7 @@ import { migrateToLatest } from "./db";
 // Helper function for defining routes
 const handler =
   (fn: express.Handler) =>
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction,
-  ) => {
+  async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
       await fn(req, res, next);
     } catch (err) {
@@ -73,9 +69,7 @@ export class Machine {
         // If somehow comming in on the wrong host, redirect to the correct one
         if (req.method !== "GET") return next();
         if (req.hostname === cfg.service.hostname) return next();
-        const url = new URL(
-          req.protocol + "://" + req.get("host") + req.originalUrl,
-        );
+        const url = new URL(req.protocol + "://" + req.get("host") + req.originalUrl);
         url.hostname = cfg.service.hostname;
         res.redirect(url.toString());
       }),

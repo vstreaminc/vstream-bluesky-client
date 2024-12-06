@@ -4,10 +4,7 @@ import type { ServerEnvironment } from "./env";
 export const envToCfg = (env: ServerEnvironment): ServerConfig => {
   const port = env.port ?? 3000;
   const hostname = env.hostname ?? "localhost";
-  const publicUrl =
-    hostname === "localhost"
-      ? `http://localhost:${port}`
-      : `https://${hostname}`;
+  const publicUrl = hostname === "localhost" ? `http://localhost:${port}` : `https://${hostname}`;
 
   const service: ServiceConfig = {
     devMode: process.env.NODE_ENV !== "production",

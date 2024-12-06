@@ -1,19 +1,6 @@
 import * as React from "react";
-import {
-  FormattedDisplayName,
-  FormattedMessage,
-  IntlProvider,
-} from "react-intl";
-import {
-  ChevronsUpDown,
-  Compass,
-  Cpu,
-  Globe,
-  House,
-  LogOut,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { FormattedDisplayName, FormattedMessage, IntlProvider } from "react-intl";
+import { ChevronsUpDown, Compass, Cpu, Globe, House, LogOut, Moon, Sun } from "lucide-react";
 import { Link, useFetcher } from "@remix-run/react";
 import { $path } from "remix-routes";
 import {
@@ -123,9 +110,7 @@ function ApplicationSidebarFooter() {
         <AvatarFallback className="rounded-lg">@</AvatarFallback>
       </Avatar>
       <div className="grid flex-1 text-left text-sm leading-tight">
-        <span className="truncate font-semibold">
-          {viewer.displayName ?? ""}
-        </span>
+        <span className="truncate font-semibold">{viewer.displayName ?? ""}</span>
         <span className="truncate text-xs">{viewer.handle}</span>
       </div>
     </>
@@ -175,10 +160,7 @@ function LogoutItem() {
 
   return (
     <logout.Form method="post" action="/auth/logout" ref={ref}>
-      <DropdownMenuItem
-        onClick={() => ref.current?.requestSubmit()}
-        className="cursor-pointer"
-      >
+      <DropdownMenuItem onClick={() => ref.current?.requestSubmit()} className="cursor-pointer">
         <LogOut />
         <FormattedMessage {...ctas.logOut} />
       </DropdownMenuItem>
@@ -202,11 +184,7 @@ const LocaleSwitcher = React.memo(function LocaleSwitcher() {
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
           {locales.map((l) => (
-            <DropdownMenuItem
-              key={l}
-              onClick={() => updateLocale(l)}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem key={l} onClick={() => updateLocale(l)} className="cursor-pointer">
               <IntlProvider locale={l}>
                 <FormattedDisplayName type="language" value={l} />
               </IntlProvider>
@@ -220,36 +198,32 @@ const LocaleSwitcher = React.memo(function LocaleSwitcher() {
 
 function ColorSchemeSwitcher() {
   const hydrated = useHydrated();
-  const switchColorScheme = React.useCallback(
-    (scheme: "dark" | "light" | null) => {
-      switch (scheme) {
-        case "dark":
-          localStorage.setItem("theme", "dark");
+  const switchColorScheme = React.useCallback((scheme: "dark" | "light" | null) => {
+    switch (scheme) {
+      case "dark":
+        localStorage.setItem("theme", "dark");
+        document.documentElement.classList.add("dark");
+        break;
+      case "light":
+        localStorage.setItem("theme", "light");
+        document.documentElement.classList.remove("dark");
+        break;
+      default:
+        localStorage.removeItem("theme");
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
           document.documentElement.classList.add("dark");
-          break;
-        case "light":
-          localStorage.setItem("theme", "light");
+        } else {
           document.documentElement.classList.remove("dark");
-          break;
-        default:
-          localStorage.removeItem("theme");
-          if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
-          break;
-      }
-    },
-    [],
-  );
+        }
+        break;
+    }
+  }, []);
 
   if (!hydrated) return null;
 
   const prefersDarkMode =
     localStorage.theme === "dark" ||
-    (!("theme" in localStorage) &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches);
+    (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   const Icon = prefersDarkMode ? Moon : Sun;
 
@@ -264,10 +238,7 @@ function ColorSchemeSwitcher() {
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          <DropdownMenuItem
-            onClick={() => switchColorScheme("light")}
-            className="cursor-pointer"
-          >
+          <DropdownMenuItem onClick={() => switchColorScheme("light")} className="cursor-pointer">
             <Sun />
             <span>
               <FormattedMessage
@@ -276,10 +247,7 @@ function ColorSchemeSwitcher() {
               />
             </span>
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => switchColorScheme("dark")}
-            className="cursor-pointer"
-          >
+          <DropdownMenuItem onClick={() => switchColorScheme("dark")} className="cursor-pointer">
             <Moon />
             <span>
               <FormattedMessage
@@ -288,10 +256,7 @@ function ColorSchemeSwitcher() {
               />
             </span>
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => switchColorScheme(null)}
-            className="cursor-pointer"
-          >
+          <DropdownMenuItem onClick={() => switchColorScheme(null)} className="cursor-pointer">
             <Cpu />
             <span>
               <FormattedMessage

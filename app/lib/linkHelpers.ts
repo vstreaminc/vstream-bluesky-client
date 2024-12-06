@@ -2,15 +2,13 @@ import { $path } from "remix-routes";
 import { handleOrDid } from "./utils";
 import { SUPPORTED_LOCALES } from "./locale";
 
-export function linkToProfile<T extends { handle: string; did: string }>(
-  author: T,
-): string {
+export function linkToProfile<T extends { handle: string; did: string }>(author: T): string {
   return $path("/c/:handle", { handle: handleOrDid(author) });
 }
 
-export function linkToPost<
-  T extends { rkey: string; author: { handle: string; did: string } },
->(post: T): string {
+export function linkToPost<T extends { rkey: string; author: { handle: string; did: string } }>(
+  post: T,
+): string {
   return $path("/c/:handle/p/:rkey", {
     handle: handleOrDid(post.author),
     rkey: post.rkey,
@@ -58,10 +56,7 @@ export function canonicalURL(
     paramsString = "?" + paramsString;
   }
 
-  return new URL(
-    `${url.pathname}${paramsString}`,
-    `https://${url.host}`,
-  ).toString();
+  return new URL(`${url.pathname}${paramsString}`, `https://${url.host}`).toString();
 }
 
 /**

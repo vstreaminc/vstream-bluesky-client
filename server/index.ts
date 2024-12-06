@@ -11,6 +11,4 @@ async function shutdown() {
 process.once("SIGTERM", shutdown).once("SIGINT", shutdown);
 
 await machine.start();
-console.log(
-  `Express server listening at http://localhost:${machine.ctx.cfg.service.port}`,
-);
+console.log(`Express server listening at http://localhost:${machine.ctx.cfg.service.port}`);

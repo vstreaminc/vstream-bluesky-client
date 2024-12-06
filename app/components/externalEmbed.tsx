@@ -78,8 +78,7 @@ function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
 
   // youtube
   if (urlp.hostname === "youtu.be") {
-    const origin =
-      typeof window !== "undefined" ? window.location.hostname : "";
+    const origin = typeof window !== "undefined" ? window.location.hostname : "";
     const videoId = urlp.pathname.split("/")[1];
     const t = urlp.searchParams.get("t") ?? "0";
     const seek = encodeURIComponent(t.replace(/s$/, ""));
@@ -98,16 +97,13 @@ function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
     urlp.hostname === "m.youtube.com" ||
     urlp.hostname === "music.youtube.com"
   ) {
-    const origin =
-      typeof window !== "undefined" ? window.location.hostname : "";
+    const origin = typeof window !== "undefined" ? window.location.hostname : "";
     const [, page, shortOrLiveVideoId] = urlp.pathname.split("/");
 
     const isShorts = page === "shorts";
     const isLive = page === "live";
     const videoId =
-      isShorts || isLive
-        ? shortOrLiveVideoId
-        : (urlp.searchParams.get("v") as string);
+      isShorts || isLive ? shortOrLiveVideoId : (urlp.searchParams.get("v") as string);
     const t = urlp.searchParams.get("t") ?? "0";
     const seek = encodeURIComponent(t.replace(/s$/, ""));
 
@@ -127,8 +123,7 @@ function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
     urlp.hostname === "www.twitch.tv" ||
     urlp.hostname === "m.twitch.tv"
   ) {
-    const parent =
-      typeof window !== "undefined" ? window.location.hostname : "";
+    const parent = typeof window !== "undefined" ? window.location.hostname : "";
 
     const [, channelOrVideo, clipOrId, id] = urlp.pathname.split("/");
 
@@ -197,10 +192,7 @@ function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
   }
 
   // soundcloud
-  if (
-    urlp.hostname === "soundcloud.com" ||
-    urlp.hostname === "www.soundcloud.com"
-  ) {
+  if (urlp.hostname === "soundcloud.com" || urlp.hostname === "www.soundcloud.com") {
     const [, user, trackOrSets, set] = urlp.pathname.split("/");
 
     if (user && trackOrSets) {
@@ -220,10 +212,7 @@ function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
     }
   }
 
-  if (
-    urlp.hostname === "music.apple.com" ||
-    urlp.hostname === "music.apple.com"
-  ) {
+  if (urlp.hostname === "music.apple.com" || urlp.hostname === "music.apple.com") {
     // This should always have: locale, type (playlist or album), name, and id. We won't use spread since we want
     // to check if the length is correct
     const pathParams = urlp.pathname.split("/");
@@ -300,8 +289,7 @@ function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
   // These can include (presumably) a tracking id in the path name, so we have to check for that as well
   if (giphyRegex.test(urlp.hostname)) {
     // We can link directly to the gif, if its a proper link
-    const [, media, trackingOrId, idOrFilename, filename] =
-      urlp.pathname.split("/");
+    const [, media, trackingOrId, idOrFilename, filename] = urlp.pathname.split("/");
 
     if (media === "media") {
       if (idOrFilename && gifFilenameRegex.test(idOrFilename)) {
@@ -405,8 +393,7 @@ function parseEmbedPlayerFromUrl(url: string): EmbedPlayerParams | undefined {
 
   // link shortened flickr path
   if (urlp.hostname === "flic.kr") {
-    const b58alph =
-      "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+    const b58alph = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
     const [, type, idBase58Enc] = urlp.pathname.split("/");
     let id = 0n;
     for (const char of idBase58Enc) {
@@ -613,11 +600,7 @@ function GifEmbed({
         aspectRatio: params.dimensions!.width / params.dimensions!.height,
       }}
     >
-      <GifView
-        source={params.playerUri}
-        autoplay={true}
-        accessibilityLabel={altText}
-      />
+      <GifView source={params.playerUri} autoplay={true} accessibilityLabel={altText} />
       {isPreferredAltText && <div>{altText}</div>}
     </div>
   );
@@ -643,11 +626,7 @@ function ExternalGifEmbed({
   }, [params.playerUri]);
 
   return (
-    <img
-      className="w-full"
-      src={isPrefetched ? params.playerUri : embed.thumb}
-      alt={embed.title}
-    />
+    <img className="w-full" src={isPrefetched ? params.playerUri : embed.thumb} alt={embed.title} />
   );
 }
 
@@ -681,11 +660,7 @@ function ExternalPlayer({
     >
       {embed.thumb && (!inView || isLoading) ? (
         <>
-          <img
-            className="h-full w-full object-cover"
-            src={embed.thumb}
-            alt={embed.title}
-          />
+          <img className="h-full w-full object-cover" src={embed.thumb} alt={embed.title} />
           <div className="absolute inset-0 bg-muted/30" />
         </>
       ) : (
@@ -720,11 +695,7 @@ function Player({
   );
 }
 
-export function FeedPostExternalEmbed({
-  embed,
-}: {
-  embed: VStreamEmbedExternal;
-}) {
+export function FeedPostExternalEmbed({ embed }: { embed: VStreamEmbedExternal }) {
   const hydrated = useHydrated();
   const niceURL = useMemo(() => {
     try {
@@ -753,10 +724,7 @@ export function FeedPostExternalEmbed({
   }
 
   return (
-    <UnstyledLink
-      className="mt-2 block rounded-t-sm border border-muted"
-      href={embed.uri}
-    >
+    <UnstyledLink className="mt-2 block rounded-t-sm border border-muted" href={embed.uri}>
       {embed.thumb && !embedPlayerParams ? (
         <img
           className="w-full border-b border-muted object-center"

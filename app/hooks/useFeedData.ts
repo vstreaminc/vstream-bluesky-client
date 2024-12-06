@@ -22,11 +22,7 @@ export function loadFeed(name: string) {
   return feedsDb.get(name);
 }
 
-export function prependToFeed(
-  name: string,
-  slices: VStreamFeedViewPostSlice[],
-  cursor?: string,
-) {
+export function prependToFeed(name: string, slices: VStreamFeedViewPostSlice[], cursor?: string) {
   let db = loadFeed(name);
   if (db === undefined) {
     db = { listeners: [] };
@@ -45,11 +41,7 @@ export function prependToFeed(
   return db;
 }
 
-export function appendToFeed(
-  name: string,
-  slices: VStreamFeedViewPostSlice[],
-  cursor?: string,
-) {
+export function appendToFeed(name: string, slices: VStreamFeedViewPostSlice[], cursor?: string) {
   let db = loadFeed(name);
   if (db === undefined) {
     db = { listeners: [] };
@@ -101,8 +93,7 @@ export function useFeedData(
   const getSnapshot = useCallback(() => {
     return feedsDb.get(name)?.value;
   }, [name]);
-  const { slices, cursor } =
-    useSyncExternalStore(subscribe, getSnapshot, getSnapshot) ?? initial;
+  const { slices, cursor } = useSyncExternalStore(subscribe, getSnapshot, getSnapshot) ?? initial;
 
   const { data, load } = useFetcher<typeof loader>({ key: `feed-${name}` });
   useEffect(() => {

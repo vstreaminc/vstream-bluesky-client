@@ -23,8 +23,7 @@ export function useDimensions() {
         height: element.clientHeight,
       });
     }
-    if (observerRef.current && ref.current)
-      observerRef.current.observe(ref.current);
+    if (observerRef.current && ref.current) observerRef.current.observe(ref.current);
   });
 
   React.useEffect(() => {
@@ -40,11 +39,7 @@ export function useDimensions() {
       const width = boxSize ? boxSize.inlineSize : contentRect.width;
       const height = boxSize ? boxSize.blockSize : contentRect.height;
 
-      if (
-        width === prevSizeRef.current.width &&
-        height === prevSizeRef.current.height
-      )
-        return;
+      if (width === prevSizeRef.current.width && height === prevSizeRef.current.height) return;
 
       prevSizeRef.current = { width, height };
       setState({ width, height });

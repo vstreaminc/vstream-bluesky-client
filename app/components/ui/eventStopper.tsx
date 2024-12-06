@@ -3,13 +3,7 @@ import { useCallback, type ReactNode } from "react";
 /**
  * This utility function captures events and stops them from propagating upwards. fadfdafdsajfadslfjadldjlkfdjlfkjdaslfdsja
  */
-export function EventStopper({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function EventStopper({ children, className }: { children: ReactNode; className?: string }) {
   // @typescript-eslint/no-explicit-any
   const stop = useCallback((e): any => {
     e.stopPropagation();

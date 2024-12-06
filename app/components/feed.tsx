@@ -25,10 +25,7 @@ export function Feed({
 
   const onScroll = useEvent(async () => {
     if (!ref.current) return;
-    if (
-      fetchedCountRef.current < count &&
-      ref.current.findEndIndex() + 10 > count
-    ) {
+    if (fetchedCountRef.current < count && ref.current.findEndIndex() + 10 > count) {
       fetchedCountRef.current = count;
       loadMore();
     }
@@ -39,19 +36,9 @@ export function Feed({
 
   return (
     <div className="mx-auto w-full max-w-[100vw] md:max-w-[42.5rem]">
-      <WindowVirtualizer
-        ref={ref}
-        cache={cache}
-        itemSize={500}
-        ssrCount={10}
-        onScroll={onScroll}
-      >
+      <WindowVirtualizer ref={ref} cache={cache} itemSize={500} ssrCount={10} onScroll={onScroll}>
         {slices.map((s, idx) => (
-          <FeedSlice
-            key={s._reactKey}
-            hideTopBorder={!showTopBorder && idx === 0}
-            slice={s}
-          />
+          <FeedSlice key={s._reactKey} hideTopBorder={!showTopBorder && idx === 0} slice={s} />
         ))}
       </WindowVirtualizer>
     </div>

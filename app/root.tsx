@@ -9,11 +9,7 @@ import {
   useRouteLoaderData,
 } from "@remix-run/react";
 import type { NavigateOptions } from "react-router-dom";
-import {
-  type LinksFunction,
-  type LoaderFunctionArgs,
-  data,
-} from "@remix-run/node";
+import { type LinksFunction, type LoaderFunctionArgs, data } from "@remix-run/node";
 import { I18nProvider, RouterProvider } from "react-aria-components";
 import { DEFAULT_LOCALE } from "./lib/locale";
 import { useBetterHref } from "./hooks/useBetterHref";

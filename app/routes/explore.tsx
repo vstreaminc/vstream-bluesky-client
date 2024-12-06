@@ -1,24 +1,12 @@
 import * as React from "react";
-import type {
-  LoaderFunctionArgs,
-  MetaDescriptor,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaDescriptor, MetaFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useEvent } from "react-use-event-hook";
 import { SECOND } from "@atproto/common";
 import { $path } from "remix-routes";
 import { MainLayout } from "~/components/mainLayout";
-import {
-  FeedPostContentText,
-  FeedPostControls,
-  PostMediaImage,
-} from "~/components/post";
-import {
-  DISCOVER_FEED_URI,
-  exploreGenerator,
-  hydrateFeedViewVStreamPost,
-} from "~/lib/bsky.server";
+import { FeedPostContentText, FeedPostControls, PostMediaImage } from "~/components/post";
+import { DISCOVER_FEED_URI, exploreGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { PRODUCT_NAME } from "~/lib/constants";
 import { BooleanFilter, cn, take } from "~/lib/utils";
 import type { VStreamEmbedImages, VStreamFeedViewPost } from "~/types";
@@ -36,10 +24,7 @@ export type SearchParams = {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
-  const [agent, t] = await Promise.all([
-    args.context.requireLoggedInUser(),
-    args.context.intl.t(),
-  ]);
+  const [agent, t] = await Promise.all([args.context.requireLoggedInUser(), args.context.intl.t()]);
   const moderationOpts = await args.context.bsky.cachedModerationOpts(agent);
   const title = t.formatMessage(
     {
@@ -49,13 +34,11 @@ export async function loader(args: LoaderFunctionArgs) {
     { productName: PRODUCT_NAME },
   );
   const description = t.formatMessage({
-    defaultMessage:
-      "Discover new and interesting posts from artists and creators",
+    defaultMessage: "Discover new and interesting posts from artists and creators",
     description: "Description for the explore page of website",
   });
   const cursorFromQuery =
-    new URLSearchParams(args.request.url.split("?")[1]).get("cursor") ??
-    undefined;
+    new URLSearchParams(args.request.url.split("?")[1]).get("cursor") ?? undefined;
   async function getExplorePosts(cursor?: string) {
     const gen = exploreGenerator(
       (opts) =>
@@ -70,12 +53,9 @@ export async function loader(args: LoaderFunctionArgs) {
     );
     const posts = await take(gen, 20);
     const finders = {
-      getProfile: (did: string) =>
-        args.context.bsky.cachedFindProfile(agent, did),
+      getProfile: (did: string) => args.context.bsky.cachedFindProfile(agent, did),
     };
-    await Promise.all(
-      posts.map((post) => hydrateFeedViewVStreamPost(post, finders)),
-    );
+    await Promise.all(posts.map((post) => hydrateFeedViewVStreamPost(post, finders)));
     return { posts, cursor: gen.cursor };
   }
   const { posts, cursor } = await (cursorFromQuery
@@ -151,11 +131,7 @@ export default function ExplorePage() {
   );
 }
 
-const ExploreItem = React.memo(function ExploreItem({
-  post,
-}: {
-  post: VStreamFeedViewPost;
-}) {
+const ExploreItem = React.memo(function ExploreItem({ post }: { post: VStreamFeedViewPost }) {
   React.useEffect(() => {
     saveFeedPost(post);
   }, [post]);
@@ -211,11 +187,7 @@ function ExploreItemPostImage({
   const url = linkToPost(post);
 
   return (
-    <OverlayItem
-      aspectRatio={width / height}
-      url={url}
-      overlay={<PostItem post={post} />}
-    >
+    <OverlayItem aspectRatio={width / height} url={url} overlay={<PostItem post={post} />}>
       <div style={{ aspectRatio: `${width / height}` }}>
         <PostMediaImage
           fullsizeSrc={image.fullsize}
@@ -230,10 +202,7 @@ function ExploreItemPostImage({
 }
 
 /* Internal helper components & hooks */
-function PostItem(props: {
-  post: VStreamFeedViewPost;
-  children?: React.ReactNode;
-}) {
+function PostItem(props: { post: VStreamFeedViewPost; children?: React.ReactNode }) {
   const { post } = props;
 
   return (
@@ -244,10 +213,7 @@ function PostItem(props: {
             <div {...hoverProps}>
               <UnstyledLink href={linkToProfile(post.author)}>
                 <Avatar>
-                  <AvatarImage
-                    src={post.author.avatar}
-                    alt={post.author.displayName}
-                  />
+                  <AvatarImage src={post.author.avatar} alt={post.author.displayName} />
                 </Avatar>
               </UnstyledLink>
             </div>
@@ -267,11 +233,7 @@ function PostItem(props: {
             )}
           </ProfileFlyout>
           <div className="max-w-full truncate text-sm text-muted md:text-foreground">
-            <RelativeTime
-              value={post.createdAt}
-              style="narrow"
-              numeric="always"
-            />
+            <RelativeTime value={post.createdAt} style="narrow" numeric="always" />
           </div>
         </div>
       </div>

@@ -22,8 +22,7 @@ export default function handleRequest(
   remixContext: EntryContext,
   _loadContext: AppLoadContext,
 ) {
-  const locale =
-    remixContext.staticHandlerContext.loaderData.root?.locale ?? DEFAULT_LOCALE;
+  const locale = remixContext.staticHandlerContext.loaderData.root?.locale ?? DEFAULT_LOCALE;
   const messages = messagesForLocale(locale);
 
   const callbackName = isbot(request.headers.get("user-agent") ?? "")
@@ -34,15 +33,10 @@ export default function handleRequest(
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
       <VStreamIntlProvider initialLocale={locale} initalMessages={messages}>
-        <RemixServer
-          context={remixContext}
-          url={request.url}
-          abortDelay={ABORT_DELAY}
-        />
+        <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
       </VStreamIntlProvider>,
       {
-        bootstrapScriptContent:
-          getLocalizationScript(locale) + serializeMessages(messages),
+        bootstrapScriptContent: getLocalizationScript(locale) + serializeMessages(messages),
         [callbackName]() {
           shellRendered = true;
           const body = new PassThrough();

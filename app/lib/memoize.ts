@@ -20,9 +20,7 @@ export function memoizeBasic1<T extends string | boolean | number, R>(
   };
 }
 
-export function memoizeObject1<T extends object, R>(
-  fn: (arg1: T) => R,
-): (arg1: T) => R {
+export function memoizeObject1<T extends object, R>(fn: (arg1: T) => R): (arg1: T) => R {
   const map = new WeakMap<T, R>();
   return (arg) => {
     let value = map.get(arg);

@@ -1,15 +1,7 @@
 import * as React from "react";
-import type {
-  LoaderFunctionArgs,
-  MetaDescriptor,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaDescriptor, MetaFunction } from "@remix-run/node";
 import type { Organization, WithContext } from "schema-dts";
-import {
-  Await,
-  type ClientLoaderFunctionArgs,
-  useLoaderData,
-} from "@remix-run/react";
+import { Await, type ClientLoaderFunctionArgs, useLoaderData } from "@remix-run/react";
 import { MainLayout } from "~/components/mainLayout";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
@@ -68,8 +60,7 @@ export const meta: MetaFunction<typeof loader> = (args) => {
         "@type": "Person",
         familyName: "Koslow",
         givenName: "Eric",
-        image:
-          "https://pbs.twimg.com/profile_images/1540529950939156480/bet_J3yK_400x400.jpg",
+        image: "https://pbs.twimg.com/profile_images/1540529950939156480/bet_J3yK_400x400.jpg",
         jobTitle: "CEO",
         name: "Eric Koslow",
       },
@@ -77,8 +68,7 @@ export const meta: MetaFunction<typeof loader> = (args) => {
         "@type": "Person",
         familyName: "Jikan",
         givenName: "E",
-        image:
-          "https://pbs.twimg.com/profile_images/1497678405478670339/cLcWqzUl_400x400.jpg",
+        image: "https://pbs.twimg.com/profile_images/1497678405478670339/cLcWqzUl_400x400.jpg",
         name: "E Jikan",
       },
     ],
@@ -149,9 +139,7 @@ export default function Index() {
     <MainLayout>
       {"serverData" in data ? (
         <React.Suspense fallback={<FeedPage {...data} />}>
-          <Await resolve={data.serverData}>
-            {(data) => <FeedPage {...data} />}
-          </Await>
+          <Await resolve={data.serverData}>{(data) => <FeedPage {...data} />}</Await>
         </React.Suspense>
       ) : (
         <FeedPage {...data} />

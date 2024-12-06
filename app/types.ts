@@ -37,13 +37,7 @@ export type LinkNode = {
   text: string;
   href: string;
 };
-export type RichText =
-  | TextNode
-  | ParagraphNode
-  | EmojiNode
-  | HashtagNode
-  | MentionNode
-  | LinkNode;
+export type RichText = TextNode | ParagraphNode | EmojiNode | HashtagNode | MentionNode | LinkNode;
 
 export type VStreamEmbedImages = {
   $type: "com.vstream.embed.images#view";
@@ -60,10 +54,7 @@ export type VStreamEmbedVideo = {
 
 export type VStreamEmbedExternal = {
   $type: "com.vstream.embed.external#view";
-} & Pick<
-  AppBskyEmbedExternal.ViewExternal,
-  "uri" | "title" | "description" | "thumb"
->;
+} & Pick<AppBskyEmbedExternal.ViewExternal, "uri" | "title" | "description" | "thumb">;
 
 export type VStreamEmbedPostRecord = VStreamFeedViewPost & {
   $type: "com.vstream.embed.post#postRecord";
@@ -99,14 +90,8 @@ export type VStreamEmbedPostWithMedia = {
   post: VStreamEmbedPost;
 };
 
-export type VStreamFeedViewPost = Pick<
-  BSkyFeedViewPost["post"],
-  "uri" | "cid" | "indexedAt"
-> & {
-  author: Pick<
-    BSkyFeedViewPost["post"]["author"],
-    "did" | "handle" | "displayName" | "avatar"
-  > & {
+export type VStreamFeedViewPost = Pick<BSkyFeedViewPost["post"], "uri" | "cid" | "indexedAt"> & {
+  author: Pick<BSkyFeedViewPost["post"]["author"], "did" | "handle" | "displayName" | "avatar"> & {
     viewer?: Pick<
       NonNullable<BSkyFeedViewPost["post"]["author"]["viewer"]>,
       "muted" | "blockedBy" | "blocking" | "following" | "followedBy"
@@ -114,12 +99,7 @@ export type VStreamFeedViewPost = Pick<
   };
   viewer?: Pick<
     NonNullable<BSkyFeedViewPost["post"]["viewer"]>,
-    | "repost"
-    | "like"
-    | "threadMuted"
-    | "replyDisabled"
-    | "embeddingDisabled"
-    | "pinned"
+    "repost" | "like" | "threadMuted" | "replyDisabled" | "embeddingDisabled" | "pinned"
   >;
   replyCount: number;
   repostCount: number;
@@ -169,19 +149,13 @@ export type VStreamProfileViewSimple = Pick<
     AppBskyActorDefs.ViewerState,
     "muted" | "blockedBy" | "blocking" | "following" | "followedBy"
   > & {
-    knownFollowers?: Pick<
-      AppBskyActorDefs.ProfileViewBasic,
-      "did" | "handle" | "avatar"
-    >[];
+    knownFollowers?: Pick<AppBskyActorDefs.ProfileViewBasic, "did" | "handle" | "avatar">[];
   };
 };
 
 type VStreamReasonRepost = {
   $type: "com.vstream.feed.defs#reasonRepost";
-  by: Pick<
-    AppBskyFeedDefs.ReasonRepost["by"],
-    "did" | "handle" | "displayName" | "avatar"
-  >;
+  by: Pick<AppBskyFeedDefs.ReasonRepost["by"], "did" | "handle" | "displayName" | "avatar">;
 };
 
 /**

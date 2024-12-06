@@ -1,10 +1,6 @@
 import type express from "express";
 import { parseAcceptLanguage } from "intl-parse-accept-language";
-import {
-  DEFAULT_LOCALE,
-  isSupportedLocale,
-  type SupportedLocale,
-} from "~/lib/locale";
+import { DEFAULT_LOCALE, isSupportedLocale, type SupportedLocale } from "~/lib/locale";
 import type { AppContext } from "./context/appContext";
 
 export async function extractCurrentLocale(
@@ -20,9 +16,7 @@ export async function extractCurrentLocale(
 
   // 2. Get from session
   const cookie =
-    request instanceof Request
-      ? request.headers.get("Cookie")
-      : (request.get("Cookie") ?? null);
+    request instanceof Request ? request.headers.get("Cookie") : (request.get("Cookie") ?? null);
   const session = await ctx.session.getFromCookie(cookie);
   const sessionLocale = session.get("locale");
   if (sessionLocale) return sessionLocale;

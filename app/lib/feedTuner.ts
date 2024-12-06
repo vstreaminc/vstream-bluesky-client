@@ -100,13 +100,9 @@ export class FeedViewPostsSlice {
      * it does.
      */
     const grandparent =
-      rootIsView && parent.record.reply?.parent.uri === root.uri
-        ? root
-        : undefined;
+      rootIsView && parent.record.reply?.parent.uri === root.uri ? root : undefined;
     const grandparentAuthor = reply.grandparentAuthor;
-    const isGrandparentBlocked = Boolean(
-      grandparent && AppBskyFeedDefs.isBlockedPost(grandparent),
-    );
+    const isGrandparentBlocked = Boolean(grandparent && AppBskyFeedDefs.isBlockedPost(grandparent));
     const isGrandparentNotFound = Boolean(
       grandparent && AppBskyFeedDefs.isNotFoundPost(grandparent),
     );
@@ -147,16 +143,12 @@ export class FeedViewPostsSlice {
 
   get isQuotePost() {
     const embed = this._feedPost.post.embed;
-    return (
-      AppBskyEmbedRecord.isView(embed) ||
-      AppBskyEmbedRecordWithMedia.isView(embed)
-    );
+    return AppBskyEmbedRecord.isView(embed) || AppBskyEmbedRecordWithMedia.isView(embed);
   }
 
   get isReply() {
     return (
-      AppBskyFeedPost.isRecord(this._feedPost.post.record) &&
-      !!this._feedPost.post.record.reply
+      AppBskyFeedPost.isRecord(this._feedPost.post.record) && !!this._feedPost.post.record.reply
     );
   }
 
@@ -275,11 +267,7 @@ export class FeedTuner {
     return slices;
   }
 
-  static removeReplies(
-    _tuner: FeedTuner,
-    slices: FeedViewPostsSlice[],
-    _dryRun: boolean,
-  ) {
+  static removeReplies(_tuner: FeedTuner, slices: FeedViewPostsSlice[], _dryRun: boolean) {
     for (let i = 0; i < slices.length; i++) {
       const slice = slices[i];
       if (
@@ -296,11 +284,7 @@ export class FeedTuner {
     return slices;
   }
 
-  static removeReposts(
-    _tuner: FeedTuner,
-    slices: FeedViewPostsSlice[],
-    _dryRun: boolean,
-  ) {
+  static removeReposts(_tuner: FeedTuner, slices: FeedViewPostsSlice[], _dryRun: boolean) {
     for (let i = 0; i < slices.length; i++) {
       if (slices[i].isRepost) {
         slices.splice(i, 1);
@@ -310,11 +294,7 @@ export class FeedTuner {
     return slices;
   }
 
-  static removeQuotePosts(
-    _tuner: FeedTuner,
-    slices: FeedViewPostsSlice[],
-    _dryRun: boolean,
-  ) {
+  static removeQuotePosts(_tuner: FeedTuner, slices: FeedViewPostsSlice[], _dryRun: boolean) {
     for (let i = 0; i < slices.length; i++) {
       if (slices[i].isQuotePost) {
         slices.splice(i, 1);
@@ -324,11 +304,7 @@ export class FeedTuner {
     return slices;
   }
 
-  static removeOrphans(
-    _tuner: FeedTuner,
-    slices: FeedViewPostsSlice[],
-    _dryRun: boolean,
-  ) {
+  static removeOrphans(_tuner: FeedTuner, slices: FeedViewPostsSlice[], _dryRun: boolean) {
     for (let i = 0; i < slices.length; i++) {
       if (slices[i].isOrphan) {
         slices.splice(i, 1);
@@ -394,10 +370,7 @@ function areSameAuthor(authors: AuthorContext): boolean {
   return true;
 }
 
-function shouldDisplayReplyInFollowing(
-  authors: AuthorContext,
-  userDid: string,
-): boolean {
+function shouldDisplayReplyInFollowing(authors: AuthorContext, userDid: string): boolean {
   const { author, parentAuthor, grandparentAuthor, rootAuthor } = authors;
   if (!isSelfOrFollowing(author, userDid)) {
     // Only show replies from self or people you follow.
@@ -412,11 +385,7 @@ function shouldDisplayReplyInFollowing(
     return true;
   }
   // From this point on we need at least one more reason to show it.
-  if (
-    parentAuthor &&
-    parentAuthor.did !== author.did &&
-    isSelfOrFollowing(parentAuthor, userDid)
-  ) {
+  if (parentAuthor && parentAuthor.did !== author.did && isSelfOrFollowing(parentAuthor, userDid)) {
     return true;
   }
   if (
@@ -426,19 +395,12 @@ function shouldDisplayReplyInFollowing(
   ) {
     return true;
   }
-  if (
-    rootAuthor &&
-    rootAuthor.did !== author.did &&
-    isSelfOrFollowing(rootAuthor, userDid)
-  ) {
+  if (rootAuthor && rootAuthor.did !== author.did && isSelfOrFollowing(rootAuthor, userDid)) {
     return true;
   }
   return false;
 }
 
-function isSelfOrFollowing(
-  profile: AppBskyActorDefs.ProfileViewBasic,
-  userDid: string,
-) {
+function isSelfOrFollowing(profile: AppBskyActorDefs.ProfileViewBasic, userDid: string) {
   return Boolean(profile.did === userDid || profile.viewer?.following);
 }

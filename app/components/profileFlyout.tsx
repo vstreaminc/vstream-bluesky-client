@@ -55,10 +55,7 @@ export function ProfileFlyout(props: Props) {
         isKeyboardDismissDisabled
       >
         <div className="w-[18.75rem] bg-muted shadow-2xl shadow-black data-[exiting]:duration-300 data-[entering]:animate-in data-[exiting]:animate-out data-[entering]:fade-in-0 data-[exiting]:fade-out-0">
-          <ProfileCard
-            profile={props.profile}
-            onHoverChange={setIsHighlightHovered}
-          />
+          <ProfileCard profile={props.profile} onHoverChange={setIsHighlightHovered} />
         </div>
       </Popover>
     </>
@@ -100,11 +97,7 @@ function ProfileCard(props: ProfileCardProps) {
       />
       <div className="flex -translate-y-8 flex-col gap-2 px-4 py-0">
         <div className="flex">
-          <UnstyledLink
-            href={profileLink}
-            className="inline-block"
-            onPress={props.onAvatarClicked}
-          >
+          <UnstyledLink href={profileLink} className="inline-block" onPress={props.onAvatarClicked}>
             <Avatar className="size-20 border-4 border-muted">
               <AvatarImage alt={profile.displayName} src={profile.avatar} />
             </Avatar>
@@ -119,16 +112,11 @@ function ProfileCard(props: ProfileCardProps) {
         </div>
         <div className="flex flex-col">
           <h3 className="truncate font-semibold">
-            <UnstyledLink
-              href={profileLink}
-              onPress={props.onDisplayNameClicked}
-            >
+            <UnstyledLink href={profileLink} onPress={props.onDisplayNameClicked}>
               {profile.displayName}{" "}
             </UnstyledLink>
             {pronouns.length > 0 ? (
-              <span className="text-xs text-muted-foreground">
-                ({pronouns.join("/")})
-              </span>
+              <span className="text-xs text-muted-foreground">({pronouns.join("/")})</span>
             ) : null}
           </h3>
           <div className="text-sm text-muted-foreground">{profile.handle}</div>
@@ -145,9 +133,7 @@ function ProfileCard(props: ProfileCardProps) {
                 description="Explains how many followers this channel has"
                 defaultMessage="<b>{followerCount, number, ::compact-short}</b> {followerCount, plural, one {follower} other {followers}}"
                 values={{
-                  b: (chunks) => (
-                    <span className="text-foreground">{chunks}</span>
-                  ),
+                  b: (chunks) => <span className="text-foreground">{chunks}</span>,
                   followerCount: profile.followersCount,
                 }}
               />
@@ -159,9 +145,7 @@ function ProfileCard(props: ProfileCardProps) {
                 description="Explains how many channels _this_ channel follows"
                 defaultMessage="<b>{followingCount, number, ::compact-short}</b> following"
                 values={{
-                  b: (chunks) => (
-                    <span className="text-foreground">{chunks}</span>
-                  ),
+                  b: (chunks) => <span className="text-foreground">{chunks}</span>,
                   followingCount: profile.followsCount,
                 }}
               />

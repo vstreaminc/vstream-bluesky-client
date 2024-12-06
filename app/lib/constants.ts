@@ -1,8 +1,4 @@
-import type {
-  BskyPreferences,
-  LabelPreference,
-  ModerationPrefs,
-} from "@atproto/api";
+import type { BskyPreferences, LabelPreference, ModerationPrefs } from "@atproto/api";
 
 export const PRODUCT_NAME = "VStream";
 export const TWITTER_HANDLE_EN = "@vstream_en";
@@ -10,10 +6,7 @@ export const TWITTER_HANDLE_EN = "@vstream_en";
 /**
  * More strict than our default settings for logged in users.
  */
-export const DEFAULT_LOGGED_OUT_LABEL_PREFERENCES: Record<
-  string,
-  LabelPreference
-> = {
+export const DEFAULT_LOGGED_OUT_LABEL_PREFERENCES: Record<string, LabelPreference> = {
   porn: "hide",
   sexual: "hide",
   nudity: "hide",

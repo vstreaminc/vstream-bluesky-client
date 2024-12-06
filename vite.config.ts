@@ -31,10 +31,7 @@ const formatJsTransform = (additionalConfigs = {}): Plugin => {
   const pluginsMap = new Map<string | undefined, PluginItem[]>();
   pluginsMap.set(undefined, [plugin]);
   pluginsMap.set("ts", [plugin, "@babel/syntax-typescript"]);
-  pluginsMap.set("tsx", [
-    plugin,
-    ["@babel/syntax-typescript", { isTSX: true }],
-  ]);
+  pluginsMap.set("tsx", [plugin, ["@babel/syntax-typescript", { isTSX: true }]]);
 
   return {
     name: "formatjs/transform",
@@ -91,11 +88,7 @@ const formatJsExtract: Plugin = (() => {
       // Nothing to extract
       if (extracted === "{\n}") return files.map(() => null);
       // Write merged object to default lang file
-      await fs.writeFile(
-        langPath,
-        stringify(JSON.parse(extracted), { space: 2 }) + "\n",
-        "utf8",
-      );
+      await fs.writeFile(langPath, stringify(JSON.parse(extracted), { space: 2 }) + "\n", "utf8");
       return files.map(() => null);
     },
     {
@@ -126,9 +119,7 @@ const formatJsExtract: Plugin = (() => {
 })();
 
 const compileFormatJS: Plugin = (() => {
-  const compileAndParse = async (
-    file: string,
-  ): Promise<Record<string, unknown>> =>
+  const compileAndParse = async (file: string): Promise<Record<string, unknown>> =>
     JSON.parse(
       await compile([file], {
         ast: true,
@@ -153,9 +144,7 @@ const compileFormatJS: Plugin = (() => {
         continue;
       }
 
-      const defaultCompiled = await compileAndParse(
-        path.resolve(`./lang/${DEFAULT_LOCALE}.json`),
-      );
+      const defaultCompiled = await compileAndParse(path.resolve(`./lang/${DEFAULT_LOCALE}.json`));
       const messages = await compileAndParse(file);
       await write(locale, { ...defaultCompiled, ...messages });
     }
@@ -176,9 +165,7 @@ const compileFormatJS: Plugin = (() => {
       // Ensure directory exists
       await fs.mkdir(".compiled-lang", { recursive: true });
 
-      const defaultCompiled = await compileAndParse(
-        path.resolve(`./lang/${DEFAULT_LOCALE}.json`),
-      );
+      const defaultCompiled = await compileAndParse(path.resolve(`./lang/${DEFAULT_LOCALE}.json`));
 
       const files = await fs.readdir("lang");
       await Promise.all(
@@ -207,8 +194,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       // We only use asts for all of our ICU messges
-      "@formatjs/icu-messageformat-parser":
-        "@formatjs/icu-messageformat-parser/no-parser",
+      "@formatjs/icu-messageformat-parser": "@formatjs/icu-messageformat-parser/no-parser",
     },
   },
   plugins: [

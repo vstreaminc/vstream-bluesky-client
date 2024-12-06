@@ -37,9 +37,7 @@ function subscribe(listener: () => void) {
   };
 }
 
-function updateStore(
-  updater: (store: AutoplaySingletonState) => AutoplaySingletonState,
-) {
+function updateStore(updater: (store: AutoplaySingletonState) => AutoplaySingletonState) {
   autoplayStore = updater(autoplayStore);
   for (const listener of listeners) {
     listener();
@@ -86,8 +84,7 @@ export const useAutoplaySingleton = () => {
       timerId = requestAnimationFrame(() => {
         const { visibleVideos } = autoplayStore;
         const sortedVisibleVideos = Array.from(visibleVideos).sort(
-          (a, b) =>
-            distanceFromVerticalCenter(a) - distanceFromVerticalCenter(b),
+          (a, b) => distanceFromVerticalCenter(a) - distanceFromVerticalCenter(b),
         );
 
         if (sortedVisibleVideos.length > 0) {
@@ -154,8 +151,7 @@ export const useShouldAutoplaySingleton = (allowAutoplay: boolean) => {
       if (canAutoplay && el) {
         updateStore((state) => ({
           visibleVideos: (state.visibleVideos.delete(el), state.visibleVideos),
-          autoplayVideo:
-            state.autoplayVideo === el ? null : state.autoplayVideo,
+          autoplayVideo: state.autoplayVideo === el ? null : state.autoplayVideo,
         }));
       }
     };

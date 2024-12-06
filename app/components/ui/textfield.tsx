@@ -16,9 +16,7 @@ import { FieldError, Label } from "./field";
 
 const TextField = AriaTextField;
 
-interface InputProps
-  extends AriaInputProps,
-    React.RefAttributes<HTMLInputElement> {}
+interface InputProps extends AriaInputProps, React.RefAttributes<HTMLInputElement> {}
 const Input = ({ className, ...props }: InputProps) => {
   return (
     <AriaInput
@@ -62,9 +60,7 @@ const TextArea = ({ className, ...props }: AriaTextAreaProps) => {
 interface JollyTextFieldProps extends AriaTextFieldProps {
   label?: React.ReactNode;
   description?: React.ReactNode;
-  errorMessage?:
-    | React.ReactNode
-    | ((validation: AriaValidationResult) => React.ReactNode);
+  errorMessage?: React.ReactNode | ((validation: AriaValidationResult) => React.ReactNode);
   textArea?: boolean;
   children?: React.ReactNode;
 }

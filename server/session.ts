@@ -13,19 +13,21 @@ type SessionFlashData = {
 };
 
 export function createSession(cfg: ServerConfig) {
-  const { getSession, commitSession, destroySession } =
-    createCookieSessionStorage<SessionData, SessionFlashData>({
-      // a Cookie from `createCookie` or the CookieOptions to create one
-      cookie: {
-        name: "__session",
-        httpOnly: true,
-        maxAge: (14 * DAY) / SECOND,
-        path: "/",
-        sameSite: "lax",
-        secrets: [cfg.service.sessionSecret],
-        secure: !cfg.service.devMode,
-      },
-    });
+  const { getSession, commitSession, destroySession } = createCookieSessionStorage<
+    SessionData,
+    SessionFlashData
+  >({
+    // a Cookie from `createCookie` or the CookieOptions to create one
+    cookie: {
+      name: "__session",
+      httpOnly: true,
+      maxAge: (14 * DAY) / SECOND,
+      path: "/",
+      sameSite: "lax",
+      secrets: [cfg.service.sessionSecret],
+      secure: !cfg.service.devMode,
+    },
+  });
 
   return {
     getFromCookie: (cookie: string | null) => getSession(cookie),

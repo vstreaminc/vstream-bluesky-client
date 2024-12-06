@@ -1,14 +1,6 @@
 import { HOUR, SECOND } from "@atproto/common";
-import {
-  type LoaderFunctionArgs,
-  redirect,
-  type SerializeFrom,
-} from "@remix-run/node";
-import {
-  Await,
-  type ClientLoaderFunctionArgs,
-  useLoaderData,
-} from "@remix-run/react";
+import { type LoaderFunctionArgs, redirect, type SerializeFrom } from "@remix-run/node";
+import { Await, type ClientLoaderFunctionArgs, useLoaderData } from "@remix-run/react";
 import { Bell } from "lucide-react";
 import { Suspense } from "react";
 import { $path } from "remix-routes";
@@ -26,9 +18,7 @@ import { loader as fetchFeedSlices } from "./api.feed.$feed";
 
 export async function loader(args: LoaderFunctionArgs): Promise<{
   profile: VStreamProfileViewSimple;
-  feed?:
-    | SerializeFrom<typeof fetchFeedSlices>
-    | Promise<SerializeFrom<typeof fetchFeedSlices>>;
+  feed?: SerializeFrom<typeof fetchFeedSlices> | Promise<SerializeFrom<typeof fetchFeedSlices>>;
 }> {
   const handleOrDid = args.params.handle!;
   if (!handleOrDid.startsWith("@") && !handleOrDid.startsWith("did:")) {
@@ -52,10 +42,7 @@ export async function loader(args: LoaderFunctionArgs): Promise<{
     ? handleOrDid
     : await cache.getOrSet(
         `did:${handleOrDid}`,
-        () =>
-          agent
-            .resolveHandle({ handle: handleOrDid.slice(1) })
-            .then((r) => r.data.did),
+        () => agent.resolveHandle({ handle: handleOrDid.slice(1) }).then((r) => r.data.did),
         {
           expiresIn: 1 * HOUR,
           staleWhileRevalidate: 23 * HOUR,
@@ -193,7 +180,5 @@ export function ProfilePage({
 }
 
 function isPromise<T>(x: unknown): x is Promise<T> {
-  return (
-    typeof x === "object" && !!x && "then" in x && typeof x.then === "function"
-  );
+  return typeof x === "object" && !!x && "then" in x && typeof x.then === "function";
 }

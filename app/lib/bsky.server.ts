@@ -39,11 +39,7 @@ import { pick } from "./utils";
 export const DISCOVER_FEED_URI =
   "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot";
 
-export function makeRecordUri(
-  didOrName: string,
-  collection: string,
-  rkey: string,
-): string {
+export function makeRecordUri(didOrName: string, collection: string, rkey: string): string {
   const urip = new AtUri("at://host/");
   urip.host = didOrName.startsWith("@") ? didOrName.slice(1) : didOrName;
   urip.collection = collection;
@@ -106,9 +102,7 @@ export function profiledDetailedToSimple(
   };
 }
 
-function parseBSkyImagesEmbed(
-  embed: AppBskyEmbedImages.View,
-): VStreamEmbedImages {
+function parseBSkyImagesEmbed(embed: AppBskyEmbedImages.View): VStreamEmbedImages {
   return {
     $type: "com.vstream.embed.images#view",
     images: embed.images.map((i) => ({
@@ -126,17 +120,13 @@ function parseBSkyVideoEmbed(embed: AppBskyEmbedVideo.View): VStreamEmbedVideo {
     $type: "com.vstream.embed.video#view",
     cid: embed.cid,
     alt: embed.alt,
-    aspectRatio: embed.aspectRatio
-      ? embed.aspectRatio.width / embed.aspectRatio.height
-      : undefined,
+    aspectRatio: embed.aspectRatio ? embed.aspectRatio.width / embed.aspectRatio.height : undefined,
     playlist: embed.playlist,
     thumbnail: embed.thumbnail,
   };
 }
 
-function parseBSkyExternalEmbed(
-  embed: AppBskyEmbedExternal.View,
-): VStreamEmbedExternal {
+function parseBSkyExternalEmbed(embed: AppBskyEmbedExternal.View): VStreamEmbedExternal {
   return {
     $type: "com.vstream.embed.external#view",
     uri: embed.external.uri,
@@ -146,9 +136,7 @@ function parseBSkyExternalEmbed(
   };
 }
 
-function parseBSkyRecordEmbed(
-  embed: AppBskyEmbedRecord.View,
-): VStreamEmbedPost | undefined {
+function parseBSkyRecordEmbed(embed: AppBskyEmbedRecord.View): VStreamEmbedPost | undefined {
   const { record } = embed;
   let post: VStreamEmbedPost["post"] | undefined;
   if (AppBskyEmbedRecord.isViewNotFound(record)) {
@@ -484,9 +472,7 @@ export async function hydrateFeedViewVStreamPost(
     if (!seg.facet) {
       return [{ $type: "text", text: seg.text } satisfies TextNode];
     } else if (seg.tag) {
-      return [
-        { $type: "hashtag", tag: "#" + seg.tag.tag } satisfies HashtagNode,
-      ];
+      return [{ $type: "hashtag", tag: "#" + seg.tag.tag } satisfies HashtagNode];
     } else if (seg.link) {
       return [
         {
@@ -523,9 +509,7 @@ const REPLY_TREE_DEPTH = 10;
 
 export async function loadPostThread(
   uri: string,
-  load: (
-    query: AppBskyFeedGetPostThread.QueryParams,
-  ) => Promise<AppBskyFeedGetPostThread.Response>,
+  load: (query: AppBskyFeedGetPostThread.QueryParams) => Promise<AppBskyFeedGetPostThread.Response>,
 ): Promise<VStreamPostThreadNode> {
   const res = await load({ uri, depth: REPLY_TREE_DEPTH });
 
@@ -563,9 +547,7 @@ export function bSkyThreadNodeToVStreamThreadNode(
     let replies;
     if (node.replies?.length && direction !== "up") {
       replies = node.replies
-        .map((reply) =>
-          bSkyThreadNodeToVStreamThreadNode(reply, depth + 1, "down"),
-        )
+        .map((reply) => bSkyThreadNodeToVStreamThreadNode(reply, depth + 1, "down"))
         // do not show blocked posts in replies
         .filter((node) => node.$type !== "blocked");
     }
@@ -580,8 +562,7 @@ export function bSkyThreadNodeToVStreamThreadNode(
       ctx: {
         depth,
         isHighlightedPost: depth === 0,
-        hasMore:
-          direction === "down" && !node.replies?.length && !!node.replyCount,
+        hasMore: direction === "down" && !node.replies?.length && !!node.replyCount,
         isSelfThread: false, // populated `annotateSelfThread`
         hasMoreSelfThread: false, // populated in `annotateSelfThread`
       },
@@ -613,10 +594,7 @@ function annotateSelfThread(thread: VStreamPostThreadNode) {
 
   let parent: VStreamPostThreadNode | undefined = thread.parent;
   while (parent) {
-    if (
-      parent.$type !== "post" ||
-      parent.post.author.did !== thread.post.author.did
-    ) {
+    if (parent.$type !== "post" || parent.post.author.did !== thread.post.author.did) {
       // not a self-thread
       return;
     }
@@ -725,10 +703,7 @@ export function createThreadSkeleton(
 function* flattenThreadParents(
   node: VStreamPostThreadNode,
   isSignedIn: boolean,
-): Generator<
-  Extract<VStreamPostThreadNode, { $type: "post" | "not-found" | "blocked" }>,
-  void
-> {
+): Generator<Extract<VStreamPostThreadNode, { $type: "post" | "not-found" | "blocked" }>, void> {
   if (node.$type === "post") {
     if (node.parent) {
       yield* flattenThreadParents(node.parent, isSignedIn);
@@ -746,10 +721,7 @@ function* flattenThreadParents(
 function* flattenThreadReplies(
   node: VStreamPostThreadNode,
   currentDid: string | undefined,
-): Generator<
-  Extract<VStreamPostThreadNode, { $type: "post" | "not-found" | "blocked" }>,
-  void
-> {
+): Generator<Extract<VStreamPostThreadNode, { $type: "post" | "not-found" | "blocked" }>, void> {
   if (node.$type === "post") {
     if (!node.ctx.isHighlightedPost) {
       yield node;

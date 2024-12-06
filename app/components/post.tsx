@@ -56,9 +56,7 @@ export const FeedSlice = React.memo(function FeedSlice({
           reason={i === 0 ? slice.reason : undefined}
           isThreadParent={isThreadParentAt(slice.items, i)}
           isThreadChild={isThreadChildAt(slice.items, i)}
-          isThreadLastChild={
-            isThreadChildAt(slice.items, i) && slice.items.length === i + 1
-          }
+          isThreadLastChild={isThreadChildAt(slice.items, i) && slice.items.length === i + 1}
           hideTopBorder={hideTopBorder && i === 0}
           rootPost={slice.items[0]}
         />
@@ -127,21 +125,12 @@ export function FeedPost(props: FeedPostProps) {
       tabIndex={0}
       onClick={onClick}
       onKeyUp={onKeyUp}
-      className={cn(
-        "cursor-pointer border-x border-x-muted-foreground px-4 hover:bg-muted",
-        {
-          "pb-5":
-            props.isThreadLastChild ||
-            (!props.isThreadChild && !props.isThreadParent),
-          "border-t border-t-muted-foreground":
-            !props.hideTopBorder && !props.isThreadChild,
-        },
-      )}
+      className={cn("cursor-pointer border-x border-x-muted-foreground px-4 hover:bg-muted", {
+        "pb-5": props.isThreadLastChild || (!props.isThreadChild && !props.isThreadParent),
+        "border-t border-t-muted-foreground": !props.hideTopBorder && !props.isThreadChild,
+      })}
     >
-      <FeedPostEyebrow
-        isThreadChild={props.isThreadChild}
-        reason={props.reason}
-      />
+      <FeedPostEyebrow isThreadChild={props.isThreadChild} reason={props.reason} />
       <div className="flex gap-4">
         <div className="flex w-[3.25rem] flex-col">
           <ProfileFlyout profile={post.author}>
@@ -149,10 +138,7 @@ export function FeedPost(props: FeedPostProps) {
               <div {...hoverProps}>
                 <UnstyledLink href={linkToProfile(post.author)}>
                   <Avatar className="aspect-square h-auto w-full">
-                    <AvatarImage
-                      src={post.author.avatar}
-                      alt={post.author.displayName}
-                    />
+                    <AvatarImage src={post.author.avatar} alt={post.author.displayName} />
                     <AvatarFallback>@</AvatarFallback>
                   </Avatar>
                 </UnstyledLink>
@@ -160,9 +146,7 @@ export function FeedPost(props: FeedPostProps) {
             )}
           </ProfileFlyout>
           {/* Line connecting related posts */}
-          {props.isThreadParent && (
-            <div className="mx-auto mt-1 w-0.5 grow bg-muted-foreground" />
-          )}
+          {props.isThreadParent && <div className="mx-auto mt-1 w-0.5 grow bg-muted-foreground" />}
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <FeedPostHeader post={post} />
@@ -186,9 +170,7 @@ export function FeedPostEyebrow({
     <div className="flex gap-4">
       <div className="flex w-[3.25rem] flex-col">
         {/* Line connecting related posts */}
-        {isThreadChild && (
-          <div className="mx-auto mb-1 w-0.5 grow bg-muted-foreground" />
-        )}
+        {isThreadChild && <div className="mx-auto mb-1 w-0.5 grow bg-muted-foreground" />}
       </div>
       <div className="flex min-w-0 shrink pt-5">
         {reason && reason.$type === "com.vstream.feed.defs#reasonRepost" ? (
@@ -214,10 +196,7 @@ export function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
       <ProfileFlyout profile={post.author}>
         {(hoverProps) => (
           <div className="truncate pb-0.5" {...hoverProps}>
-            <UnstyledLink
-              href={linkToProfile(post.author)}
-              className="font-sm cursor-pointer"
-            >
+            <UnstyledLink href={linkToProfile(post.author)} className="font-sm cursor-pointer">
               {post.author.displayName}
             </UnstyledLink>
             &nbsp;
@@ -259,20 +238,12 @@ export function FeedPostContentText({
         className,
       )}
     >
-      {post.richText.length > 0 ? (
-        <RichTextRenderer richText={post.richText} />
-      ) : (
-        post.plainText
-      )}
+      {post.richText.length > 0 ? <RichTextRenderer richText={post.richText} /> : post.plainText}
     </span>
   );
 }
 
-export function FeedPostEmbed({
-  embed,
-}: {
-  embed: VStreamFeedViewPost["embed"];
-}) {
+export function FeedPostEmbed({ embed }: { embed: VStreamFeedViewPost["embed"] }) {
   if (!embed) return null;
   switch (embed.$type) {
     case "com.vstream.embed.images#view":
@@ -396,9 +367,7 @@ export function FeedPostVideoEmbed({ embed }: { embed: VStreamEmbedVideo }) {
           aria-labelledby={embed.alt ? figId : undefined}
           loop
         ></HlsVideo>
-        {embed.thumbnail && (
-          <MediaPosterImage slot="poster" src={embed.thumbnail} />
-        )}
+        {embed.thumbnail && <MediaPosterImage slot="poster" src={embed.thumbnail} />}
       </MediaThemeMinimal>
       {embed.alt && (
         <div id={figId} className="sr-only">
@@ -427,10 +396,7 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
           <Repeat className="size-4 stroke-slate-400" />
           {post.repostCount + post.quoteCount > 0 ? (
             <span className="text-sm text-slate-400">
-              <FormattedNumber
-                value={post.repostCount + post.quoteCount}
-                notation="compact"
-              />
+              <FormattedNumber value={post.repostCount + post.quoteCount} notation="compact" />
             </span>
           ) : null}
         </button>
@@ -451,8 +417,7 @@ export function FeedPostControls({ post }: { post: VStreamFeedViewPost }) {
 
 function FeedPostQuote({ embed }: { embed: VStreamEmbedPost }) {
   const { post } = embed;
-  const url =
-    post.$type === "com.vstream.embed.post#postRecord" ? linkToPost(post) : "";
+  const url = post.$type === "com.vstream.embed.post#postRecord" ? linkToPost(post) : "";
   const navigate = useNavigate();
   const ref = React.useRef<HTMLDivElement>(null);
   const onClick = useEvent<React.MouseEventHandler<HTMLDivElement>>((event) => {
@@ -529,10 +494,7 @@ function FeedPostQuote({ embed }: { embed: VStreamEmbedPost }) {
             <div {...hoverProps}>
               <UnstyledLink href={linkToProfile(post.author)}>
                 <Avatar className="mr-3 size-6">
-                  <AvatarImage
-                    src={post.author.avatar}
-                    alt={post.author.displayName}
-                  />
+                  <AvatarImage src={post.author.avatar} alt={post.author.displayName} />
                 </Avatar>
               </UnstyledLink>
             </div>
@@ -548,9 +510,7 @@ function FeedPostQuote({ embed }: { embed: VStreamEmbedPost }) {
               >
                 <span className="font-semibold">{post.author.displayName}</span>
                 &nbsp;
-                <span className="text-muted-foreground">
-                  {post.author.handle}
-                </span>
+                <span className="text-muted-foreground">{post.author.handle}</span>
               </UnstyledLink>
             </div>
           )}
@@ -652,9 +612,7 @@ export function PostMediaImage(props: {
   const dpr = useDevicePixelRatio();
   const maxWidth = props.width !== undefined ? props.width / dpr : undefined;
   const maxHeight =
-    maxWidth !== undefined &&
-    props.width !== undefined &&
-    props.height !== undefined
+    maxWidth !== undefined && props.width !== undefined && props.height !== undefined
       ? (maxWidth / props.width) * props.height
       : undefined;
 
@@ -675,29 +633,18 @@ export function PostMediaImage(props: {
   return (
     <div
       ref={onContainerMount}
-      className={cn(
-        "grid h-full w-full place-items-center overflow-hidden",
-        props.className,
-      )}
+      className={cn("grid h-full w-full place-items-center overflow-hidden", props.className)}
     >
       <Container
         className={cn(
           "relative isolate min-h-0 min-w-0",
-          primaryDimension === "width" &&
-            "h-auto w-full min-w-[min(100%,48rem)]",
-          primaryDimension === "height" &&
-            "h-full min-h-[min(100%,24rem)] w-auto",
+          primaryDimension === "width" && "h-auto w-full min-w-[min(100%,48rem)]",
+          primaryDimension === "height" && "h-full min-h-[min(100%,24rem)] w-auto",
         )}
         style={{
           aspectRatio: `${props.width} / ${props.height}`,
-          maxWidth:
-            props.noUpscale && primaryDimension === "width"
-              ? maxWidth
-              : undefined,
-          maxHeight:
-            props.noUpscale && primaryDimension === "height"
-              ? maxHeight
-              : undefined,
+          maxWidth: props.noUpscale && primaryDimension === "width" ? maxWidth : undefined,
+          maxHeight: props.noUpscale && primaryDimension === "height" ? maxHeight : undefined,
         }}
         onPress={props.onPress}
       >

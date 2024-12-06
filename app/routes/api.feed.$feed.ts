@@ -13,8 +13,7 @@ export async function loader(args: LoaderFunctionArgs): Promise<{
   cursor?: string;
 }> {
   const cursorFromQuery =
-    new URLSearchParams(args.request.url.split("?")[1]).get("cursor") ??
-    undefined;
+    new URLSearchParams(args.request.url.split("?")[1]).get("cursor") ?? undefined;
   const name = args.params.feed!;
 
   const [agent, cache] = await Promise.all([
@@ -39,8 +38,7 @@ export async function loader(args: LoaderFunctionArgs): Promise<{
     moderationOpts,
   });
   const finders = {
-    getProfile: (did: string) =>
-      args.context.bsky.cachedFindProfile(agent, did),
+    getProfile: (did: string) => args.context.bsky.cachedFindProfile(agent, did),
   };
 
   return cache.getOrSet(

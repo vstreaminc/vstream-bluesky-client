@@ -1,10 +1,6 @@
 "use client";
 
-import type {
-  FocusEventHandler,
-  MouseEventHandler,
-  TouchEventHandler,
-} from "react";
+import type { FocusEventHandler, MouseEventHandler, TouchEventHandler } from "react";
 import * as React from "react";
 import type { VariantProps } from "class-variance-authority";
 import {
@@ -45,8 +41,7 @@ function usePrefetchBehavior<T extends HTMLAnchorElement>(
 ): [boolean, React.RefObject<T>, Required<PrefetchHandlers>] {
   const [maybePrefetch, setMaybePrefetch] = React.useState(false);
   const [shouldPrefetch, setShouldPrefetch] = React.useState(false);
-  const { onFocus, onBlur, onMouseEnter, onMouseLeave, onTouchStart } =
-    theirElementProps;
+  const { onFocus, onBlur, onMouseEnter, onMouseLeave, onTouchStart } = theirElementProps;
 
   const ref = React.useRef<T>(null);
 
@@ -141,12 +136,8 @@ const ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 
 const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
   ({ className, variant, size, prefetch = "none", ...props }, forwardedRef) => {
-    const isAbsolute =
-      typeof props.href === "string" && ABSOLUTE_URL_REGEX.test(props.href);
-    const [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(
-      prefetch,
-      props,
-    );
+    const isAbsolute = typeof props.href === "string" && ABSOLUTE_URL_REGEX.test(props.href);
+    const [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(prefetch, props);
 
     return (
       <>
@@ -179,23 +170,13 @@ const UnstyledLink = React.forwardRef<
     prefetch?: PrefetchBehavior;
   }
 >(({ prefetch = "none", ...props }, forwardedRef) => {
-  const isAbsolute =
-    typeof props.href === "string" && ABSOLUTE_URL_REGEX.test(props.href);
-  const [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(
-    prefetch,
-    props,
-  );
+  const isAbsolute = typeof props.href === "string" && ABSOLUTE_URL_REGEX.test(props.href);
+  const [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(prefetch, props);
 
   return (
     <>
-      <AriaLink
-        {...props}
-        {...prefetchHandlers}
-        ref={mergeRefs(forwardedRef, ref)}
-      />
-      {shouldPrefetch && props.href && !isAbsolute ? (
-        <PrefetchPageLinks page={props.href} />
-      ) : null}
+      <AriaLink {...props} {...prefetchHandlers} ref={mergeRefs(forwardedRef, ref)} />
+      {shouldPrefetch && props.href && !isAbsolute ? <PrefetchPageLinks page={props.href} /> : null}
     </>
   );
 });

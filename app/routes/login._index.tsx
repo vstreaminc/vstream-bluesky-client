@@ -12,13 +12,7 @@ import { useActionData, useSubmit } from "@remix-run/react";
 import { Form, Text } from "react-aria-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input, JollyTextField } from "~/components/ui/textfield";
 import { PRODUCT_NAME } from "~/lib/constants";
 import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
@@ -38,10 +32,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     console.error(err);
     return json({
       errors: {
-        _:
-          err instanceof OAuthResolverError
-            ? err.message
-            : "couldn't initiate login",
+        _: err instanceof OAuthResolverError ? err.message : "couldn't initiate login",
       },
     });
   }
@@ -108,11 +99,7 @@ export default function Login() {
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background px-4">
-      <Form
-        method="post"
-        validationErrors={actionData?.errors}
-        onSubmit={onSubmit}
-      >
+      <Form method="post" validationErrors={actionData?.errors} onSubmit={onSubmit}>
         <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle className="text-2xl">
@@ -147,10 +134,7 @@ export default function Login() {
                   description="Description of the handle input on login page"
                   values={{
                     a: (nodes) => (
-                      <a
-                        href="https://bsky.app"
-                        className="text-foreground underline"
-                      >
+                      <a href="https://bsky.app" className="text-foreground underline">
                         {nodes}
                       </a>
                     ),

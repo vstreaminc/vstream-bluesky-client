@@ -44,8 +44,7 @@ export function FollowButton({
     varient = "secondary";
     children = t.formatMessage({
       defaultMessage: "Following",
-      description:
-        "Follow button text when the current user follows the profile",
+      description: "Follow button text when the current user follows the profile",
     });
   } else if (profileFollowsViewer) {
     children = t.formatMessage({
@@ -56,8 +55,7 @@ export function FollowButton({
   } else {
     children = t.formatMessage({
       defaultMessage: "Follow",
-      description:
-        "Follow button text when the current user does not follow the profile",
+      description: "Follow button text when the current user does not follow the profile",
     });
   }
 

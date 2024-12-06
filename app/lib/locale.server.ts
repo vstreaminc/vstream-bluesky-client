@@ -11,9 +11,7 @@ import { memoizeBasic1 } from "./memoize";
 
 const intlCache = createIntlCache();
 
-const _messagesForLocale = (
-  locale: SupportedLocale,
-): NonNullable<IntlConfig["messages"]> => {
+const _messagesForLocale = (locale: SupportedLocale): NonNullable<IntlConfig["messages"]> => {
   const localeToLoad = ((): SupportedLocale => {
     switch (locale) {
       case "en":
@@ -30,9 +28,7 @@ const _messagesForLocale = (
   })();
 
   try {
-    return JSON.parse(
-      fs.readFileSync(`./.compiled-lang/${localeToLoad}.json`, "utf8"),
-    );
+    return JSON.parse(fs.readFileSync(`./.compiled-lang/${localeToLoad}.json`, "utf8"));
   } catch (err) {
     if (
       locale !== DEFAULT_LOCALE &&
@@ -53,10 +49,7 @@ export const messagesForLocale =
       memoizeBasic1(_messagesForLocale)
     : _messagesForLocale;
 
-const serializeCache = new WeakMap<
-  ReturnType<typeof messagesForLocale>,
-  string
->();
+const serializeCache = new WeakMap<ReturnType<typeof messagesForLocale>, string>();
 
 /**
  * Serializes the VStream translations into more compact JS block
@@ -70,9 +63,7 @@ const serializeCache = new WeakMap<
  *
  * @see https://github.com/adobe/react-spectrum/blob/12920fc91afa90d54ae769db45a1cff4b823e1bb/packages/%40react-aria/i18n/src/server.tsx#L51
  */
-export function serializeMessages(
-  messages: ReturnType<typeof messagesForLocale>,
-): string {
+export function serializeMessages(messages: ReturnType<typeof messagesForLocale>): string {
   const cached = serializeCache.get(messages);
   if (cached) {
     return cached;
@@ -81,19 +72,14 @@ export function serializeMessages(
   // Find common strings between keys and hoist them into variables.
   const seen = new Set();
   const common = new Map();
-  const stringifyCache = new Map<
-    (typeof messages)[keyof typeof messages],
-    string
-  >();
+  const stringifyCache = new Map<(typeof messages)[keyof typeof messages], string>();
   for (const key in messages) {
     const v = messages[key];
     // JSON stringify to add quotes around strings or turn complex object into a string
     const s = stringify(v);
     stringifyCache.set(v, s);
     if (seen.has(s) && !common.has(s)) {
-      const name = String.fromCharCode(
-        common.size > 25 ? common.size + 97 : common.size + 65,
-      );
+      const name = String.fromCharCode(common.size > 25 ? common.size + 97 : common.size + 65);
       common.set(s, name);
     }
     seen.add(s);

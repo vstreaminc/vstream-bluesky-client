@@ -21,10 +21,7 @@ export function Mark(props: Props) {
       height="343px"
       viewBox="0 0 400 343"
       version="1.1"
-      className={cn(
-        "[&_path]:fill-black dark:[&_path]:fill-white",
-        props.className,
-      )}
+      className={cn("[&_path]:fill-black dark:[&_path]:fill-white", props.className)}
       role="img"
     >
       <title>{title}</title>
@@ -52,10 +49,7 @@ export function Logo(props: Props) {
       height="24"
       viewBox="0 0 127 24"
       fill="none"
-      className={cn(
-        "[&_path]:fill-black dark:[&_path]:fill-white",
-        props.className,
-      )}
+      className={cn("[&_path]:fill-black dark:[&_path]:fill-white", props.className)}
       role="img"
     >
       <title>{title}</title>

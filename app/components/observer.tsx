@@ -39,9 +39,7 @@ export function ObserverLoader(props: Props) {
     <>
       <div ref={ref} />
       {/* The empty <div /> around the spinner stops the parent container from changing size while the spinner spins */}
-      <div className="flex w-full flex-col items-center justify-center p-4">
-        {children}
-      </div>
+      <div className="flex w-full flex-col items-center justify-center p-4">{children}</div>
     </>
   );
 }

@@ -33,10 +33,7 @@ export function ImageMosaic<T extends ImageMosaicItem>({
   // 2. Keeps the old layout around for a fraction of a second which makes our drag-and-drop animation
   // look way better.
   const deferredItems = useDeferredValue(items);
-  const aspectRatios = useMemo(
-    () => deferredItems.map((i) => i.aspectRatio),
-    [deferredItems],
-  );
+  const aspectRatios = useMemo(() => deferredItems.map((i) => i.aspectRatio), [deferredItems]);
   const grid = useMemo(
     () => imageMosaicLayout(aspectRatios, gapPercentage),
     // Using JSON.stringify is a hack to minimize recomputations by comparing values instead of array pointers
@@ -91,10 +88,7 @@ type ImageMosaicGridRows = {
   rows: ImageMosaicGrid[];
   aspectRatio: number;
 };
-type ImageMosaicGrid =
-  | ImageMosaicGridItem
-  | ImageMosaicGridCols
-  | ImageMosaicGridRows;
+type ImageMosaicGrid = ImageMosaicGridItem | ImageMosaicGridCols | ImageMosaicGridRows;
 type ImageMosaicResult = {
   aspectRatio: number;
   items: {
@@ -172,9 +166,7 @@ function mergeCols(a: ImageMosaicGrid, b: ImageMosaicGrid) {
     aspectRatio: a.aspectRatio + b.aspectRatio,
   };
 }
-function strechItemsAcrossRows(
-  items: ImageMosaicIndexedAspectRatio[][],
-): ImageMosaicGrid[] {
+function strechItemsAcrossRows(items: ImageMosaicIndexedAspectRatio[][]): ImageMosaicGrid[] {
   // We need at least two rows to "stretch" an item across, so handle the 0 & 1 row cases explicitly
   if (items.length === 0) {
     return [];
@@ -218,10 +210,7 @@ function strechItemsAcrossRows(
       item: items[0][0],
       aspectRatio: items[0][0].aspectRatio,
     };
-    const right = strechItemsAcrossRows([
-      items[0].slice(1),
-      ...items.slice(1, idx + 1),
-    ]);
+    const right = strechItemsAcrossRows([items[0].slice(1), ...items.slice(1, idx + 1)]);
     const bottom = strechItemsAcrossRows(items.slice(idx + 1));
     if (bottom.length === 0) {
       // If we stretched the item across all rows, there won't be anything "below", so only consider "right" options
@@ -285,13 +274,10 @@ function calcScores(grid: ImageMosaicGrid) {
     invariant(i.width);
     return i.height * i.width;
   });
-  const avgSize =
-    sizes.reduce((sum, itemSize) => sum + itemSize, 0) / sizes.length;
+  const avgSize = sizes.reduce((sum, itemSize) => sum + itemSize, 0) / sizes.length;
   const score =
-    sizes.reduce(
-      (sum, itemSize) => sum + (itemSize - avgSize) * (itemSize - avgSize),
-      0,
-    ) / sizes.length;
+    sizes.reduce((sum, itemSize) => sum + (itemSize - avgSize) * (itemSize - avgSize), 0) /
+    sizes.length;
   return {
     ...grid,
     score:
@@ -314,11 +300,7 @@ function calcRealSize(grid: ImageMosaicGrid, gap: number): ImageMosaicResult {
     y(): number;
   }[] = [];
   const S = LinearSystemSolver();
-  const makeEquations = (
-    g: ImageMosaicGrid,
-    x: () => number,
-    y: () => number,
-  ) => {
+  const makeEquations = (g: ImageMosaicGrid, x: () => number, y: () => number) => {
     switch (g.type) {
       case "item":
         return (() => {
@@ -488,14 +470,9 @@ function LinearSystemSolver() {
           `number of variables (${variables.length}) must match number of equations (${equations.length})`,
         );
       }
-      const M = equations.map((e) => [
-        ...variables.map((v) => e[v] ?? 0),
-        e[SOLUTION] ?? 0,
-      ]);
+      const M = equations.map((e) => [...variables.map((v) => e[v] ?? 0), e[SOLUTION] ?? 0]);
       gaussJordanElimination(M);
-      _solution = Object.fromEntries(
-        variables.map((k, idx) => [k, M[idx].at(-1)]),
-      );
+      _solution = Object.fromEntries(variables.map((k, idx) => [k, M[idx].at(-1)]));
       return _solution;
     },
     // Gets the value for a specific variable. Must call `solve` first.

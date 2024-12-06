@@ -14,10 +14,7 @@ export function handleOrDid<T extends Author>(author: T): string {
   return author.handle.endsWith(INVALID_HANDLE) ? author.did : author.handle;
 }
 
-export async function take<T>(
-  iter: AsyncIterable<T>,
-  num: number,
-): Promise<T[]> {
+export async function take<T>(iter: AsyncIterable<T>, num: number): Promise<T[]> {
   const items: T[] = [];
   for await (const item of iter) {
     items.push(item);

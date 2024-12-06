@@ -46,9 +46,7 @@ export function RichTextRenderer({
     </ProfileFlyout>
   ),
   hashtagRenderer = (node) => (
-    <span className="cursor-pointer text-blue-400 hover:underline">
-      {node.tag}
-    </span>
+    <span className="cursor-pointer text-blue-400 hover:underline">{node.tag}</span>
   ),
   linkRenderer = (node) => (
     <UnstyledLink
@@ -83,16 +81,13 @@ export function RichTextRenderer({
   };
 
   const renderFn = (nodes: RichText[]): React.ReactNode =>
-    nodes.map((node, idx) => (
-      <React.Fragment key={idx}>{renderNode(node)}</React.Fragment>
-    ));
+    nodes.map((node, idx) => <React.Fragment key={idx}>{renderNode(node)}</React.Fragment>);
 
   return renderFn(Array.isArray(richText) ? richText : [richText]);
 }
 
 const MENTION_REGEX = /(^|\s|\()(@)([a-zA-Z0-9.-]+)(\b)/g;
-const URL_REGEX =
-  /(^|\s|\()((https?:\/\/[\S]+)|((?<domain>[a-z][a-z0-9]*(\.[a-z0-9]+)+)[\S]*))/gim;
+const URL_REGEX = /(^|\s|\()((https?:\/\/[\S]+)|((?<domain>[a-z][a-z0-9]*(\.[a-z0-9]+)+)[\S]*))/gim;
 const TRAILING_PUNCTUATION_REGEX = /\p{P}+$/gu;
 
 /**

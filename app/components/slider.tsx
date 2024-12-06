@@ -33,9 +33,7 @@ export function Slider({
   const onScrollMount = React.useCallback(
     (e: HTMLDivElement | null) => {
       scrollRef.current = e;
-      e?.children
-        .item(2 * (startIndex ?? 0))
-        ?.scrollIntoView({ behavior: "instant" });
+      e?.children.item(2 * (startIndex ?? 0))?.scrollIntoView({ behavior: "instant" });
     },
     [startIndex],
   );
@@ -81,11 +79,7 @@ export function Slider({
       scrollTo(page + 1);
     },
     {
-      enabled:
-        nodes.length > 1 &&
-        enableHotKeys &&
-        !isScrolling &&
-        page < nodes.length - 1,
+      enabled: nodes.length > 1 && enableHotKeys && !isScrolling && page < nodes.length - 1,
     },
   );
 

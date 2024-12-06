@@ -1,8 +1,7 @@
 import * as React from "react";
 import { FormattedRelativeTime, useIntl } from "react-intl";
 
-interface Props
-  extends Omit<React.ComponentProps<typeof FormattedRelativeTime>, "value"> {
+interface Props extends Omit<React.ComponentProps<typeof FormattedRelativeTime>, "value"> {
   value: string | Date;
 }
 
@@ -10,12 +9,7 @@ interface Props
  * A component that returns an internationalized relative time string.
  * In English, this is something like "2 minutes ago".
  */
-export function RelativeTime({
-  numeric,
-  updateIntervalInSeconds,
-  value,
-  ...rest
-}: Props) {
+export function RelativeTime({ numeric, updateIntervalInSeconds, value, ...rest }: Props) {
   const date = React.useMemo(() => new Date(value), [value]);
 
   const [val, unit] = React.useMemo(() => {
@@ -23,31 +17,13 @@ export function RelativeTime({
     const deltaSeconds = Math.round((date.getTime() - Date.now()) / 1000);
 
     // Array reprsenting one minute, hour, day, week, month, etc in seconds
-    const cutoffs = [
-      60,
-      3_600,
-      86_400,
-      86_400 * 7,
-      86_400 * 30,
-      86_400 * 365,
-      Infinity,
-    ];
+    const cutoffs = [60, 3_600, 86_400, 86_400 * 7, 86_400 * 30, 86_400 * 365, Infinity];
 
     // Array equivalent to the above but in the string representation of the units
-    const units: Props["unit"][] = [
-      "second",
-      "minute",
-      "hour",
-      "day",
-      "week",
-      "month",
-      "year",
-    ];
+    const units: Props["unit"][] = ["second", "minute", "hour", "day", "week", "month", "year"];
 
     // Grab the ideal cutoff unit
-    const unitIndex = cutoffs.findIndex(
-      (cutoff) => cutoff > Math.abs(deltaSeconds),
-    );
+    const unitIndex = cutoffs.findIndex((cutoff) => cutoff > Math.abs(deltaSeconds));
 
     // Get the divisor to divide from the seconds. E.g. if our unit is "day" our divisor
     // is one day in seconds, so we can divide our seconds by this to get the # of days
@@ -65,9 +41,7 @@ export function RelativeTime({
         unit={unit}
         numeric={numeric ?? "auto"}
         updateIntervalInSeconds={
-          unit === "second" || unit === "minute"
-            ? (updateIntervalInSeconds ?? 60)
-            : undefined
+          unit === "second" || unit === "minute" ? (updateIntervalInSeconds ?? 60) : undefined
         }
       />
     </time>

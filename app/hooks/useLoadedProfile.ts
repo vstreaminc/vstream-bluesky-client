@@ -7,19 +7,13 @@ import { handleOrDid } from "~/lib/utils";
 
 type Listener = () => void;
 
-const profileDB = new Map<
-  string,
-  { listeners: Listener[]; value?: VStreamProfileViewSimple }
->();
+const profileDB = new Map<string, { listeners: Listener[]; value?: VStreamProfileViewSimple }>();
 
 export function loadProfile(handleOrDid: string) {
   return profileDB.get(handleOrDid)?.value;
 }
 
-export function saveProfile(
-  handleOrDid: string,
-  profile: VStreamProfileViewSimple,
-) {
+export function saveProfile(handleOrDid: string, profile: VStreamProfileViewSimple) {
   let db = profileDB.get(handleOrDid);
   if (db === undefined) {
     db = { value: profile, listeners: [] };
@@ -63,11 +57,7 @@ export function useLoadedProfile<T extends { did: string; handle: string }>(
     return profileDB.get(key)?.value;
   }, [key]);
 
-  const clientProfile = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getSnapshot,
-  );
+  const clientProfile = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   const { load, data: serverProfile } = useFetcher<typeof profileApiLoader>({
     key: `flyout-${profile.did}`,
