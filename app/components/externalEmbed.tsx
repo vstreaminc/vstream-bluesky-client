@@ -1,9 +1,10 @@
 import { Globe } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { VStreamEmbedExternal } from "~/types";
 import { cn } from "~/lib/utils";
 import { useShouldAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
 import { useHydrated } from "~/hooks/useHydrated";
+import { useExternalScript } from "~/hooks/useExernalScript";
 import { UnstyledLink } from "./ui/link";
 import { EventStopper } from "./ui/eventStopper";
 
@@ -653,25 +654,92 @@ function ExternalPlayer({
   const { ref, inView } = useShouldAutoplaySingleton(false);
 
   return (
-    <div
-      ref={ref}
-      className="bordered-muted relative flex w-full flex-col overflow-hidden border-b"
-      style={aspect}
-    >
-      {embed.thumb && (!inView || isLoading) ? (
-        <>
-          <img className="h-full w-full object-cover" src={embed.thumb} alt={embed.title} />
+    <div className="relative">
+      <div
+        ref={ref}
+        className="bordered-muted flex w-full flex-col overflow-hidden border-b"
+        style={aspect}
+      >
+        {embed.thumb && (!inView || isLoading) ? (
+          <>
+            <img className="h-full w-full object-cover" src={embed.thumb} alt={embed.title} />
+            <div className="absolute inset-0 bg-muted/30" />
+          </>
+        ) : (
           <div className="absolute inset-0 bg-muted/30" />
-        </>
-      ) : (
-        <div className="absolute inset-0 bg-muted/30" />
-      )}
-      <Player isActive={inView} onLoad={onLoad} params={params} />
+        )}
+        {params.type === "twitch_video" ? (
+          <TwitchPlayer isActive={inView} onLoad={onLoad} params={params} />
+        ) : (
+          <GenericPlayer isActive={inView} onLoad={onLoad} params={params} />
+        )}
+      </div>
     </div>
   );
 }
 
-function Player({
+function TwitchPlayer({
+  isActive,
+  onLoad,
+  params,
+}: {
+  isActive: boolean;
+  params: EmbedPlayerParams;
+  onLoad: () => void;
+}) {
+  const id = useId();
+  const [isOnline, setIsOnline] = useState(false);
+  const isTwitchLoaded = useExternalScript("https://player.twitch.tv/js/embed/v1.js");
+
+  const { channel, video, parent } = useMemo(() => {
+    const urlParams = new URLSearchParams(params.playerUri.split("?")[1]);
+    const channel = urlParams.get("channel") ?? undefined;
+    const video = urlParams.get("video") ?? urlParams.get("clip") ?? undefined;
+    const parent = urlParams.get("parent")!;
+    return { channel, video, parent };
+  }, [params.playerUri]);
+
+  useEffect(() => {
+    if (!isTwitchLoaded || !isActive) return;
+    const player = new Twitch.Player(id, {
+      channel,
+      video,
+      parent: [parent],
+      width: "100%",
+      height: "100%",
+      muted: true,
+    });
+
+    player.addEventListener(Twitch.Player.ONLINE, () => {
+      onLoad();
+      setIsOnline(true);
+    });
+
+    player.addEventListener(Twitch.Player.OFFLINE, () => {
+      setIsOnline(false);
+    });
+  }, [id, isActive, onLoad, channel, video, parent, isTwitchLoaded]);
+
+  if (!isActive) return null;
+
+  return (
+    <>
+      <EventStopper id={id} className={cn({ hidden: !isOnline }, "absolute inset-0 z-30")} />
+      {isActive && isOnline && channel ? (
+        <iframe
+          title={`${channel ?? "twitch"} chat`}
+          src={`https://www.twitch.tv/embed/${channel}/chat?parent=${parent}`}
+          height="100%"
+          width="100%"
+          className="absolute -top-20 right-0 z-30 w-60 translate-x-60"
+          style={{ height: "calc(100% + 160px)" }}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function GenericPlayer({
   isActive,
   onLoad,
   params,
