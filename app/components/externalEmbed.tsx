@@ -723,8 +723,8 @@ function TwitchPlayer({
   if (!isActive) return null;
 
   return (
-    <>
-      <EventStopper
+    <EventStopper>
+      <div
         id={id}
         className={cn({ hidden: !isOnline }, "absolute inset-y-0 -left-20 right-20 z-30")}
       />
@@ -738,7 +738,7 @@ function TwitchPlayer({
           style={{ height: "calc(100% + 160px)" }}
         />
       ) : null}
-    </>
+    </EventStopper>
   );
 }
 
