@@ -724,14 +724,17 @@ function TwitchPlayer({
 
   return (
     <>
-      <EventStopper id={id} className={cn({ hidden: !isOnline }, "absolute inset-0 z-30")} />
+      <EventStopper
+        id={id}
+        className={cn({ hidden: !isOnline }, "absolute inset-y-0 -left-20 right-20 z-30")}
+      />
       {isActive && isOnline && channel ? (
         <iframe
           title={`${channel ?? "twitch"} chat`}
           src={`https://www.twitch.tv/embed/${channel}/chat?parent=${parent}`}
           height="100%"
           width="100%"
-          className="absolute -top-20 right-0 z-30 w-60 translate-x-60"
+          className="absolute -right-[13.5rem] -top-20 z-30 w-72"
           style={{ height: "calc(100% + 160px)" }}
         />
       ) : null}
