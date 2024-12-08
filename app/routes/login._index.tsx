@@ -2,7 +2,6 @@ import { OAuthResolverError } from "@atproto/oauth-client-node";
 import { isValidHandle } from "@atproto/syntax";
 import {
   type ActionFunctionArgs,
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   type MetaDescriptor,
@@ -19,23 +18,26 @@ import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
 import { ctas } from "~/lib/messages";
 import { BooleanFilter } from "~/lib/utils";
 
-export async function action({ request, context }: ActionFunctionArgs) {
+export async function action({ request, context }: ActionFunctionArgs): Promise<{
+  errors: Record<string, string>;
+}> {
   const { handle } = Object.fromEntries(await request.formData());
   if (typeof handle !== "string" || !isValidHandle(handle)) {
-    return json({ errors: { handle: "Handle is invalid" } });
+    return { errors: { handle: "Handle is invalid" } };
   }
 
+  let url: URL;
   try {
-    const url = await context.atProtoClient.authorize(handle);
-    return redirect(url.toString());
+    url = await context.atProtoClient.authorize(handle);
   } catch (err) {
     console.error(err);
-    return json({
+    return {
       errors: {
         _: err instanceof OAuthResolverError ? err.message : "couldn't initiate login",
       },
-    });
+    };
   }
+  throw redirect(url.toString());
 }
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -96,6 +98,7 @@ export default function Login() {
     e.preventDefault();
     submit(e.currentTarget);
   };
+  const genericError = actionData?.errors["_"] as string | undefined;
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background px-4">
@@ -143,8 +146,11 @@ export default function Login() {
               </Text>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full">
+          <CardFooter className="block">
+            {genericError ? (
+              <div className="mb-2 text-[0.8rem] font-medium text-destructive">{genericError}</div>
+            ) : null}
+            <Button type="submit" className="block w-full">
               <FormattedMessage {...ctas.logIn} />
             </Button>
           </CardFooter>
