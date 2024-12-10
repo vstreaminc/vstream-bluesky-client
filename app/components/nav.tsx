@@ -1,8 +1,8 @@
 import * as React from "react";
 import { FormattedDisplayName, FormattedMessage, IntlProvider } from "react-intl";
 import { ChevronsUpDown, Compass, Cpu, Globe, House, LogOut, Moon, Sun } from "lucide-react";
-import { Link, useFetcher } from "@remix-run/react";
-import { $path } from "remix-routes";
+import { Link, useFetcher } from "react-router";
+import { $path } from "safe-routes";
 import {
   Sidebar,
   SidebarContent,

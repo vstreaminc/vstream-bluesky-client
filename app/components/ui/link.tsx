@@ -8,7 +8,7 @@ import {
   type LinkProps as AriaLinkProps,
   composeRenderProps,
 } from "react-aria-components";
-import { PrefetchPageLinks } from "@remix-run/react";
+import { PrefetchPageLinks } from "react-router";
 import { cn } from "~/lib/utils";
 import { buttonVariants } from "./button";
 

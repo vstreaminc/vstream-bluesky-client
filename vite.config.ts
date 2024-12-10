@@ -4,20 +4,13 @@ import DataLoader from "dataloader";
 import babel, { type PluginItem } from "@babel/core";
 import stringify from "json-stable-stringify";
 import fg from "fast-glob";
-import { vitePlugin as remix } from "@remix-run/dev";
+import { reactRouter } from "@react-router/dev/vite";
 import optimizeLocales from "@react-aria/optimize-locales-plugin";
 import { compile, extract } from "@formatjs/cli-lib";
 import { defineConfig, type Plugin } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { remixRoutes } from "remix-routes/vite";
-import esbuild from "esbuild";
+import { safeRoutes } from "safe-routes/vite";
 import { DEFAULT_LOCALE } from "./app/lib/locale";
-
-declare module "@remix-run/node" {
-  interface Future {
-    v3_singleFetch: true;
-  }
-}
 
 const ID_INTERPOLATION = "[sha512:contenthash:base64:6]";
 
@@ -198,35 +191,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
-    remix({
-      future: {
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-        v3_singleFetch: true,
-        v3_lazyRouteDiscovery: true,
-      },
-      serverBuildFile: "remix.js",
-      buildEnd: async () => {
-        await esbuild
-          .build({
-            alias: { "~/lib": "./app/lib", "~/types": "./app/types.ts" },
-            outfile: "build/server/index.js",
-            entryPoints: ["server/index.ts"],
-            external: ["./build/server/*"],
-            platform: "node",
-            format: "esm",
-            packages: "external",
-            bundle: true,
-            logLevel: "info",
-          })
-          .catch((error: unknown) => {
-            console.error("Error building server:", error);
-            process.exit(1);
-          });
-      },
-    }),
-    remixRoutes(),
+    reactRouter(),
+    safeRoutes(),
     tsconfigPaths(),
     // Don't include any locale strings in the client JS bundle.
     // See: https://react-spectrum.adobe.com/react-aria/ssr.html

@@ -5,7 +5,7 @@ import { useEvent } from "react-use-event-hook";
 import { Heading, type PressEvent } from "react-aria-components";
 import HlsVideo from "hls-video-element/react";
 import MediaThemeMinimal from "player.style/minimal/react";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate } from "react-router";
 import { MediaPosterImage } from "media-chrome/react";
 import type {
   VStreamEmbedImages,
@@ -233,7 +233,6 @@ export function FeedModerationGuard({
 }) {
   const [userModeration, setModeration] = useUserModeration(post.cid);
   const decision = post.moderation?.[topic];
-  console.log(decision, userModeration);
 
   if (decision?.blur && userModeration !== "allow") {
     return (

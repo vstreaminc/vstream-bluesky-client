@@ -1,6 +1,7 @@
-import { data, type ActionFunctionArgs } from "@remix-run/node";
+import { data } from "react-router";
+import type { Route } from "./+types/auth.logout";
 
-export async function action(args: ActionFunctionArgs) {
+export async function action(args: Route.ActionArgs) {
   const session = await args.context.session.get(args.request);
   session.unset("did");
   return data("ok", {

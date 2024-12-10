@@ -1,9 +1,8 @@
 import * as React from "react";
-import type { LoaderFunctionArgs, MetaDescriptor, MetaFunction } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
+import { useFetcher, useNavigate, type MetaDescriptor } from "react-router";
 import { useEvent } from "react-use-event-hook";
 import { SECOND } from "@atproto/common";
-import { $path } from "remix-routes";
+import { $path } from "safe-routes";
 import { MainLayout } from "~/components/mainLayout";
 import { FeedPostContentText, FeedPostControls, PostMediaImage } from "~/components/post";
 import { DISCOVER_FEED_URI, exploreGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
@@ -18,12 +17,13 @@ import { hrefLangs, linkToPost, linkToProfile } from "~/lib/linkHelpers";
 import { ObserverLoader } from "~/components/observer";
 import { ProfileFlyout } from "~/components/profileFlyout";
 import { UnstyledLink } from "~/components/ui/link";
+import type { Route } from "./+types/explore";
 
 export type SearchParams = {
   cursor?: string;
 };
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: Route.LoaderArgs) {
   const [agent, t] = await Promise.all([args.context.requireLoggedInUser(), args.context.intl.t()]);
   const moderationOpts = await args.context.bsky.cachedModerationOpts(agent);
   const title = t.formatMessage(
@@ -75,7 +75,7 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 }
 
-export const meta: MetaFunction<typeof loader> = (args) => {
+export const meta: Route.MetaFunction = (args) => {
   const metas: MetaDescriptor[] = [
     args.data?.title && { title: args.data.title },
     args.data?.description && {
@@ -98,8 +98,7 @@ export const meta: MetaFunction<typeof loader> = (args) => {
 const MIN_ROW_HEIGHT = 200;
 const MAX_ROW_HEIGHT = 400;
 
-export default function ExplorePage() {
-  const serverData = useLoaderData<typeof loader>();
+export default function ExplorePage({ loaderData: serverData }: Route.ComponentProps) {
   const [posts, setPosts] = React.useState(serverData.posts);
   const [cursor, setCursor] = React.useState(serverData.cursor);
   const { data, load } = useFetcher<typeof loader>({ key: `explore-feed` });

@@ -4,9 +4,8 @@
 
 import { PassThrough } from "node:stream";
 import { getLocalizationScript } from "react-aria-components/i18n";
-import type { AppLoadContext, EntryContext } from "@remix-run/node";
-import { createReadableStreamFromReadable } from "@remix-run/node";
-import { RemixServer } from "@remix-run/react";
+import { type AppLoadContext, type EntryContext, ServerRouter } from "react-router";
+import { createReadableStreamFromReadable } from "@react-router/node";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { DEFAULT_LOCALE } from "./lib/locale";
@@ -19,10 +18,10 @@ export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
+  reactRouterContext: EntryContext,
   _loadContext: AppLoadContext,
 ) {
-  const locale = remixContext.staticHandlerContext.loaderData.root?.locale ?? DEFAULT_LOCALE;
+  const locale = reactRouterContext.staticHandlerContext.loaderData.root?.locale ?? DEFAULT_LOCALE;
   const messages = messagesForLocale(locale);
 
   const callbackName = isbot(request.headers.get("user-agent") ?? "")
@@ -33,7 +32,7 @@ export default function handleRequest(
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
       <VStreamIntlProvider initialLocale={locale} initalMessages={messages}>
-        <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
+        <ServerRouter context={reactRouterContext} url={request.url} abortDelay={ABORT_DELAY} />
       </VStreamIntlProvider>,
       {
         bootstrapScriptContent: getLocalizationScript(locale) + serializeMessages(messages),

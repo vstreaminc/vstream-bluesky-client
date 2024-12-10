@@ -1,14 +1,14 @@
 import { SECOND } from "@atproto/common";
-import type { LoaderFunctionArgs } from "@remix-run/node";
 import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { take } from "~/lib/utils";
 import type { VStreamFeedViewPostSlice } from "~/types";
+import type { Route } from "./+types/api.feed.$feed";
 
 export type SearchParams = {
   cursor?: string;
 };
 
-export async function loader(args: LoaderFunctionArgs): Promise<{
+export async function loader(args: Route.LoaderArgs): Promise<{
   slices: VStreamFeedViewPostSlice[];
   cursor?: string;
 }> {

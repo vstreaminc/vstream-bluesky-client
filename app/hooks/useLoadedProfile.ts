@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { $path } from "remix-routes";
-import { useFetcher } from "@remix-run/react";
+import { $path } from "safe-routes";
+import { useFetcher } from "react-router";
 import type { VStreamProfileViewSimple } from "~/types";
 import type { loader as profileApiLoader } from "~/routes/api.profile.$handleOrDid";
 import { handleOrDid } from "~/lib/utils";

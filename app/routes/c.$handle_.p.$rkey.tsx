@@ -1,15 +1,8 @@
 import * as React from "react";
-import {
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  redirect,
-  type SerializeFrom,
-  type MetaDescriptor,
-} from "@remix-run/node";
-import { Await, type ClientLoaderFunctionArgs, useLoaderData, useNavigate } from "@remix-run/react";
+import { redirect, type MetaDescriptor, Await, useNavigate } from "react-router";
 import { Suspense } from "react";
 import { FormattedDate, FormattedMessage, FormattedTime } from "react-intl";
-import { $path } from "remix-routes";
+import { $path } from "safe-routes";
 import { useEvent } from "react-use-event-hook";
 import { MainLayout } from "~/components/mainLayout";
 import {
@@ -31,16 +24,17 @@ import {
   sortPostThread,
 } from "~/lib/bsky.server";
 import { canonicalURL, hrefLangs, linkToPost, linkToProfile } from "~/lib/linkHelpers";
-import type { VStreamFeedViewPost, VStreamPostThread } from "~/types";
+import type { SerializeFrom, VStreamFeedViewPost, VStreamPostThread } from "~/types";
 import { cn } from "~/lib/utils";
 import { ProfileFlyout } from "~/components/profileFlyout";
 import { PRODUCT_NAME, TWITTER_HANDLE_EN } from "~/lib/constants";
 import type { SupportedLocale } from "~/lib/locale";
 import { UnstyledLink } from "~/components/ui/link";
+import type { Route } from "./+types/c.$handle_.p.$rkey";
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: Route.LoaderArgs) {
   const { handle, rkey } = args.params;
-  if (!handle!.startsWith("@") && !handle!.startsWith("did:")) {
+  if (!handle.startsWith("@") && !handle.startsWith("did:")) {
     const searchParams = new URLSearchParams(args.request.url.split("?")[1]);
     throw redirect(
       $path(
@@ -91,10 +85,10 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 }
 
-export function clientLoader(args: ClientLoaderFunctionArgs) {
+export function clientLoader(args: Route.ClientLoaderArgs) {
   const post = loadFeedPost(args.params.handle!, args.params.rkey!);
 
-  if (!post) return args.serverLoader<typeof loader>();
+  if (!post) return args.serverLoader();
   const thread: VStreamPostThread = {
     $type: "post",
     _reactKey: post.uri,
@@ -113,11 +107,11 @@ export function clientLoader(args: ClientLoaderFunctionArgs) {
       document.documentElement.getAttribute("lang") as SupportedLocale,
     ),
     hrefLangs: hrefLangs(args.request.url),
-    serverData: args.serverLoader<typeof loader>(),
+    serverData: args.serverLoader(),
   } satisfies SerializeFrom<typeof loader> & { serverData: unknown };
 }
 
-export const meta: MetaFunction<typeof loader> = (args) => {
+export const meta: Route.MetaFunction = (args) => {
   if (!args.data) return [];
   const { highlightedPost: post, postPlainText, canonicalURL } = args.data;
   if (!post || post.$type !== "post") return [];
@@ -178,9 +172,7 @@ export const meta: MetaFunction<typeof loader> = (args) => {
   return metas;
 };
 
-export default function PostPageScreen() {
-  const data = useLoaderData<typeof loader | typeof clientLoader>();
-
+export default function PostPageScreen({ loaderData: data }: Route.ComponentProps) {
   return (
     <MainLayout>
       {"serverData" in data ? (

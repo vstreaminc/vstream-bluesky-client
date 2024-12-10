@@ -1,8 +1,9 @@
-import { data, type ActionFunctionArgs } from "@remix-run/node";
+import { data } from "react-router";
 import { isSupportedLocale } from "~/lib/locale";
 import { messagesForLocale } from "~/lib/locale.server";
+import type { Route } from "./+types/api.switch-locale";
 
-export async function action(args: ActionFunctionArgs) {
+export async function action(args: Route.ActionArgs) {
   const [{ locale }, session] = await Promise.all([
     args.request.json(),
     args.context.session.get(args.request),

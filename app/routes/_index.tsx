@@ -1,7 +1,6 @@
 import * as React from "react";
-import type { LoaderFunctionArgs, MetaDescriptor, MetaFunction } from "@remix-run/node";
+import { Await, type MetaDescriptor } from "react-router";
 import type { Organization, WithContext } from "schema-dts";
-import { Await, type ClientLoaderFunctionArgs, useLoaderData } from "@remix-run/react";
 import { MainLayout } from "~/components/mainLayout";
 import { PRODUCT_NAME } from "~/lib/constants";
 import logoSvg from "~/imgs/logo.svg";
@@ -11,18 +10,19 @@ import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
 import { Feed } from "~/components/feed";
 import { loadFeed } from "~/hooks/useFeedData";
 import { loader as fetchFeedSlices } from "./api.feed.$feed";
+import type { Route } from "./+types/_index";
 
-export const meta: MetaFunction<typeof loader> = (args) => {
+export const meta: Route.MetaFunction = (args) => {
   const metas: MetaDescriptor[] = [
     // TODO: Remove before going live
     { name: "robots", content: "noindex" },
-    args.data?.title && { title: args.data.title },
-    args.data?.canonicalURL && {
+    "title" in args.data && { title: args.data.title },
+    "canonicalURL" in args.data && {
       tagName: "link",
       rel: "canonical",
       href: args.data.canonicalURL,
     },
-    ...(args.data?.hrefLangs ?? []).map(({ locale, href }) => ({
+    ...("hrefLangs" in args.data ? args.data.hrefLangs : []).map(({ locale, href }) => ({
       tagName: "link",
       rel: "alternate",
       hrefLang: locale,
@@ -97,7 +97,7 @@ export const meta: MetaFunction<typeof loader> = (args) => {
   return metas;
 };
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: Route.LoaderArgs) {
   const [t, { slices, cursor }] = await Promise.all([
     args.context.intl.t(),
     fetchFeedSlices({ ...args, params: { feed: "home" } }),
@@ -120,21 +120,19 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 }
 
-export async function clientLoader(args: ClientLoaderFunctionArgs) {
+export async function clientLoader(args: Route.ClientLoaderArgs) {
   const cached = loadFeed(args.params.feed!)?.value;
   if (cached) {
     return {
       slices: cached.slices,
       cursor: cached.cursor,
-      serverData: args.serverLoader<typeof loader>(),
+      serverData: args.serverLoader(),
     };
   }
-  return args.serverLoader<typeof loader>();
+  return args.serverLoader();
 }
 
-export default function Index() {
-  const data = useLoaderData<typeof loader | typeof clientLoader>();
-
+export default function Index({ loaderData: data }: Route.ComponentProps) {
   return (
     <MainLayout>
       {"serverData" in data ? (

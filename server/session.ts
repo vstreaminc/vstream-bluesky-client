@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage } from "react-router";
 import { DAY, SECOND } from "@atproto/common";
 import type { SupportedLocale } from "~/lib/locale";
 import type { ServerConfig } from "./config";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
-import { $path } from "remix-routes";
-import { useFetcher } from "@remix-run/react";
+import { $path } from "safe-routes";
+import { useFetcher } from "react-router";
 import { useEvent } from "react-use-event-hook";
 import type { VStreamFeedViewPostSlice } from "~/types";
 import type { loader } from "~/routes/api.feed.$feed";

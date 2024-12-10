@@ -1,7 +1,8 @@
 import assert from "node:assert";
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { redirect } from "react-router";
+import type { Route } from "./+types/auth.bsky.callback";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   const params = new URLSearchParams(request.url.split("?")[1]);
   try {
     const { session } = await context.atProtoClient.callback(params);

@@ -1,5 +1,5 @@
 import type express from "express";
-import { redirect } from "@remix-run/node";
+import { redirect } from "react-router";
 import {
   Agent,
   type AppBskyLabelerDefs,

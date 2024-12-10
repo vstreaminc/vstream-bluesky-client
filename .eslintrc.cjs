@@ -106,6 +106,7 @@ module.exports = {
         "plugin:import/typescript",
       ],
       rules: {
+        "import/no-duplicates": ["error", { "prefer-inline": true }],
         "@typescript-eslint/no-unused-vars": [
           "error",
           {

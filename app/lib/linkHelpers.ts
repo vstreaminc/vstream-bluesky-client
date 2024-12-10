@@ -1,4 +1,4 @@
-import { $path } from "remix-routes";
+import { $path } from "safe-routes";
 import { handleOrDid } from "./utils";
 import { SUPPORTED_LOCALES } from "./locale";
 

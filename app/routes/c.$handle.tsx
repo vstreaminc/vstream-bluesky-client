@@ -1,9 +1,8 @@
-import { HOUR, SECOND } from "@atproto/common";
-import { type LoaderFunctionArgs, redirect, type SerializeFrom } from "@remix-run/node";
-import { Await, type ClientLoaderFunctionArgs, useLoaderData } from "@remix-run/react";
-import { Bell } from "lucide-react";
 import { Suspense } from "react";
-import { $path } from "remix-routes";
+import { HOUR, SECOND } from "@atproto/common";
+import { redirect, Await } from "react-router";
+import { Bell } from "lucide-react";
+import { $path } from "safe-routes";
 import { DescriptionAutoLinker } from "~/components/descriptionAutoLinker";
 import { FollowButton } from "~/components/followButton";
 import { MainLayout } from "~/components/mainLayout";
@@ -11,12 +10,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { loadProfile, saveProfile } from "~/hooks/useLoadedProfile";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
-import type { VStreamProfileViewSimple } from "~/types";
+import type { SerializeFrom, VStreamProfileViewSimple } from "~/types";
 import { Feed } from "~/components/feed";
 import { loadFeed } from "~/hooks/useFeedData";
 import { loader as fetchFeedSlices } from "./api.feed.$feed";
+import type { Route } from "./+types/c.$handle";
 
-export async function loader(args: LoaderFunctionArgs): Promise<{
+export async function loader(args: Route.LoaderArgs): Promise<{
   profile: VStreamProfileViewSimple;
   feed?: SerializeFrom<typeof fetchFeedSlices> | Promise<SerializeFrom<typeof fetchFeedSlices>>;
 }> {
@@ -70,7 +70,7 @@ export async function loader(args: LoaderFunctionArgs): Promise<{
   return { profile, feed };
 }
 
-export function clientLoader(args: ClientLoaderFunctionArgs) {
+export function clientLoader(args: Route.ClientLoaderArgs) {
   const handleOrDid = args.params.handle!;
   const profile = loadProfile(handleOrDid);
   if (profile) {
@@ -78,22 +78,20 @@ export function clientLoader(args: ClientLoaderFunctionArgs) {
     return {
       profile,
       feed,
-      serverData: args.serverLoader<typeof loader>().then((p) => {
+      serverData: args.serverLoader().then((p) => {
         saveProfile(handleOrDid, p.profile);
         return { clientFeed: feed, ...p };
       }),
     };
   }
 
-  return args.serverLoader<typeof loader>().then((p) => {
+  return args.serverLoader().then((p) => {
     saveProfile(handleOrDid, p.profile);
     return p;
   });
 }
 
-export default function ProfilePageScreen() {
-  const data = useLoaderData<typeof loader | typeof clientLoader>();
-
+export default function ProfilePageScreen({ loaderData: data }: Route.ComponentProps) {
   return (
     <MainLayout>
       {"serverData" in data ? (

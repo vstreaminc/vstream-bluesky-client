@@ -1,3 +1,4 @@
+import type { useLoaderData } from "react-router";
 import type {
   AppBskyActorDefs,
   AppBskyEmbedExternal,
@@ -225,3 +226,7 @@ export type VStreamPostThreadUnknown = {
   $type: "unknown";
   uri: string;
 };
+
+/// Utilities
+
+export type SerializeFrom<T> = ReturnType<typeof useLoaderData<T>>;

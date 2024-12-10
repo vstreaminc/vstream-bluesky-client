@@ -1,13 +1,6 @@
 import { OAuthResolverError } from "@atproto/oauth-client-node";
 import { isValidHandle } from "@atproto/syntax";
-import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  type MetaDescriptor,
-  redirect,
-} from "@remix-run/node";
-import { useActionData, useSubmit } from "@remix-run/react";
+import { type MetaDescriptor, redirect, useActionData, useSubmit } from "react-router";
 import { Form, Text } from "react-aria-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button } from "~/components/ui/button";
@@ -17,8 +10,9 @@ import { PRODUCT_NAME } from "~/lib/constants";
 import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
 import { ctas } from "~/lib/messages";
 import { BooleanFilter } from "~/lib/utils";
+import type { Route } from "./+types/login._index";
 
-export async function action({ request, context }: ActionFunctionArgs): Promise<{
+export async function action({ request, context }: Route.ActionArgs): Promise<{
   errors: Record<string, string>;
 }> {
   const { handle } = Object.fromEntries(await request.formData());
@@ -40,7 +34,7 @@ export async function action({ request, context }: ActionFunctionArgs): Promise<
   throw redirect(url.toString());
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: Route.LoaderArgs) {
   const t = await args.context.intl.t();
   const title = t.formatMessage(
     {
@@ -65,7 +59,7 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 }
 
-export const meta: MetaFunction<typeof loader> = (args) => {
+export const meta: Route.MetaFunction = (args) => {
   const metas: MetaDescriptor[] = [
     // TODO: Remove before going live
     { name: "robots", content: "noindex" },

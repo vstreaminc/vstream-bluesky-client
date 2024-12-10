@@ -1,9 +1,8 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import type { ClientLoaderFunctionArgs } from "@remix-run/react";
 import { loadProfile, saveProfile } from "~/hooks/useLoadedProfile";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
+import type { Route } from "./+types/api.profile.$handleOrDid";
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: Route.LoaderArgs) {
   const handleOrDid = args.params.handleOrDid!;
   const agent = await args.context.requireLoggedInUser();
 
@@ -18,10 +17,10 @@ export async function loader(args: LoaderFunctionArgs) {
   return profiledDetailedToSimple(res.data);
 }
 
-export async function clientLoader(args: ClientLoaderFunctionArgs) {
+export async function clientLoader(args: Route.ClientLoaderArgs) {
   let profile = loadProfile(args.params.handleOrDid!);
   if (profile) return profile;
-  profile = await args.serverLoader<typeof loader>();
+  profile = await args.serverLoader();
   saveProfile(args.params.handleOrDid!, profile);
   return profile;
 }

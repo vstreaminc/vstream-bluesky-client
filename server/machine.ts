@@ -1,6 +1,6 @@
 import type http from "http";
 import events from "events";
-import { createRequestHandler } from "@remix-run/express";
+import { createRequestHandler } from "@react-router/express";
 import compression from "compression";
 import express from "express";
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
@@ -47,7 +47,7 @@ export class Machine {
 
     const remixHandler = createRequestHandler({
       build: viteDevServer
-        ? () => viteDevServer.ssrLoadModule("virtual:remix/server-build")
+        ? () => viteDevServer.ssrLoadModule("virtual:react-router/server-build")
         : // @ts-expect-error - the file might not exist yet but it will
           // eslint-disable-next-line import/no-unresolved
           await import("../build/server/remix.js"),
