@@ -13,6 +13,7 @@ import { $path } from "remix-routes";
 import { useEvent } from "react-use-event-hook";
 import { MainLayout } from "~/components/mainLayout";
 import {
+  FeedModerationGuard,
   FeedPostContent,
   FeedPostContentText,
   FeedPostControls,
@@ -59,7 +60,10 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const uri = makeRecordUri(handle!, "app.bsky.feed.post", rkey!);
 
-  const thread = await loadPostThread(uri, (params) => agent.getPostThread(params));
+  const moderationOpts = await args.context.bsky.cachedModerationOpts(agent);
+  const thread = await loadPostThread(uri, (params) => agent.getPostThread(params), {
+    moderationOpts,
+  });
 
   if (thread.$type !== "post") {
     throw new Response("Not found", { status: 404 });
@@ -305,7 +309,9 @@ const HighlightedPostPageItem = React.forwardRef<
       <div className="pt-4">
         <FeedPostContentText post={post} />
       </div>
-      <FeedPostEmbed embed={post.embed} />
+      <FeedModerationGuard post={post} topic="media">
+        <FeedPostEmbed embed={post.embed} />
+      </FeedModerationGuard>
       <div className="pb-4 pt-5 text-sm text-muted-foreground">
         <FormattedTime value={post.createdAt} />
         &nbsp;&middot;&nbsp;
@@ -431,7 +437,9 @@ function PostPageItem(props: {
         <div className="flex min-w-0 flex-1 flex-col">
           <FeedPostHeader post={post} />
           <FeedPostContent post={post} />
-          <FeedPostEmbed embed={post.embed} />
+          <FeedModerationGuard post={post} topic="media">
+            <FeedPostEmbed embed={post.embed} />
+          </FeedModerationGuard>
           <FeedPostControls post={post} />
         </div>
       </div>

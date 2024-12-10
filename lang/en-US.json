@@ -51,6 +51,14 @@
     "defaultMessage": "OS preference",
     "description": "CTA to switch the application to the color scheme that is controled by thier operating system"
   },
+  "DpbxwD": {
+    "defaultMessage": "Hidden content",
+    "description": "A warning that a post contains content a user has chosen to hide"
+  },
+  "F6pFu4": {
+    "defaultMessage": "Hide",
+    "description": "CTA to hide a part of the UI"
+  },
   "HzDgHf": {
     "defaultMessage": "Follow back",
     "description": "Follow button text when the current user does not follow the profile, but the profile follows the current user"
@@ -98,6 +106,10 @@
   "X8eJGc": {
     "defaultMessage": "Following",
     "description": "Follow button text when the current user follows the profile"
+  },
+  "cQwKno": {
+    "defaultMessage": "Show",
+    "description": "CTA to show/reveal a part of the UI"
   },
   "gLb6nw": {
     "defaultMessage": "{followerCount,plural,one{<b>{followerCount, number, ::compact-short}</b> follower} other{<b>{followerCount, number, ::compact-short}</b> followers}}",

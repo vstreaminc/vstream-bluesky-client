@@ -98,4 +98,7 @@ function DisclosureGroup({ children, className, ...props }: DisclosureGroupProps
   );
 }
 
+export const UnstyledDisclosure = AriaDisclosure;
+export const UnstyledDisclosurePanel = AriaDisclosurePanel;
+
 export { Disclosure, DisclosureHeader, DisclosurePanel, DisclosureGroup };

@@ -1,8 +1,8 @@
 import * as React from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { Heart, RefreshCcw, Repeat, Undo2 } from "lucide-react";
+import { Heart, InfoIcon, RefreshCcw, Repeat, Undo2 } from "lucide-react";
 import { useEvent } from "react-use-event-hook";
-import type { PressEvent } from "react-aria-components";
+import { Heading, type PressEvent } from "react-aria-components";
 import HlsVideo from "hls-video-element/react";
 import MediaThemeMinimal from "player.style/minimal/react";
 import { useNavigate } from "@remix-run/react";
@@ -12,6 +12,7 @@ import type {
   VStreamEmbedPost,
   VStreamEmbedVideo,
   VStreamFeedViewPost,
+  VStreamFeedViewPostModerationTopic,
   VStreamFeedViewPostSlice,
 } from "~/types";
 import { cn } from "~/lib/utils";
@@ -26,6 +27,8 @@ import { useImageShadows, useUpdateImageShadow } from "~/hooks/useImgShadow";
 import { linkToProfile, linkToPost } from "~/lib/linkHelpers";
 import { clamp } from "~/lib/numbers";
 import { useShouldAutoplaySingleton } from "~/hooks/useAutoplaySingleton";
+import { useUserModeration } from "~/hooks/useUserModeration";
+import { ctas } from "~/lib/messages";
 import { RichTextRenderer } from "./richText";
 import { Slider } from "./slider";
 import { ManualDialogTrigger } from "./ui/dialog";
@@ -33,6 +36,7 @@ import { ProfileFlyout } from "./profileFlyout";
 import { UnstyledLink } from "./ui/link";
 import { UnstyledButton } from "./ui/button";
 import { FeedPostExternalEmbed } from "./externalEmbed";
+import { UnstyledDisclosure } from "./ui/disclosure";
 
 /**
  * Main component for rendering slices in the feed
@@ -151,7 +155,9 @@ export function FeedPost(props: FeedPostProps) {
         <div className="flex min-w-0 flex-1 flex-col">
           <FeedPostHeader post={post} />
           <FeedPostContent post={post} />
-          <FeedPostEmbed embed={post.embed} />
+          <FeedModerationGuard post={post} topic="media">
+            <FeedPostEmbed embed={post.embed} />
+          </FeedModerationGuard>
           <FeedPostControls post={post} />
         </div>
       </div>
@@ -216,6 +222,69 @@ export function FeedPostHeader({ post }: { post: VStreamFeedViewPost }) {
   );
 }
 
+export function FeedModerationGuard({
+  post,
+  topic,
+  children,
+}: {
+  post: VStreamFeedViewPost;
+  topic: VStreamFeedViewPostModerationTopic;
+  children: React.ReactNode;
+}) {
+  const [userModeration, setModeration] = useUserModeration(post.cid);
+  const decision = post.moderation?.[topic];
+  console.log(decision, userModeration);
+
+  if (decision?.blur && userModeration !== "allow") {
+    return (
+      <UnstyledDisclosure>
+        <Heading className="mt-4">
+          <UnstyledButton
+            slot="trigger"
+            className="flex w-full items-center bg-gray-300/30 px-4 py-2 hover:bg-gray-300"
+            onPress={() => setModeration("allow")}
+          >
+            <InfoIcon className="mr-2 size-4" />
+            <FormattedMessage
+              defaultMessage="Hidden content"
+              description="A warning that a post contains content a user has chosen to hide"
+            />
+            <span className="ml-auto">
+              <FormattedMessage {...ctas.show} />
+            </span>
+          </UnstyledButton>
+        </Heading>
+      </UnstyledDisclosure>
+    );
+  } else if (decision?.blur && userModeration === "allow") {
+    return (
+      <>
+        <UnstyledDisclosure>
+          <Heading className="mt-4">
+            <UnstyledButton
+              slot="trigger"
+              className="flex w-full items-center bg-gray-300/30 px-4 py-2 hover:bg-gray-300"
+              onPress={() => setModeration("deny")}
+            >
+              <InfoIcon className="mr-2 size-4" />
+              <FormattedMessage
+                defaultMessage="Hidden content"
+                description="A warning that a post contains content a user has chosen to hide"
+              />
+              <span className="ml-auto">
+                <FormattedMessage {...ctas.hide} />
+              </span>
+            </UnstyledButton>
+          </Heading>
+        </UnstyledDisclosure>
+        {children}
+      </>
+    );
+  } else {
+    return children;
+  }
+}
+
 export function FeedPostContent({ post }: { post: VStreamFeedViewPost }) {
   return (
     <div className="mt-2">
@@ -245,6 +314,7 @@ export function FeedPostContentText({
 
 export function FeedPostEmbed({ embed }: { embed: VStreamFeedViewPost["embed"] }) {
   if (!embed) return null;
+
   switch (embed.$type) {
     case "com.vstream.embed.images#view":
       return <FeedPostImagesEmbed embed={embed} />;
@@ -521,7 +591,9 @@ function FeedPostQuote({ embed }: { embed: VStreamEmbedPost }) {
         </div>
       </div>
       <FeedPostContent post={post} />
-      <FeedPostEmbed embed={post.embed} />
+      <FeedModerationGuard post={post} topic="media">
+        <FeedPostEmbed embed={post.embed} />
+      </FeedModerationGuard>
     </div>
   );
 }
@@ -681,7 +753,7 @@ export function PostMediaImage(props: {
         />
         <div
           className={cn(
-            "h-full w-full animate-shimmer bg-gray-200",
+            "animate-shimmer h-full w-full bg-gray-200",
             "pointer-events-none absolute inset-0",
             "opacity-0 mix-blend-plus-lighter transition-opacity ease-linear",
             showShimmer && "animate-none opacity-100",

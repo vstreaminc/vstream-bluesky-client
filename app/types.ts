@@ -90,6 +90,13 @@ export type VStreamEmbedPostWithMedia = {
   post: VStreamEmbedPost;
 };
 
+export type VStreamModerationDecision = {
+  filter: boolean;
+  blur: boolean;
+  alert: boolean;
+  inform: boolean;
+};
+
 export type VStreamFeedViewPost = Pick<BSkyFeedViewPost["post"], "uri" | "cid" | "indexedAt"> & {
   author: Pick<BSkyFeedViewPost["post"]["author"], "did" | "handle" | "displayName" | "avatar"> & {
     viewer?: Pick<
@@ -114,10 +121,9 @@ export type VStreamFeedViewPost = Pick<BSkyFeedViewPost["post"], "uri" | "cid" |
     | VStreamEmbedPostWithMedia;
   _reactKey: string;
   moderation?: {
-    filter: boolean;
-    blur: boolean;
-    alert: boolean;
-    inform: boolean;
+    avatar: VStreamModerationDecision;
+    content: VStreamModerationDecision;
+    media: VStreamModerationDecision;
   };
   /**
    * Real type `BskyPostRecord["facets"]`. Typed as `unknown` to make remix okay
@@ -128,6 +134,10 @@ export type VStreamFeedViewPost = Pick<BSkyFeedViewPost["post"], "uri" | "cid" |
   plainText: BskyPostRecord["text"];
   richText: RichText[];
 };
+
+export type VStreamFeedViewPostModerationTopic = keyof NonNullable<
+  VStreamFeedViewPost["moderation"]
+>;
 
 // VStream types
 

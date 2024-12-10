@@ -7,7 +7,6 @@ import {
   type AppBskyFeedGetPostThread,
   moderatePost,
   type ModerationOpts,
-  type ModerationBehavior,
   AppBskyEmbedVideo,
   AppBskyEmbedExternal,
   AppBskyEmbedRecord,
@@ -193,7 +192,7 @@ function parseBSkyRecordEmbed(embed: AppBskyEmbedRecord.View): VStreamEmbedPost 
   }
 
   if (!post) {
-    console.log("Unknown record type", record.$type);
+    console.warn("Unknown record type", record.$type);
     return;
   }
   return {
@@ -257,13 +256,11 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
     post: AppBskyFeedDefs.PostView;
     record: AppBskyFeedPost.Record;
   },
->(
-  item: T,
-  opts?: { moderationOpts: ModerationOpts; context: keyof ModerationBehavior },
-): VStreamFeedViewPost {
-  const moderation = opts
-    ? moderatePost(item.post, opts.moderationOpts).ui(opts.context)
-    : undefined;
+>(item: T, opts?: { moderationOpts: ModerationOpts }): VStreamFeedViewPost {
+  const moderation = opts ? moderatePost(item.post, opts.moderationOpts) : undefined;
+  const avatarModeration = moderation?.ui("avatar");
+  const contentModeration = moderation?.ui("contentView");
+  const mediaModeration = moderation?.ui("contentMedia");
 
   return {
     _reactKey: item.post.uri,
@@ -297,18 +294,34 @@ export function bSkyPostFeedViewPostToVStreamPostItem<
     plainText: item.record.text,
     // TODO: Handle this
     richText: [],
-    moderation: {
-      filter: moderation?.filter ?? false,
-      blur: moderation?.blur ?? false,
-      alert: moderation?.alert ?? false,
-      inform: moderation?.inform ?? false,
-    },
+    moderation: moderation
+      ? {
+          avatar: {
+            filter: avatarModeration?.filter ?? false,
+            blur: avatarModeration?.blur ?? false,
+            alert: avatarModeration?.alert ?? false,
+            inform: avatarModeration?.inform ?? false,
+          },
+          content: {
+            filter: contentModeration?.filter ?? false,
+            blur: contentModeration?.blur ?? false,
+            alert: contentModeration?.alert ?? false,
+            inform: contentModeration?.inform ?? false,
+          },
+          media: {
+            filter: mediaModeration?.filter ?? false,
+            blur: mediaModeration?.blur ?? false,
+            alert: mediaModeration?.alert ?? false,
+            inform: mediaModeration?.inform ?? false,
+          },
+        }
+      : undefined,
   };
 }
 
 function bSkySliceToVStreamSlice(
   slice: FeedViewPostsSlice,
-  opts?: { moderationOpts: ModerationOpts; context: keyof ModerationBehavior },
+  opts?: { moderationOpts: ModerationOpts },
 ): VStreamFeedViewPostSlice {
   return {
     _reactKey: slice._reactKey,
@@ -359,9 +372,7 @@ export function feedGenerator(
         yield* slices.map((slice) =>
           bSkySliceToVStreamSlice(
             slice,
-            opts.moderationOpts
-              ? { moderationOpts: opts.moderationOpts, context: "contentList" }
-              : undefined,
+            opts.moderationOpts ? { moderationOpts: opts.moderationOpts } : undefined,
           ),
         );
       } while (this.cursor);
@@ -413,21 +424,28 @@ export function exploreGenerator(
             opts?.moderationOpts
               ? {
                   moderationOpts: opts.moderationOpts,
-                  context: "contentList",
                 }
               : undefined,
           );
-          if (
-            post.moderation?.filter ||
-            post.moderation?.blur ||
-            post.moderation?.inform ||
-            post.moderation?.alert
-          ) {
-            continue;
-          }
           if (AppBskyEmbedImages.isView(slice.items[0].post.embed)) {
+            if (
+              post.moderation?.media.filter ||
+              post.moderation?.media.blur ||
+              post.moderation?.media.inform ||
+              post.moderation?.media.alert
+            ) {
+              continue;
+            }
             imagePosts.push(post);
           } else {
+            if (
+              post.moderation?.content.filter ||
+              post.moderation?.content.blur ||
+              post.moderation?.content.inform ||
+              post.moderation?.content.alert
+            ) {
+              continue;
+            }
             basicPosts.push(post);
           }
         }
@@ -510,6 +528,7 @@ const REPLY_TREE_DEPTH = 10;
 export async function loadPostThread(
   uri: string,
   load: (query: AppBskyFeedGetPostThread.QueryParams) => Promise<AppBskyFeedGetPostThread.Response>,
+  opts?: { moderationOpts: ModerationOpts },
 ): Promise<VStreamPostThreadNode> {
   const res = await load({ uri, depth: REPLY_TREE_DEPTH });
 
@@ -518,7 +537,7 @@ export async function loadPostThread(
   }
 
   const hydrations: Promise<unknown>[] = [];
-  const thread = bSkyThreadNodeToVStreamThreadNode(res.data.thread);
+  const thread = bSkyThreadNodeToVStreamThreadNode(res.data.thread, opts);
   annotateSelfThread(thread);
   await Promise.all(hydrations);
 
@@ -527,6 +546,7 @@ export async function loadPostThread(
 
 export function bSkyThreadNodeToVStreamThreadNode(
   node: AppBskyFeedGetPostThread.Response["data"]["thread"],
+  opts: { moderationOpts: ModerationOpts } | undefined = undefined,
   depth = 0,
   direction: "up" | "down" | "start" = "start",
 ): VStreamPostThreadNode {
@@ -536,18 +556,21 @@ export function bSkyThreadNodeToVStreamThreadNode(
     AppBskyFeedPost.validateRecord(node.post.record).success
   ) {
     const post = node.post;
-    const vstreamPost = bSkyPostFeedViewPostToVStreamPostItem({
-      post,
-      record: node.post.record,
-    });
+    const vstreamPost = bSkyPostFeedViewPostToVStreamPostItem(
+      {
+        post,
+        record: node.post.record,
+      },
+      opts,
+    );
     let parent;
     if (node.parent && direction !== "down") {
-      parent = bSkyThreadNodeToVStreamThreadNode(node.parent, depth - 1, "up");
+      parent = bSkyThreadNodeToVStreamThreadNode(node.parent, opts, depth - 1, "up");
     }
     let replies;
     if (node.replies?.length && direction !== "up") {
       replies = node.replies
-        .map((reply) => bSkyThreadNodeToVStreamThreadNode(reply, depth + 1, "down"))
+        .map((reply) => bSkyThreadNodeToVStreamThreadNode(reply, opts, depth + 1, "down"))
         // do not show blocked posts in replies
         .filter((node) => node.$type !== "blocked");
     }

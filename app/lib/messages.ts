@@ -13,4 +13,12 @@ export const ctas = defineMessages({
     defaultMessage: "Log in",
     description: "CTA to log in of the appliation",
   },
+  show: {
+    defaultMessage: "Show",
+    description: "CTA to show/reveal a part of the UI",
+  },
+  hide: {
+    defaultMessage: "Hide",
+    description: "CTA to hide a part of the UI",
+  },
 });
