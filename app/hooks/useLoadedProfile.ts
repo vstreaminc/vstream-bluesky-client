@@ -2,7 +2,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { $path } from "safe-routes";
 import { useFetcher } from "react-router";
 import type { VStreamProfileViewSimple } from "~/types";
-import type { loader as profileApiLoader } from "~/routes/api.profile.$handleOrDid";
+import type { loader as profileApiLoader } from "~/routes/api/load-profile";
 import { handleOrDid } from "~/lib/utils";
 
 type Listener = () => void;

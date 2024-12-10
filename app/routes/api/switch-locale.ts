@@ -1,7 +1,7 @@
 import { data } from "react-router";
 import { isSupportedLocale } from "~/lib/locale";
 import { messagesForLocale } from "~/lib/locale.server";
-import type { Route } from "./+types/api.switch-locale";
+import type { Route } from "./+types/switch-locale";
 
 export async function action(args: Route.ActionArgs) {
   const [{ locale }, session] = await Promise.all([

@@ -1,6 +1,6 @@
 import { loadProfile, saveProfile } from "~/hooks/useLoadedProfile";
 import { profiledDetailedToSimple } from "~/lib/bsky.server";
-import type { Route } from "./+types/api.profile.$handleOrDid";
+import type { Route } from "./+types/load-profile";
 
 export async function loader(args: Route.LoaderArgs) {
   const handleOrDid = args.params.handleOrDid!;

@@ -1,22 +1,22 @@
 import { index, prefix, route, type RouteConfig } from "@react-router/dev/routes";
 
 export default [
-  index("./routes/_index.tsx"),
+  index("./routes/home.tsx"),
   route("explore", "./routes/explore.tsx"),
-  route("c/:handle", "./routes/c.$handle.tsx"),
-  route("c/:handle/p/:rkey", "./routes/c.$handle_.p.$rkey.tsx"),
+  route("c/:handle", "./routes/profile-page.tsx"),
+  route("c/:handle/p/:rkey", "./routes/post-page.tsx"),
 
   // Auth routes
-  route("login", "./routes/login._index.tsx"),
+  route("login", "./routes/login.tsx"),
   ...prefix("auth", [
-    route("logout", "./routes/auth.logout.ts"),
-    route("bsky/callback", "./routes/auth.bsky.callback.tsx"),
+    route("logout", "./routes/logout.ts"),
+    route("bsky/callback", "./routes/bsky-callback.tsx"),
   ]),
 
   // API Routes
   ...prefix("api", [
-    route("feed/:feed", "./routes/api.feed.$feed.ts"),
-    route("profile/:handleOrDid", "./routes/api.profile.$handleOrDid.ts"),
-    route("switch-locale", "./routes/api.switch-locale.ts"),
+    route("feed/:feed", "./routes/api/list-feed.ts"),
+    route("profile/:handleOrDid", "./routes/api/load-profile.ts"),
+    route("switch-locale", "./routes/api/switch-locale.ts"),
   ]),
 ] satisfies RouteConfig;

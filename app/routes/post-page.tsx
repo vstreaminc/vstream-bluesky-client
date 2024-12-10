@@ -30,7 +30,7 @@ import { ProfileFlyout } from "~/components/profileFlyout";
 import { PRODUCT_NAME, TWITTER_HANDLE_EN } from "~/lib/constants";
 import type { SupportedLocale } from "~/lib/locale";
 import { UnstyledLink } from "~/components/ui/link";
-import type { Route } from "./+types/c.$handle_.p.$rkey";
+import type { Route } from "./+types/post-page";
 
 export async function loader(args: Route.LoaderArgs) {
   const { handle, rkey } = args.params;

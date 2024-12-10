@@ -13,8 +13,8 @@ import { profiledDetailedToSimple } from "~/lib/bsky.server";
 import type { SerializeFrom, VStreamProfileViewSimple } from "~/types";
 import { Feed } from "~/components/feed";
 import { loadFeed } from "~/hooks/useFeedData";
-import { loader as fetchFeedSlices } from "./api.feed.$feed";
-import type { Route } from "./+types/c.$handle";
+import { loader as fetchFeedSlices } from "./api/list-feed";
+import type { Route } from "./+types/profile-page";
 
 export async function loader(args: Route.LoaderArgs): Promise<{
   profile: VStreamProfileViewSimple;

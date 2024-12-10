@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { redirect } from "react-router";
-import type { Route } from "./+types/auth.bsky.callback";
+import type { Route } from "./+types/bsky-callback";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const params = new URLSearchParams(request.url.split("?")[1]);

@@ -2,7 +2,7 @@ import { SECOND } from "@atproto/common";
 import { feedGenerator, hydrateFeedViewVStreamPost } from "~/lib/bsky.server";
 import { take } from "~/lib/utils";
 import type { VStreamFeedViewPostSlice } from "~/types";
-import type { Route } from "./+types/api.feed.$feed";
+import type { Route } from "./+types/list-feed";
 
 export type SearchParams = {
   cursor?: string;

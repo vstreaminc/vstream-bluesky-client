@@ -3,7 +3,7 @@ import { $path } from "safe-routes";
 import { useFetcher } from "react-router";
 import { useEvent } from "react-use-event-hook";
 import type { VStreamFeedViewPostSlice } from "~/types";
-import type { loader } from "~/routes/api.feed.$feed";
+import type { loader } from "~/routes/api/list-feed";
 
 type Listener = () => void;
 

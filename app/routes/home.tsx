@@ -9,8 +9,8 @@ import type { VStreamFeedViewPostSlice } from "~/types";
 import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
 import { Feed } from "~/components/feed";
 import { loadFeed } from "~/hooks/useFeedData";
-import { loader as fetchFeedSlices } from "./api.feed.$feed";
-import type { Route } from "./+types/_index";
+import { loader as fetchFeedSlices } from "./api/list-feed";
+import type { Route } from "./+types/home";
 
 export const meta: Route.MetaFunction = (args) => {
   const metas: MetaDescriptor[] = [

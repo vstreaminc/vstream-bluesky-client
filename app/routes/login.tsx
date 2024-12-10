@@ -10,7 +10,7 @@ import { PRODUCT_NAME } from "~/lib/constants";
 import { canonicalURL, hrefLangs } from "~/lib/linkHelpers";
 import { ctas } from "~/lib/messages";
 import { BooleanFilter } from "~/lib/utils";
-import type { Route } from "./+types/login._index";
+import type { Route } from "./+types/login";
 
 export async function action({ request, context }: Route.ActionArgs): Promise<{
   errors: Record<string, string>;
